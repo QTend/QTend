@@ -8,7 +8,7 @@ type Button = {
 }
 
 
-const Button = ({onClick, bg, text, borderColor, color='#fff', disabled}:Button) => {
+const Button = ({onClick, bg, text, borderColor='transparent', color='#fff', disabled}:Button) => {
   return (
     <button
         onClick={onClick}

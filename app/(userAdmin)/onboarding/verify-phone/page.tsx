@@ -1,7 +1,7 @@
 
 'use client'
 
-import Phone from '@/components/userAdmin/screen/Phone'
+import { GradientButton } from '@/components/userAdmin/ui/Buttons'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 import { FaPhoneAlt } from 'react-icons/fa'
@@ -30,9 +30,10 @@ const page = () => {
                     />
                 </div>
         
-                <div onClick={handleVerification} className='bg-orange-400  cursor-pointer text-white text-center p-3 rounded-xl'>
-                  Verify and Continue
-                </div>
+                <GradientButton 
+                  label='Verify and Continue' variant='gradient' 
+                  onClick={handleVerification} className='w-full'
+                />
         
                 <p className='text-black/70 text-xs text-center mt-3'>Didn't receive code? Resend</p>
         

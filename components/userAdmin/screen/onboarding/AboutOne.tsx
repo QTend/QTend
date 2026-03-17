@@ -1,6 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import { FaPhoneAlt } from 'react-icons/fa'
+import { GradientButton } from '../../ui/Buttons'
 
 const categories = [
     'Resturnat',
@@ -10,9 +11,11 @@ const categories = [
     'Food Truck',
     'Bakery'
 ]
+export const AboutOne = ({setSteps}:any) => {
 
-const About = () => {
-    const [steps, setSteps] = useState('1');
+    const handleContinue = () => {
+        setSteps('2')
+    }
 
   return (
      <div >
@@ -43,11 +46,7 @@ const About = () => {
             </select>
         </div>
 
-        <div className='bg-orange-400  cursor-pointer text-white text-center p-3 rounded-xl'>
-            Continue
-        </div>
+        <GradientButton label='Continue' onClick={handleContinue} className='w-full' />
     </div>
   )
 }
-
-export default About

@@ -1,13 +1,18 @@
 
 'use client'
 
+import { GradientButton } from '@/components/userAdmin/ui/Buttons'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 import { FaPhoneAlt } from 'react-icons/fa'
 
 const page = () => {
-   const route = useRouter()
+   const router = useRouter()
+
+   const handleNext = () => {
+    router.push('/onboarding/verify-phone')
+   }
   
   return (
     <section className='flex justify-center items-center h-screen'>
@@ -27,9 +32,11 @@ const page = () => {
                     />
                 </div>
         
-                <Link href={'/onboarding/verify-phone'} className='bg-orange-400 block  cursor-pointer text-white text-center p-3 rounded-xl'>
-                  Send Verification Code
-                </Link>
+                <GradientButton 
+                label='Send Verification Code' variant='gradient' 
+                onClick={handleNext} className='w-full'
+                 />
+
         
                 <p className='text-black/70 text-xs text-center mt-3'>By continuing, you agree to our Terms of Service and Privacy Policy</p>
         
