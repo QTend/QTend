@@ -4,6 +4,7 @@ import { EllipsisVertical, Pencil, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Switch from './Switch'
 import Button from '@/components/customer/ui/Button'
+import { GradientButton } from './Buttons'
 
 export const EditMenu = () => {
   const [openEdit, setOpenEdit] = useState(false);
@@ -34,14 +35,16 @@ export const EditMenu = () => {
       {openEdit && (
         <div
           onClick={() => setOpenEdit(false)}
-          className={`fixed inset-0 bg-black/10 h-screen w-screen flex ${update ? 'justify-center items-center' : 'justify-end'} `}
+          className={`fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex ${
+  update ? 'justify-center items-center' : 'justify-end'
+}`}
         >
           {
             !update ? (
         
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="bg-white py-5 px-6 w-140"
+                  className="bg-white z-50 py-5 px-6 w-140 h-full max-h-screen flex flex-col"
                 >
                   {/* header */}
                   <div className='flex justify-between mb-10'>
@@ -62,44 +65,42 @@ export const EditMenu = () => {
                   <p>See details of your item here. You can edit item as required.</p>
 
                   {/* Form */}
-                  <form className='mt-5'>
-                    <div className='mb-3'>
-                      <p className='text-sm text-[#344054] mb-1'>Name of item</p>
-                      <input type="text" className='border-[#D0D5DD] border w-full p-2 text-[#101828] rounded-lg focus:outline-0' />
+                  <form className='mt-5 flex flex-col h-full justify-between'>
+                    <div>
+                      <div className='mb-3'>
+                        <p className='text-sm text-[#344054] mb-1'>Name of item</p>
+                        <input type="text" className='border-[#D0D5DD] border w-full p-2 text-[#101828] rounded-lg focus:outline-0' />
+                      </div>
+
+                      <div className='mb-3'>
+                        <p className='text-sm text-[#344054] mb-1'>Description</p>
+                        <textarea  className='border-[#D0D5DD] border w-full h-25 p-2 text-[#101828] rounded-lg focus:outline-0' />
+                      </div>
+
+                      <div className='mb-3'>
+                        <p className='text-sm text-[#344054] mb-1'>Price</p>
+                        <input type="text" className='border-[#D0D5DD] border w-full p-2 text-[#101828] rounded-lg focus:outline-0' />
+                      </div>
+
+                      <div className='flex items-center gap-1 mb-3'>
+                        <Switch />
+                        <p>items is available</p>
+                      </div>
                     </div>
 
-                    <div className='mb-3'>
-                      <p className='text-sm text-[#344054] mb-1'>Description</p>
-                      <textarea  className='border-[#D0D5DD] border w-full h-25 p-2 text-[#101828] rounded-lg focus:outline-0' />
-                    </div>
-
-                    <div className='mb-3'>
-                      <p className='text-sm text-[#344054] mb-1'>Price</p>
-                      <input type="text" className='border-[#D0D5DD] border w-full p-2 text-[#101828] rounded-lg focus:outline-0' />
-                    </div>
-
-                    <div className='flex items-center gap-1 mb-3'>
-                      <Switch />
-                      <p>items is available</p>
-                    </div>
-
-                    <Button text='Proceed to save' disabled={false} bg='orange' onClick={() => setUpdate(true)} />
+                      <GradientButton label='Proceed to save'className='w-full' onClick={() => setUpdate(true)} />
                   </form>
                 </div>
               
             )
             : (
-              <div className="bg-white py-10 px-6 w-140 h-fit text-center rounded-3xl relative">
+              <div onClick={(e) => e.stopPropagation()} className="bg-white py-10 px-6 w-140 h-fit text-center rounded-3xl relative">
                 <div className='flex absolute top-5 right-6 bg-[#f67d2622] w-fit p-1 rounded-full'><X /></div>
                 <p className='mb-2 text-2xl'>Update item?</p>
                 <p>You're sure you want to commit your changes to this item?</p>
-                <div className='flex items-center mt-5 gap-3'>
-                  <div>
-                    <Button text='Cancel' bg='#F0F0F0' color='black' />
-                  </div>
-                  <div className='flex-1 '>
-                    <Button text='Yes, confirm' bg='orange' />
-                  </div>
+                <div className='flex-cal mt-7 gap-5'>
+                  <GradientButton label='Yes, cancel' className='w-full mb-2' type='button' onClick={() => setUpdate(false)} />
+                  <GradientButton label='Cancel' variant='outline' type='button'  className='w-full' onClick={() => setUpdate(false)} />
                 </div>
               </div>
             )

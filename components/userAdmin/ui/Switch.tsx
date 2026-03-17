@@ -8,7 +8,7 @@ export default function Switch() {
   return (
     <button
       onClick={() => setEnabled(!enabled)}
-      className={`w-9 h-5 flex items-center rounded-full p-1 transition ${
+      className={`w-9 h-5  flex items-center rounded-full p-1 transition ${
         enabled ? "bg-[#F97316]" : "bg-gray-300"
       }`}
     >
