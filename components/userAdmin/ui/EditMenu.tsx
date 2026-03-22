@@ -79,7 +79,7 @@ export const EditMenu = () => {
                       </div>
 
                       <div className='flex items-center gap-1 mb-3'>
-                        <Switch />
+                        <Switch enabled={true} onClick={() => {}} />
                         <p>items is available</p>
                       </div>
                     </div>

@@ -34,7 +34,7 @@ export function Navbar(){
     return(
         <nav className="flex max-w-7xl justify-between mx-auto mt-10 mb-5">
             <div>
-                <p className="text-[#333333] text-xl">{renderMenuTitle()}</p>
+                <div className="text-[#333333] text-xl">{renderMenuTitle()}</div>
             </div>
             
             <div className="flex justify-between items-center gap-5">
