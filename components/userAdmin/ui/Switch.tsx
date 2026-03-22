@@ -1,14 +1,18 @@
 'use client'
+import { MouseEventHandler } from "react";
 
-import { useState } from "react";
+interface SwitchProps {
+  enabled: boolean;
+  // Use the name you want to call inside the component
+  onClick: MouseEventHandler<HTMLButtonElement>; 
+}
 
-export default function Switch() {
-  const [enabled, setEnabled] = useState(false);
-
+export default function Switch({ enabled, onClick }: SwitchProps) {
   return (
     <button
-      onClick={() => setEnabled(!enabled)}
-      className={`w-9 h-5  flex items-center rounded-full p-1 transition ${
+      type="button" // Good practice to prevent form submission
+      onClick={onClick}
+      className={`w-9 h-5 flex items-center rounded-full p-1 transition ${
         enabled ? "bg-[#F97316]" : "bg-gray-300"
       }`}
     >

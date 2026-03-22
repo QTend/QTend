@@ -1,3 +1,6 @@
+'use client'
+
+import { AddMenu } from "@/components/userAdmin/ui/ActionButtons/AddMenu";
 import { EditMenu } from "@/components/userAdmin/ui/EditMenu";
 import Switch from "@/components/userAdmin/ui/Switch";
 import { foods } from "@/constant/foods";
@@ -12,6 +15,14 @@ const tableHeads = [
 ]
 
 export default function Menu () {
+
+    const formatNaira = (amount: number) => 
+    `₦${Math.round(amount).toLocaleString('en-NG')}`;
+
+    const addNaira = (...nums: number[]) => 
+    formatNaira(nums.reduce((a, b) => a + b, 0));
+
+
     return  (
         <div className="bg-white rounded-2xl">
             <div className="flex justify-between items-center py-6 px-6">
@@ -21,7 +32,7 @@ export default function Menu () {
                 <List strokeWidth={3} />
                 </div>
                 </div>
-                <div className="flex items-center gap-1 text-[#68A544] border-[#68A544] border rounded-xl text-sm px-6 py-1 cursor-pointer"><Plus size={20} /> Add item</div>
+                <AddMenu />
             </div>
 
             <div>
@@ -36,13 +47,15 @@ export default function Menu () {
 
                     <tbody>
                         {foods.map((f, index) => (
-                        <tr key={index} className="cursor-pointer hover:bg-linear-to-r from-[#f67d261b] to-[#68a54429]">
+                        <tr key={index} className="group cursor-pointer hover:bg-linear-to-r from-[#f67d261b] to-[#68a54429]">
                             <td className="py-4 px-6 text-left  flex items-center gap-2"><div className="w-14 h-14 bg-orange-500 rounded-xl" />{f.name}</td>
                             <td className="py-4 px-6 text-left">{f.description}</td>
-                            <td className="py-4 px-6 text-left ">{f.price}</td>
+                            <td className="py-4 px-6 text-left text-[#F47C26] ">{addNaira  (f.price)}</td>
                             <td className="py-4 px-6 text-left"><div className="flex items-center gap-7">
-                              <Switch />
-                              <EditMenu/>
+                              <Switch enabled={false} onClick={() => {}} />
+                              <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+                              <EditMenu />
+                              </span>
                               </div>
                             </td>
                         </tr>

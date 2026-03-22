@@ -2,9 +2,7 @@
 'use client'
 
 import { GradientButton } from '@/components/userAdmin/ui/Buttons'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import React from 'react'
 import { FaPhoneAlt } from 'react-icons/fa'
 
 const page = () => {

@@ -2,6 +2,7 @@
 import React, { useState } from 'react'
 import { FaPhoneAlt } from 'react-icons/fa'
 import { GradientButton } from '../../ui/Buttons'
+import { Store } from 'lucide-react'
 
 const categories = [
     'Resturnat',
@@ -20,7 +21,7 @@ export const AboutOne = ({setSteps}:any) => {
   return (
      <div >
         <div className='bg-[#68A544] w-fit p-5 rounded-xl mx-auto mb-5'>
-        <FaPhoneAlt color='#ffffff' size={24} />
+        <Store color='#ffffff' size={24} />
         </div>
         <h5 className='text-2xl text-center font-medium' >Tell us about your business</h5>
         <p className='text-center text-black/80'>This helps us personalize your experience</p>

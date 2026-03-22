@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { FaPhoneAlt } from 'react-icons/fa'
 import { PiCopyLight } from 'react-icons/pi'
 import { GradientButton } from '../../ui/Buttons'
+import { CircleCheckBig } from 'lucide-react'
 
 const categories = [
     'Resturnat',
@@ -24,7 +25,7 @@ export const AboutThree = ({setSteps}: any) => {
   return (
      <div >
         <div className='bg-[#68A544] w-fit p-5 rounded-xl mx-auto mb-5'>
-        <FaPhoneAlt color='#ffffff' size={24} />
+        <CircleCheckBig color='#ffffff' size={24}/>
         </div>
         <h5 className='text-2xl text-center font-medium' >Your menu URL is ready</h5>
         <p className='text-center text-black/80'>Share this link with your customers</p>

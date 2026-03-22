@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Switch from './Switch'
 import Button from '@/components/customer/ui/Button'
 import { GradientButton } from './Buttons'
+import { Modal } from '../screen/Modal'
 
 export const EditMenu = () => {
   const [openEdit, setOpenEdit] = useState(false);
@@ -33,12 +34,7 @@ export const EditMenu = () => {
 
       {/* Modal */}
       {openEdit && (
-        <div
-          onClick={() => setOpenEdit(false)}
-          className={`fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex ${
-  update ? 'justify-center items-center' : 'justify-end'
-}`}
-        >
+        <Modal center={update} onClick={() => setOpenEdit(prev => !prev)}>
           {
             !update ? (
         
@@ -105,7 +101,7 @@ export const EditMenu = () => {
               </div>
             )
           }
-        </div>
+        </Modal>
       )  }
 
       
