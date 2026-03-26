@@ -1,6 +1,7 @@
 'use client'
 
 import { AddMenu } from "@/components/userAdmin/ui/ActionButtons/AddMenu";
+import { ManageCategory } from "@/components/userAdmin/ui/ActionButtons/ManageCategory";
 import { EditMenu } from "@/components/userAdmin/ui/EditMenu";
 import Switch from "@/components/userAdmin/ui/Switch";
 import { foods } from "@/constant/foods";
@@ -32,7 +33,10 @@ export default function Menu () {
                 <List strokeWidth={3} />
                 </div>
                 </div>
+                <div className="flex items-center gap-2">
                 <AddMenu />
+                <ManageCategory />
+                </div>
             </div>
 
             <div>
