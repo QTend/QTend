@@ -19,7 +19,7 @@ export const AboutThree = ({setSteps}: any) => {
     const router = useRouter()
 
     const handleContinue = () => {
-        router.push('/kitchen/1/menu')
+        router.push('/dashboard/1/menu')
     }
 
   return (

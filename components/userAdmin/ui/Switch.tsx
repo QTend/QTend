@@ -3,17 +3,23 @@ import { MouseEventHandler } from "react";
 
 interface SwitchProps {
   enabled: boolean;
-  // Use the name you want to call inside the component
-  onClick: MouseEventHandler<HTMLButtonElement>; 
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+  bgOn?: string;
+  bgOff?: string;
 }
 
-export default function Switch({ enabled, onClick }: SwitchProps) {
+export default function Switch({ 
+  enabled, 
+  onClick, 
+  bgOn = "bg-[#F97316]",
+  bgOff = "bg-gray-300"  
+}: SwitchProps) {
   return (
     <button
-      type="button" // Good practice to prevent form submission
+      type="button"
       onClick={onClick}
       className={`w-9 h-5 flex items-center rounded-full p-1 transition ${
-        enabled ? "bg-[#F97316]" : "bg-gray-300"
+        enabled ? bgOn : bgOff
       }`}
     >
       <div

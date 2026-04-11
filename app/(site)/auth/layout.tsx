@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 
-export default async function OnboardingLayout({
+export default async function AuthLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

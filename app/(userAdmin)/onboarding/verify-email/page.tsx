@@ -2,6 +2,7 @@
 'use client'
 
 import { GradientButton } from '@/components/userAdmin/ui/Buttons'
+import { Mail } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 import { FaPhoneAlt } from 'react-icons/fa'
@@ -15,14 +16,14 @@ const page = () => {
   return (
     <section className='flex justify-center items-center h-screen'>
          <div className='bg-white p-6 min-w-125 rounded-lg'>
-              <div className='bg-[#68A544] w-fit p-5 rounded-xl mx-auto mb-5'>
-                <FaPhoneAlt color='#ffffff' size={24} />
+              <div className='bg-[#68A544] w-16 h-16 flex justify-center items-center rounded-xl mx-auto mb-3'>
+                <Mail color='#ffffff' size={40} />
               </div>
-                <h5 className='text-2xl text-center' >Verify your phone number</h5>
-                <p className='text-center text-black/80'>We sent a code to your phone</p>
+                <h5 className='text-2xl font-medium text-center text-[#333333]' >Verify your email address</h5>
+                <p className='text-center text-[#666666]'>We sent a code to the email, mybu...@gmail.com</p>
         
-                <div className='mt-16 grid gap-2 mb-16'>
-                    <label htmlFor="" className='font-medium'>Verification code</label>
+                <div className='mt-5 grid gap-2 mb-10'>
+                    <label className='font-medium text-[#344054] text-sm'>Verification code</label>
                     <input 
                     type="text"
                     placeholder='Enter 6-digit code'
@@ -35,7 +36,7 @@ const page = () => {
                   onClick={handleVerification} className='w-full'
                 />
         
-                <p className='text-black/70 text-xs text-center mt-3'>Didn't receive code? Resend</p>
+                <p className='text-[#666666] text-xs text-center mt-3'>Didn't receive code? <span className='text-[#F67D26]'>Resend</span></p>
         
                 
             </div>

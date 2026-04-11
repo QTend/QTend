@@ -1,11 +1,15 @@
-'use client'
 
+
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
 import { AddMenu } from "@/components/userAdmin/ui/ActionButtons/AddMenu";
 import { ManageCategory } from "@/components/userAdmin/ui/ActionButtons/ManageCategory";
 import { EditMenu } from "@/components/userAdmin/ui/EditMenu";
 import Switch from "@/components/userAdmin/ui/Switch";
 import { foods } from "@/constant/foods";
+import { getCurrentBranch } from "@/lib/get-current-branch";
+import { BranchProps } from "@/types/BranchType";
 import { EllipsisVertical, List, Plus } from "lucide-react";
+import { getServerSession } from "next-auth";
 
 
 const tableHeads = [
@@ -15,7 +19,13 @@ const tableHeads = [
     'Availability'
 ]
 
-export default function Menu () {
+export default async function Menu ({params}: {params: Promise<{branchSlug: string}>}) {
+
+     const {branchSlug} = await params;
+
+
+    const branch : BranchProps = await getCurrentBranch(branchSlug)
+    
 
     const formatNaira = (amount: number) => 
     `₦${Math.round(amount).toLocaleString('en-NG')}`;
@@ -35,7 +45,7 @@ export default function Menu () {
                 </div>
                 <div className="flex items-center gap-2">
                 <AddMenu />
-                <ManageCategory />
+                <ManageCategory branchId={branch._id} />
                 </div>
             </div>
 
@@ -56,7 +66,7 @@ export default function Menu () {
                             <td className="py-4 px-6 text-left">{f.description}</td>
                             <td className="py-4 px-6 text-left text-[#F47C26] ">{addNaira  (f.price)}</td>
                             <td className="py-4 px-6 text-left"><div className="flex items-center gap-7">
-                              <Switch enabled={false} onClick={() => {}} />
+                              <Switch enabled={false}  />
                               <span className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <EditMenu />
                               </span>

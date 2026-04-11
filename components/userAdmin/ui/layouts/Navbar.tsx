@@ -39,7 +39,7 @@ export function Navbar(){
             
             <div className="flex justify-between items-center gap-5">
             {navs.map((n, index) => (
-                <Link href={`/kitchen/1/${n.label.toLowerCase()}`} key={index} className={`flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2 cursor-pointer ${activeSegment === n.label.toLowerCase() ? 'text-white bg-[#68A544]' : 'text-black'}`}>
+                <Link href={`/dashboard/1/${n.label.toLowerCase()}`} key={index} className={`flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2 cursor-pointer ${activeSegment === n.label.toLowerCase() ? 'text-white bg-[#68A544]' : 'text-black'}`}>
                     <div>{n.icon}</div>
                     <p>{n.label}</p>
                 </Link>

@@ -1,3 +1,5 @@
+'use client'
+
 import React, { ReactNode } from 'react';
 
 interface ButtonProps {
@@ -24,7 +26,7 @@ export function GradientButton({
   
   const variantStyles = variant === "gradient" 
   ? disabled
-    ? "bg-gray-300 text-white"
+    ? "bg-gradient-to-r from-[#F67D2680] to-[#68A54480] text-white"
     : "bg-gradient-to-r from-[#F67D26] to-[#68A544] text-white"
   : "bg-white text-black border border-gray-200";
 
