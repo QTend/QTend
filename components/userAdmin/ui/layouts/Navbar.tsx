@@ -8,10 +8,10 @@ import { FiShoppingBag } from "react-icons/fi"
 import { IoMenuOutline } from "react-icons/io5"
 
 const navs = [
-    {label: 'Menu', icon: <IoMenuOutline />},
-    {label: 'Orders', icon: <FiShoppingBag />},
-    {label: 'Analytics', icon: <ChartColumn />},
-    {label: 'Settings', icon: <Settings />},
+    {label: 'Menu', icon: <IoMenuOutline />, title: 'Your Menu'},
+    {label: 'Orders', icon: <FiShoppingBag />, title: 'Your Menu'},
+    {label: 'Analytics', icon: <ChartColumn />, title: 'Your Menu'},
+    {label: 'Settings', icon: <Settings />, title: 'Your Menu'},
 ]
 
 export function Navbar(){
@@ -20,7 +20,7 @@ export function Navbar(){
 
 
     const renderMenuTitle = () => {
-        const title = navs.find(n => n.label.toLocaleLowerCase() === activeSegment)?.label
+        const title = navs.find(n => n.label.toLocaleLowerCase() === activeSegment)?.title
         return(
             <div>
                 <p className="text-[#333333] text-xl">{title}</p>

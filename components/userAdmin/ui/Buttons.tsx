@@ -42,3 +42,27 @@ export function GradientButton({
     </button>
   );
 }
+
+
+export function PlainButton({ 
+  label, 
+  onClick, 
+  type = "button", 
+  className = "",
+  icon,
+  disabled = false
+}: ButtonProps) {
+    const baseStyles = "p-3 rounded-xl flex items-center justify-center cursor-pointer font-semibold transition-all";
+
+  return(
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className={`${baseStyles} ${className}`}
+    >
+      {icon}
+      {label}
+    </button>
+  )
+}
