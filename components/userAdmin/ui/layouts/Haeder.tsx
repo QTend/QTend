@@ -4,10 +4,11 @@ import { PiBellSimpleLight } from "react-icons/pi";
 import { GradientButton } from "../Buttons";
 import { QrCode, Share2 } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { BranchProps } from "@/types/BranchType";
 
 
 
-export function Header({branch}: any){
+export function Header({branch}: {branch :BranchProps}){
     return(
         <div className=" bg-white py-5">
             <div className="max-w-7xl flex justify-between mx-auto ">

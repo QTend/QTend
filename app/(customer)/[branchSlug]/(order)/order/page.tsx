@@ -12,7 +12,7 @@ import { LuDot } from "react-icons/lu"
 import { RiDeleteBin6Line } from "react-icons/ri";
 
 const page = () => {
-  const { cart, setCart } = useCart();
+  const { cart } = useCart();
   const router = useRouter()
   
   const totalPrice = cart.reduce(
@@ -25,7 +25,7 @@ const page = () => {
       {/* header */}
       <section className="bg-white p-5 mb-3">
         <div className="flex gap-3 items-center mb-3">
-          <IoMdArrowBack color="#4B2E05" onClick={() => router.replace('/1')} />
+          <IoMdArrowBack color="#4B2E05" onClick={() => router.replace('/1/menu')} />
           <p className="text-[#4B2E05]">Back To Menu</p>
         </div>
 
@@ -48,7 +48,7 @@ const page = () => {
         >
           {cart.map(c => (
             <div
-              key={c.id}
+              key={c._id}
               className="bg-white p-3 flex gap-4 rounded-lg shadow mb-2"
             >
               {/* Image placeholder */}

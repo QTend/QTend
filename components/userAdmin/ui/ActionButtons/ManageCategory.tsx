@@ -49,7 +49,7 @@ export function ManageCategory({ branchId }: { branchId: string }) {
   const fetchCategoryItems = async (categoryId: string) => {
     setIsItemsLoading(true);
     try {
-      const res = await fetch(`/api/user-admin/menu/${branchId}/item?categoryId=${categoryId}`);
+      const res = await fetch(`/api/user-admin/${branchId}/menu/item?categoryId=${categoryId}&limit=10000`);
       const data = await res.json();
 
       if (!res.ok) {
@@ -75,7 +75,7 @@ export function ManageCategory({ branchId }: { branchId: string }) {
     setError('');
 
     try {
-      const res = await fetch(`/api/user-admin/menu/${branchId}/category`, {
+      const res = await fetch(`/api/user-admin/${branchId}/menu/category`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, isAvailable: categoryEnabled }),
@@ -104,7 +104,7 @@ export function ManageCategory({ branchId }: { branchId: string }) {
     if (!selectedCategory._id) return;
 
     try {
-      const res = await fetch(`/api/user-admin/menu/${branchId}/category?categoryId=${selectedCategory._id}`, {
+      const res = await fetch(`/api/user-admin/${branchId}/menu/category?categoryId=${selectedCategory._id}`, {
         method: 'DELETE'
       });
       const data = await res.json();
@@ -131,7 +131,7 @@ export function ManageCategory({ branchId }: { branchId: string }) {
     setError('');
 
     try {
-      const res = await fetch(`/api/user-admin/menu/${branchId}/category`, {
+      const res = await fetch(`/api/user-admin/${branchId}/menu/category`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -166,7 +166,7 @@ export function ManageCategory({ branchId }: { branchId: string }) {
 
   const handleToggle = async (category: CategoryProps) => {
     try {
-      const res = await fetch(`/api/user-admin/menu/${branchId}/category`, {
+      const res = await fetch(`/api/user-admin/${branchId}/menu/category`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -194,7 +194,7 @@ export function ManageCategory({ branchId }: { branchId: string }) {
   const deleteItemFromDatabase = async (itemId: string) => {
     setDeletingItemId(itemId);
     try {
-        const res = await fetch(`/api/user-admin/menu/${branchId}/item?itemId=${itemId}`, {
+        const res = await fetch(`/api/user-admin/${branchId}/menu/item?itemId=${itemId}`, {
             method: 'DELETE',
         });
         
@@ -204,7 +204,7 @@ export function ManageCategory({ branchId }: { branchId: string }) {
         
         showToast("Item deleted!", "success");
         fetchCategoryItems(selectedCategory._id);
-        await refreshMenuItems()
+        refreshMenuItems()
         
     } catch (error: any) {
         showToast(error.message, "error");

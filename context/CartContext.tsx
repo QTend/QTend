@@ -1,6 +1,7 @@
 'use client'
 
 import { Food } from "@/constant/foods";
+import { MenuItem } from "@/types/MenuItemType";
 import {
   createContext,
   useContext,
@@ -12,7 +13,7 @@ import {
 
 /* ---------------- TYPES ---------------- */
 
-export type CartItem = Food & {
+export type CartItem = MenuItem & {
   quantity: number;
 };
 

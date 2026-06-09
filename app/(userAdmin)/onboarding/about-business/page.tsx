@@ -15,7 +15,7 @@ import { FaPhoneAlt } from 'react-icons/fa'
 const categories = [
     'Resturnat',
     'Cafe',
-    'Fast Food',
+    'Lounges',
     'Bar',
     'Food Truck',
     'Bakery'
@@ -63,8 +63,8 @@ const page = () => {
   }
 
   return (
-    <section className='flex justify-center items-center h-screen'>
-      <div className='bg-white p-6 min-w-125 max-h-screen overflow-auto rounded-lg no-scrollbar'>
+    <section className='flex justify-center items-center min-h-screen bg-transaparent p-4'>
+     <div className='bg-white p-6 sm:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl no-scrollbar'>
           <div >
             <div className='bg-[#68A544] w-16 h-16 flex justify-center items-center rounded-xl mx-auto mb-3'>
             <Store color='#ffffff' size={40} />

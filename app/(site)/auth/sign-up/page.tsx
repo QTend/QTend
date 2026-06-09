@@ -65,15 +65,15 @@ const page = () => {
     }
   
   return (
-    <section className='flex justify-center items-center h-screen'>
-      <div className='bg-white p-6 min-w-125 max-h-[90%] rounded-lg'>
+    <section className='flex justify-center items-center min-h-screen bg-transaparent p-4'>
+     <div className='bg-white p-6 sm:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl'>
         <div className='bg-[#68A544] w-16 h-16 flex justify-center items-center rounded-xl mx-auto'>
           <FaPhoneAlt color='#ffffff' size={24} />
         </div>
         <h5 className='text-2xl font-medium font-space text-center' >Create your account</h5>
         <p className='text-center text-black/80'>Enter your phone number to get started</p>
   
-        <div className='mt-8 grid gap-2'>
+        <div className='mt-6 grid gap-2'>
           <label className='font-medium text-sm'>Email address</label>
           <input 
           type="text"

@@ -40,6 +40,7 @@ export default function SignIn(){
 
 
       if(!res?.ok){
+        console.log(res)
         showToast('Error while trying to login', 'error')
         return;
       }
@@ -62,14 +63,14 @@ export default function SignIn(){
    }
   
   return (
-    <section className='flex justify-center items-center h-screen'>
-         <div className='bg-white p-6 min-w-125 max-h-[90%] rounded-lg'>
+    <section className='flex justify-center items-center min-h-screen bg-transaparent p-4'>
+     <div className='bg-white p-6 sm:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl'>
               <div className='bg-[#F67D26] w-16 h-16 flex justify-center items-center rounded-xl mx-auto'>
                 <Store color='#ffffff' size={40} />
               </div>
               <h5 className='text-2xl font-medium font-space text-center' >Sign into your account</h5>
         
-              <div className='mt-8 grid gap-2'>
+              <div className='mt-6 grid gap-1.5'>
                   <label className='font-medium text-sm'>Email address</label>
                   <input 
                   type="text"
@@ -106,7 +107,7 @@ export default function SignIn(){
         
               <GradientButton 
               label='Sign in' variant='gradient'  disabled={!email || !password || isLoading}
-              onClick={handleNext} className='w-full mt-10'
+              onClick={handleNext} className='w-full mt-6'
               />     
 
               <GradientButton 

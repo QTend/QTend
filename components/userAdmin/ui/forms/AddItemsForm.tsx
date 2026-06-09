@@ -4,8 +4,8 @@ import { ChevronDown, Plus, X, Trash } from "lucide-react";
 import { GradientButton } from "../Buttons";
 import Image from "next/image";
 import { useToast } from "@/context/ToastContext"; 
-import { MenuItem } from "@/types/MenuItemType";
 import { useMenuItem } from "@/context/MenuItemContext";
+import { useCategory } from "@/context/CategoryContext";
 
 interface Props {
     closeModal: () => void;
@@ -17,8 +17,13 @@ interface Props {
     };
 }
 
-// Extend MenuState locally so we can track the file and preview URL per-item!
-interface LocalItem extends MenuItem {
+interface LocalItem {
+    name: string;
+    category: string;
+    price: number | ''; 
+    description: string;
+    image?: { url: string; publicId: string };
+    isAvailable: boolean;
     preview: string | null;
     file: File | null;
 }
@@ -27,41 +32,22 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
     const { showToast } = useToast();
     const { refreshMenuItems } = useMenuItem()
     const [isLoading, setIsLoading] = useState(false);
-    const [categories, setCategories] = useState<any[]>(category ? [category] : []); 
+    const {categories} = useCategory()
     
-    // Tracks the "New" item being drafted
     const [menu, setMenu] = useState<LocalItem>({
-        name: '', category: category?._id || '', price: '', description: '', image: '', isAvailable: false, preview: null, file: null
+        name: '', category: category?._id || '', price: '', description: '', isAvailable: false, preview: null, file: null
     });
     
-    // Tracks the items already added to the list
     const [menusItems, setMenusItems] = useState<LocalItem[]>([]);
-    
-    // UI States: Tracks which accordion is open, and which one is being dragged over
     const [expandedIndex, setExpandedIndex] = useState<number | 'new'>('new');
     const [draggingIndex, setDraggingIndex] = useState<number | 'new' | null>(null);
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const res = await fetch(`/api/user-admin/menu/${branchId}/category`);
-                const data = await res.json();
-                if (res.ok) setCategories(data.categories || []);
-            } catch (error) {
-                console.error("Failed to fetch categories", error);
-            }
-        };
-        fetchCategories();
-    }, [branchId]);
-
     const handleClose = () => {
-        setMenu({ name: '', category: category?._id || '', price: '', description: '', image: '', isAvailable: false, preview: null, file: null }); 
+        setMenu({ name: '', category: category?._id || '', price: '', description: '', isAvailable: false, preview: null, file: null }); 
         setMenusItems([]);
         closeModal();
     }
 
-    // --- SMART UPDATE FUNCTIONS ---
-    // These functions figure out if we are updating the 'new' form OR an existing item in the array
     const updateItemData = (index: number | 'new', field: string, value: any) => {
         if (index === 'new') {
             setMenu(prev => ({ ...prev, [field]: value }));
@@ -79,7 +65,7 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
     }
 
     const handleToggle = (index: number | 'new', currentState: boolean) => {
-        updateItemData(index, 'isEnable', !currentState);
+        updateItemData(index, 'isAvailable', !currentState); 
     };
 
     const handleFileChange = (index: number | 'new', selectedFile: File | undefined) => {
@@ -91,29 +77,27 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
 
     const handleDeleteItem = (indexToRemove: number) => {
         setMenusItems(prev => prev.filter((_, i) => i !== indexToRemove));
-        setExpandedIndex('new'); // Default back to the new form
+        setExpandedIndex('new'); 
     };
 
-    // --- ACTION BUTTONS ---
     const handleAddMoreItems = () => {
-        // We only validate and push if they click this while on the 'new' form
         if (expandedIndex === 'new') {
             if (!menu.category || !menu.name) {
                 showToast("Please provide a name and select a category", "error");
                 return;
             }
             setMenusItems(prev => [...prev, menu]);
-            setMenu({ name: '', category: category?._id || '', price: '', description: '', image: '', isAvailable: false, preview: null, file: null }); 
+            setMenu({ name: '', category: category?._id || '', price: '', description: '', isAvailable: false, preview: null, file: null }); 
         }
-        
-        // Ensure the view switches back to a fresh empty form
         setExpandedIndex('new');
     }
 
-    const handleSubmitItems = async () => {
+    // =====================================================================
+    // MASSIVE UPGRADE: Concurrent Batch Upload to Cloudinary & MongoDB
+    // =====================================================================
+   const handleSubmitItems = async () => {
         let rawItems = [...menusItems];
         
-        // If they filled out the 'new' form but forgot to click 'Add more', grab it anyway!
         if (menu.name.trim() !== '') {
             if (!menu.category) {
                 showToast("Please select a category for your new item", "error");
@@ -128,37 +112,105 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
         }
 
         setIsLoading(true);
-
-        const finalItemsToSubmit = rawItems.map(item => ({
-            name: item.name,
-            description: item.description,
-            price: Number(item.price) || 0,
-            isAvailable: item.isAvailable, 
-            categoryId: item.category, 
-            image: { url: "temp_random_string", publicId: "temp_random_id" }
-        }));
+        
+        let uploadedPublicIds: string[] = []; 
 
         try {
-            const res = await fetch(`/api/user-admin/menu/${branchId}/item`, {
+            const signRes = await fetch('/api/cloudinary/cloudinary-sign', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ folder: 'menu_items' })
+            });
+            
+            // If the signature route itself fails, catch it early!
+            if (!signRes.ok) {
+                const signError = await signRes.json();
+                throw new Error(`Signature failed: ${signError.error || 'Unknown server error'}`);
+            }
+            
+            const { signature, timestamp, folder } = await signRes.json();
+            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+            const finalItemsToSubmit = await Promise.all(rawItems.map(async (item) => {
+                let finalImage = null;
+
+                if (item.file && cloudName) {
+                    const formData = new FormData();
+                    formData.append('file', item.file);
+                    formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY as string);
+                    formData.append('timestamp', timestamp.toString());
+                    formData.append('signature', signature);
+                    formData.append('folder', folder);
+
+                    const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const cloudData = await uploadRes.json();
+                    console.log('cloudData', cloudData,'uploadRes', uploadRes)
+                    
+                    // NEW: Strict Error Checking for Cloudinary!
+                    // If Cloudinary returns a 4xx or 5xx status, or specifically includes an "error" object
+                    if (!uploadRes.ok || cloudData.error) {
+                        console.error("Cloudinary Detailed Error:", cloudData);
+                        throw new Error(`Image upload failed: ${cloudData.error?.message || 'Unknown Cloudinary error'}`);
+                    }
+                    
+                    if (cloudData.secure_url) {
+                        finalImage = { url: cloudData.secure_url, publicId: cloudData.public_id };
+                        uploadedPublicIds.push(cloudData.public_id); 
+                    } else {
+                        // Safety net: Request succeeded but no URL was given
+                        throw new Error(`Image upload failed: No secure_url returned from Cloudinary`);
+                    }
+                }
+
+                return {
+                    name: item.name,
+                    description: item.description,
+                    price: Number(item.price) || 0,
+                    isAvailable: item.isAvailable, 
+                    categoryId: item.category, 
+                    image: finalImage 
+                };
+            }));
+
+            // Step 3: Send to MongoDB
+            const res = await fetch(`/api/user-admin/${branchId}/menu/item`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items: finalItemsToSubmit })
             });
+            
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
 
             showToast(data.message, "success");
             refreshMenuItems();
             onSuccess();
+            handleClose(); 
+
         } catch (error: any) {
+            console.error("Submission Error:", error);
+            
+            // THE ROLLBACK
+            if (uploadedPublicIds.length > 0) {
+                console.log("Rolling back Cloudinary uploads...", uploadedPublicIds);
+                fetch('/api/cloudinary/cloudinary-delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ publicIds: uploadedPublicIds })
+                }).catch(e => console.error("Rollback failed to execute:", e));
+            }
+
+            // This will now display the exact Cloudinary error in your toast notification!
             showToast(error.message || "Failed to save items", "error");
         } finally {
             setIsLoading(false);
         }
     }
+    // =====================================================================
 
-    // --- REUSABLE FORM RENDERER ---
-    // This generates the actual inputs for whichever item is currently expanded!
     const renderForm = (itemData: LocalItem, index: number | 'new') => (
         <div className="bg-[#EAECF0] p-4 rounded-b-2xl grid gap-5 border-t border-gray-200">
             <div className="flex gap-3">
@@ -196,7 +248,6 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
                 }}
                 className={`relative w-full h-36 rounded-2xl border flex flex-col items-center justify-center transition-all overflow-hidden mb-3 ${draggingIndex === index ? "border-[#68A544] bg-[#68A544]/5" : "border-gray-300 bg-white hover:bg-gray-50"}`}
             >
-                {/* Notice the unique ID for each file input based on its index! */}
                 <input id={`file-upload-${index}`} type="file" onChange={(e) => handleFileChange(index, e.target.files?.[0])} accept="image/*" className="hidden" />
                 <label htmlFor={`file-upload-${index}`} className="absolute inset-0 z-10 cursor-pointer w-full h-full flex flex-col items-center justify-center">
                     {itemData.preview ? (
@@ -221,7 +272,6 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
                     <p className="text-sm">Item is available</p>
                 </div>
                 
-                {/* Delete button only appears for old items, not the 'new' empty form */}
                 {index !== 'new' && (
                     <button onClick={() => handleDeleteItem(index)} className="text-red-500 text-sm font-medium flex items-center gap-1 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">
                         <Trash size={16} /> Remove 
@@ -242,7 +292,6 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
 
                 <div className="flex flex-col gap-3 mb-4"> 
                     
-                    {/* 1. Map over previously added items */}
                     {menusItems.map((m, index) => (
                         <div key={index} className="flex flex-col shadow-sm">
                             <div 
@@ -253,14 +302,11 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
                                 <ChevronDown className={`transition-transform duration-200 ${expandedIndex === index ? 'rotate-180' : ''}`} />
                             </div>
                             
-                            {/* If expanded, render its form! */}
                             {expandedIndex === index && renderForm(m, index)}
                         </div>
                     ))}
 
-                    {/* 2. The "New Item" Accordion */}
                     <div className="flex flex-col mt-2 shadow-sm">
-                        {/* Only show the 'Add New' header if they are currently looking at an older item */}
                         {expandedIndex !== 'new' && menusItems.length > 0 && (
                             <div 
                                 onClick={() => setExpandedIndex('new')}
@@ -271,10 +317,8 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
                             </div>
                         )}
 
-                        {/* If 'new' is expanded, render the empty form! */}
                         {expandedIndex === 'new' && (
                             <div className={menusItems.length > 0 ? "mt-4" : ""}>
-                                {/* Add a subtle title if there are multiple items on screen */}
                                 {menusItems.length > 0 && <p className="text-sm font-medium text-gray-500 mb-2 ml-1">Drafting new item...</p>}
                                 <div className="rounded-t-2xl overflow-hidden">
                                     {renderForm(menu, 'new')}
@@ -284,7 +328,6 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
                     </div>
                 </div>
 
-                {/* 3. Add More Button (Only active when looking at the New form) */}
                 {expandedIndex === 'new' ? (
                     <div onClick={handleAddMoreItems} className="my-5 bg-[#68A544] flex text-white w-fit px-4 py-2.5 rounded-xl cursor-pointer hover:bg-[#5b913b] transition-colors" >
                         <Plus size={20} className="mr-1" />
@@ -298,7 +341,7 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
             </div>
         
             <div className="bg-[#F0F0F0] p-6 sticky bottom-0 z-20">
-                <GradientButton onClick={handleSubmitItems} label={isLoading ? "Saving items..." : `Add ${menusItems.length + (menu.name ? 1 : 0)} items to menu`} className="w-full" disabled={isLoading}  />
+                <GradientButton onClick={handleSubmitItems} label={isLoading ? "Saving items & images..." : `Add ${menusItems.length + (menu.name ? 1 : 0)} items to menu`} className="w-full" disabled={isLoading}  />
             </div>
         </div>
     )

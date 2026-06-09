@@ -1,12 +1,13 @@
-import '@/app/globals.css'
-import { Header } from '@/components/userAdmin/ui/layouts/Haeder';
-import { Navbar } from '@/components/userAdmin/ui/layouts/Navbar';import { cookies, headers } from "next/headers"; // Next.js 15 uses cookies() directly
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 import { getCurrentBranch } from '@/lib/get-current-branch';
 import { MenuItemProvider } from '@/context/MenuItemContext';
 import { CategoryProvider } from '@/context/CategoryContext';
+import { Navbar } from '@/components/userAdmin/ui/layouts/Navbar'; // Assuming this import
+import { Header } from "@/components/userAdmin/ui/layouts/Haeder";
+import { UserAdminProvider } from "@/context/UserAdminContext";
 
 export default async function UserAdminDashboardLayout({
   children,
@@ -15,34 +16,31 @@ export default async function UserAdminDashboardLayout({
   children: React.ReactNode;
   params: Promise<{branchSlug: string}>
 }>) {
-  const {branchSlug} = await params; 
-
-  // console.log('slug',branchSlug)
-
+  const { branchSlug } = await params; 
   const session: any = await getServerSession(authOptions)
 
- 
   if (!session?.user?.id) {
     redirect('/auth/sign-in');
   }
 
- const branch = await getCurrentBranch(branchSlug)
-
-
+  const branch = await getCurrentBranch(branchSlug)
 
   return (
+    <UserAdminProvider branch={branch}>
     <CategoryProvider branch={branch}>
         <MenuItemProvider branch={branch}>
-          <div className=''>
-          <Header branch={branch} />
-          <Navbar/>
-          <div className='max-w-7xl mx-auto p-4 pb-10'>
-          {children} 
+          {/* 1. Changed h-screen to min-h-screen so it can grow if content is long.
+            2. Added flex and flex-col to prevent margin collapse and allow children to stretch.
+          */}
+          <div className=' min-h-screen flex flex-col'>
+            <Header branch={branch} />
+            <Navbar branch={branch} />
+            <div className='max-w-7xl mx-auto flex-1 w-full pb-10'>
+              {children} 
+            </div> 
           </div> 
-        </div> 
-      </MenuItemProvider>
+        </MenuItemProvider>
     </CategoryProvider>
-    
-    
+    </UserAdminProvider>
   );
 }

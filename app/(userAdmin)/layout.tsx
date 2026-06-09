@@ -28,7 +28,6 @@ export default function UserAdminLayout({
         <ToasTProvider>
           {children}
         </ToasTProvider>
-        
       </body>
     </html>
   );

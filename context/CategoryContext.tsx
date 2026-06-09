@@ -21,7 +21,7 @@ export const CategoryProvider = ({children, branch}: {children: ReactNode, branc
 
     const fetchCategories = async () => {
         try {
-        const res = await fetch(`/api/user-admin/menu/${branch._id}/category`)
+        const res = await fetch(`/api/user-admin/${branch._id}/menu/category`)
         const data = await res.json();
 
         if (!res.ok) {
@@ -55,7 +55,7 @@ export const CategoryProvider = ({children, branch}: {children: ReactNode, branc
 export const useCategory = () => {
     const context = useContext(CategoryContext);
     if (!context) {
-        throw new Error("useToast must be used inside ToastProvider");
+        throw new Error("useCategory must be used inside CategoryProvider");
     }
     return context;
 }

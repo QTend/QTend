@@ -1,12 +1,13 @@
 'use client'
 
-import { EllipsisVertical, Pencil, Trash2, X } from 'lucide-react'
+import { Camera, EllipsisVertical, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Switch from './Switch'
 import { GradientButton } from './Buttons'
 import { Modal } from '../screen/Modal'
 import { MenuItem } from '@/types/MenuItemType'
 import { useToast } from '@/context/ToastContext'
+import Image from 'next/image'
 
 interface EditMenuProps {
   menu: MenuItem;
@@ -24,6 +25,10 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // New Image States
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
+
   // Safely extract the ID (handles both populated objects and raw strings)
   const getSafeCategoryId = () => {
     if (!menu.categoryId) return '';
@@ -40,17 +45,32 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
     name: menu.name || '',
     description: menu.description || '',
     price: menu.price || '',
-    categoryId: getSafeCategoryId(), // <-- Uses the ID so the <select> element works!
+    categoryId: getSafeCategoryId(), 
+    image: {
+      url: menu.image?.url || '',
+      publicI: menu.image?.publicId
+    },
     isAvailable: menu.isAvailable || false
   });
 
+  // Centralized close handler to reset all states
+  const handleCloseModal = () => {
+    setOpenEdit(false);
+    setUpdate(false);
+    setNewImageFile(null);
+    setNewImagePreview(null);
+  }
 
   useEffect(() => {
       setFormData({
           name: menu.name || '',
           description: menu.description || '',
           price: menu.price || '',
-          categoryId: getSafeCategoryId(), // <-- Keeps it synced
+          categoryId: getSafeCategoryId(),
+          image: {
+            url: menu.image?.url || "",
+            publicI: menu.image?.publicId || ""
+          },
           isAvailable: menu.isAvailable || false 
       });
   }, [menu]);
@@ -61,7 +81,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
       const fetchCategories = async () => {
         setIsCategoriesLoading(true);
         try {
-          const res = await fetch(`/api/user-admin/menu/${branchId}/category`);
+          const res = await fetch(`/api/user-admin/${branchId}/menu/category`);
           const data = await res.json();
           if (res.ok) setCategories(data.categories || []);
         } catch (error) {
@@ -93,6 +113,15 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
     setFormData(prev => ({ ...prev, isAvailable: !prev.isAvailable }));
   }
 
+  // Handle the selection of a new image file
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      setNewImageFile(file);
+      setNewImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   // PATCH Request to save changes
   const handleUpdate = async () => {
     if (!formData.name.trim() || !formData.categoryId || !formData.price) {
@@ -102,8 +131,49 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
     }
 
     setIsSaving(true);
+    let finalImagePayload = { url: formData.image.url, publicId: formData.image.publicI };
+
     try {
-      const res = await fetch(`/api/user-admin/menu/${branchId}/item`, {
+      if (newImageFile) {
+        const signRes = await fetch('/api/cloudinary/cloudinary-sign', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ folder: 'menu_items' })
+        });
+        
+        if (!signRes.ok) throw new Error("Failed to get upload signature");
+        const { signature, timestamp, folder } = await signRes.json();
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', newImageFile);
+        uploadFormData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY as string);
+        uploadFormData.append('timestamp', timestamp.toString());
+        uploadFormData.append('signature', signature);
+        uploadFormData.append('folder', folder);
+
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+            method: 'POST',
+            body: uploadFormData
+        });
+        
+        const cloudData = await uploadRes.json();
+        if (!uploadRes.ok || cloudData.error) throw new Error("Image upload failed");
+
+        finalImagePayload = { url: cloudData.secure_url, publicId: cloudData.public_id };
+        
+        // Optional: Delete old image to save space
+        if (formData.image.publicI) {
+            fetch('/api/cloudinary/cloudinary-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ publicIds: [formData.image.publicI] })
+            }).catch(e => console.error("Failed to delete old image"));
+        }
+      }
+      // -----------------------------
+
+      const res = await fetch(`/api/user-admin/${branchId}/menu/item`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -112,7 +182,8 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
           description: formData.description,
           price: Number(formData.price),
           categoryId: formData.categoryId, 
-          isAvailable: formData.isAvailable
+          isAvailable: formData.isAvailable,
+          image: finalImagePayload
         }),
       });
 
@@ -121,12 +192,12 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
       if (!res.ok) throw new Error(data.error);
 
       showToast("Item updated successfully", "success");
-      setUpdate(false);
-      setOpenEdit(false);
+      handleCloseModal(); 
       onSuccess(); 
 
     } catch (error: any) {
       showToast(error.message || "Failed to update item", "error");
+      setUpdate(false);
     } finally {
       setIsSaving(false);
     }
@@ -136,7 +207,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-        const res = await fetch(`/api/user-admin/menu/${branchId}/item?itemId=${menu._id}`, {
+        const res = await fetch(`/api/user-admin/${branchId}/menu/item?itemId=${menu._id}`, {
             method: 'DELETE',
         });
         const data = await res.json();
@@ -144,7 +215,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
         if (!res.ok) throw new Error(data.error);
         
         showToast("Item deleted!", "success");
-        setOpenEdit(false);
+        handleCloseModal();
         onSuccess(); // Refresh the table!
     } catch (error: any) {
         showToast(error.message, "error");
@@ -152,6 +223,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
         setIsDeleting(false);
     }
   }
+
 
   return (
     <>
@@ -162,10 +234,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
 
       {/* Modal */}
       {openEdit && (
-        <Modal center={update} onClick={() => {
-            setOpenEdit(false);
-            setUpdate(false);
-        }}>
+        <Modal center={update} onClick={handleCloseModal}>
           {
             !update ? (
                 <div
@@ -180,7 +249,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
                     </div>
                     <div className='flex justify-between items-center gap-3'>
                       {/* Close Button */}
-                      <div onClick={() => setOpenEdit(false)} className='bg-[#f67d260e] p-2 rounded-full cursor-pointer hover:bg-[#f67d2620]'>
+                      <div onClick={handleCloseModal} className='bg-[#f67d260e] p-2 rounded-full cursor-pointer hover:bg-[#f67d2620]'>
                         <X color='#F67D26' size={20} />
                       </div>
                       {/* Delete Button */}
@@ -195,28 +264,35 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
                   {/* Form */}
                   <form className='flex flex-col flex-1' onSubmit={(e) => e.preventDefault()}>
                     <div className="flex-1">
-                      <div className='mb-4'>
-                        <label className='text-sm font-medium text-[#344054] mb-1 block'>Name of item</label>
-                        <input type="text" name="name" value={formData.name} onChange={handleChange} className='border-[#D0D5DD] border w-full p-2 text-[#101828] rounded-lg focus:outline-0 focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26]' />
+                      <div className='flex items-center justify-between gap-1'>
+                         <div className='mb-4 flex-1'>
+                            <label className='text-sm font-medium text-[#344054] mb-1 block'>Name of item</label>
+                            <input type="text" name="name" value={formData.name} onChange={handleChange} className='border-[#D0D5DD] border w-full p-2 text-[#101828] rounded-lg focus:outline-0 focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26]' />
+                          </div>
+
+                          <div className='mb-4 flex-1'>
+                            <label className='text-sm font-medium text-[#344054] mb-1 block'>Category</label>
+                            {isCategoriesLoading ? (
+                              <p className="text-sm text-gray-400 p-2 border border-gray-200 rounded-lg animate-pulse">Loading categories...</p>
+                            ) : (
+                              <select 
+                                name="categoryId" 
+                                value={formData.categoryId} 
+                                onChange={handleChange}
+                                className="w-full border border-[#D0D5DD] rounded-lg bg-white px-3 py-2 outline-none focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26] cursor-pointer"
+                              >
+                                <option value="" disabled>Select a category</option>
+                                {categories.map((c) => (
+                                    <option key={c._id} value={c._id}>{c.name}</option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
                       </div>
 
                       <div className='mb-4'>
-                        <label className='text-sm font-medium text-[#344054] mb-1 block'>Category</label>
-                        {isCategoriesLoading ? (
-                           <p className="text-sm text-gray-400 p-2 border border-gray-200 rounded-lg animate-pulse">Loading categories...</p>
-                        ) : (
-                          <select 
-                            name="categoryId" 
-                            value={formData.categoryId} 
-                            onChange={handleChange}
-                            className="w-full border border-[#D0D5DD] rounded-lg bg-white px-3 py-2 outline-none focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26] cursor-pointer"
-                          >
-                            <option value="" disabled>Select a category</option>
-                            {categories.map((c) => (
-                                <option key={c._id} value={c._id}>{c.name}</option>
-                            ))}
-                          </select>
-                        )}
+                        <label className='text-sm font-medium text-[#344054] mb-1 block'>Price (₦)</label>
+                        <input type="number" name="price" value={formData.price} onChange={handleChange} className='border-[#D0D5DD] border w-full p-2 text-[#101828] rounded-lg focus:outline-0 focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26]' />
                       </div>
 
                       <div className='mb-4'>
@@ -224,9 +300,26 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
                         <textarea name="description" value={formData.description} onChange={handleChange} className='border-[#D0D5DD] border w-full h-25 p-2 text-[#101828] rounded-lg focus:outline-0 focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26]' />
                       </div>
 
+                      {/* Image */}
                       <div className='mb-4'>
-                        <label className='text-sm font-medium text-[#344054] mb-1 block'>Price (₦)</label>
-                        <input type="number" name="price" value={formData.price} onChange={handleChange} className='border-[#D0D5DD] border w-full p-2 text-[#101828] rounded-lg focus:outline-0 focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26]' />
+                        <label className='text-sm font-medium text-[#344054] mb-1 block'>Image of item</label>
+                        <label className='w-full h-36 relative rounded-lg block cursor-pointer border border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 transition-colors overflow-hidden'>
+                          <input type='file' accept="image/*" onChange={handleFileChange} className='hidden' />
+                          
+                          {(newImagePreview || formData.image.url) ? (
+                            <>
+                              <Image src={newImagePreview || formData.image.url} alt='item image' fill className='object-cover' />
+                              <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                  <p className="text-white font-medium bg-black/50 px-4 py-2 rounded-full text-sm">Click to Change</p>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
+                                <Camera className="mb-2 text-gray-400" size={32} />
+                                <p className="text-sm font-medium">Click to upload image</p>
+                            </div>
+                          )}
+                        </label>
                       </div>
 
                       <div className='flex items-center gap-2 mb-6'>

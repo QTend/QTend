@@ -3,31 +3,73 @@ import { connectToDB } from "@/utils/connectToDb";
 import MenuItem from "@/utils/models/MenuItem"; 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
-import mongoose from "mongoose"; // <--- ADDED THIS
+import MenuCategory from "@/utils/models/MenuCategory";
+import { deleteCloudinaryImage } from "@/utils/cloudinary";
 
 type RouteParams = {
     params: Promise<{ branchId: string }>
 }
 
+
+
 export async function GET(req: NextRequest, { params }: RouteParams) {
     try {
+
+        const session: any = await getServerSession(authOptions);
+        if (!session?.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        
         await connectToDB();
         const { branchId } = await params;
+
+        if (!branchId) {
+            return NextResponse.json({ error: "Branch ID parameter missing" }, { status: 400 });
+        }
         
-        // Grab categoryId from the URL query parameter
+        // Grab data from the URL query parameter
         const categoryId = req.nextUrl.searchParams.get("categoryId");
+        const q = req.nextUrl.searchParams.get('q');
+
+        // --- NEW PAGINATION PARAMS ---
+        // Default to page 1 and limit to 10 if not provided in the URL
+        const page = parseInt(req.nextUrl.searchParams.get('page') || '1', 10);
+        const limit = parseInt(req.nextUrl.searchParams.get('limit') || '10', 10);
+        const skip = (page - 1) * limit;
 
         // Build the database query dynamically
         const query: any = { branchId };
+        
         if (categoryId) {
-            query.categoryId = categoryId; // Only filter by category if it exists in the URL
+            query.categoryId = categoryId; 
         }
 
-        const items = await MenuItem.find(query).populate('categoryId', 'name _id');
+        if (q) {
+            query.name = { $regex: q, $options: "i" }; 
+        }
 
-        return NextResponse.json({ items }, { status: 200 });
+        // --- FETCH ITEMS AND TOTAL COUNT CONCURRENTLY ---
+        const [items, totalItems] = await Promise.all([
+            MenuItem.find(query)
+                .populate('categoryId', 'name _id')
+                .sort({ createdAt: -1 }) // Good practice: sort so newest items are on page 1
+                .skip(skip)
+                .limit(limit),
+            MenuItem.countDocuments(query)
+        ]);
+
+        // Calculate how many pages exist in total
+        const totalPages = Math.ceil(totalItems / limit);
+
+        // Return the items alongside the pagination metadata
+        return NextResponse.json({ 
+            items, 
+            totalPages, 
+            currentPage: page 
+        }, { status: 200 });
+
     } catch (error: any) {
-        console.error("Error saving items:", error);
+        console.error("Error fetching items:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
@@ -101,6 +143,13 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
         if (!deletedItem) {
             return NextResponse.json({ error: "Item not found" }, { status: 404 });
+        }
+
+        if (deletedItem.image && deletedItem.image.publicId) {
+            // Notice we do NOT use "await" here.
+            // This runs in the background so the user gets a fast response!
+            deleteCloudinaryImage(deletedItem.image.publicId)
+                .catch((err: any) => console.error("Failed to clean up Cloudinary image:", err));
         }
 
         return NextResponse.json(
