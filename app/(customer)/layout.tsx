@@ -16,14 +16,9 @@ export const metadata: Metadata = {
 
 export default async function CustomerLayout({
   children,
-  params
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{branchSlug: string}>
 }>) {
-
-
-    
     
 
   return (
