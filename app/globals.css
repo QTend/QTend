@@ -7,6 +7,9 @@ body {
   box-sizing: border-box;
   /* AND… a default background of transparent or white depending on browser */
 }
+@theme {
+  --max-width-desktop : 1400px; 
+}
 
 /* this is for no scrolling bar showing  */
 @utility no-scrollbar {
@@ -16,3 +19,5 @@ body {
     display: none; /* Chrome, Safari, Opera */
   }
 }
+
+

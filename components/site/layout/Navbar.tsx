@@ -10,7 +10,7 @@ const links = [
 export const Navbar = () => {
   return (
     <nav>
-        <div className="flex items-center justify-between max-w-350 p-4 mx-auto">
+        <div className="flex items-center justify-between max-w-desktop  p-4 mx-auto">
             <Link href={'/'}>Qtend</Link>
             <div className="flex items-center gap-5">
                 {
