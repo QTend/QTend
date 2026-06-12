@@ -9,7 +9,7 @@ import { useEffect, useState, use } from 'react';
 import { useCustomer } from '@/context/CustomerContext';
 
 const SummaryPage = () => { 
-  const {branch} = useCustomer()
+  const {branch, table} = useCustomer()
   const router = useRouter()
   const { cart, setCart } = useCart() 
 
@@ -49,7 +49,7 @@ const SummaryPage = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                tableNumber: "23", 
+                tableNumber: table, 
                 items: cart,
                 totalAmount: totalPrice,
                 specialInstructions: specialRequest 
@@ -71,7 +71,7 @@ const SummaryPage = () => {
         if (setCart) setCart([]); 
         localStorage.removeItem('cart');
 
-       router.push(`/${branch.restaurant.slug}/order-success/${officialOrder._id}`);
+       router.push(`/${branch.restaurant.slug}/order-success/${officialOrder._id}?table=${table}`);
 
     } catch (error: any) {
         console.error("Order error:", error);
@@ -92,9 +92,9 @@ const SummaryPage = () => {
 
         <p className="text-[#4B2E05] font-bold text-2xl mt-4">Order Summary</p>
         <p className="text-[#92400E] flex items-center gap-1 mt-1">
-          The Chef & Bar
+          {branch.restaurant.name}
           <LuDot size={20} />
-          Table 23
+          Table {table}
         </p>
       </section>
 

@@ -1,19 +1,23 @@
 'use client'
 
 import { CustomerProps } from "@/types/CustomerType";
+import { useSearchParams } from "next/navigation";
 import { createContext, ReactNode, useContext } from "react";
 
 
 interface ContextProps {
-    branch: CustomerProps
+    branch: CustomerProps;
+    table: string | null
 }
 
 
 const customerContext = createContext<ContextProps | null>(null)
 
 export const CustomerProvider = ({children, branch}: {children: ReactNode, branch: CustomerProps}) => {
+    const searchParams = useSearchParams()
+    const table = searchParams.get('table')
     return(
-        <customerContext.Provider value={{branch}}>
+        <customerContext.Provider value={{branch, table}}>
             {children}
         </customerContext.Provider>
     )

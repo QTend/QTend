@@ -1,5 +1,6 @@
 import { connectToDB } from '@/utils/connectToDb';
 import OrderItem from '@/utils/models/OrderItem';
+import { pusherServer } from '@/utils/pusher/pusher';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request, { params }: { params: Promise<{ branchId: string }> }) {
@@ -33,6 +34,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ branchI
             specialInstructions,
             status: 'Active'
         });
+
+
+        await pusherServer.trigger(`branch-${branchId}`, 'new-order', newOrder);
 
         // 6. Send success response back to the phone
         return NextResponse.json({ 

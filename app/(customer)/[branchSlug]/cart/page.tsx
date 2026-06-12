@@ -2,6 +2,7 @@
 
 import Button from "@/components/customer/ui/Button";
 import { CartItem, useCart } from "@/context/CartContext";
+import { useCustomer } from "@/context/CustomerContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
@@ -25,6 +26,7 @@ const CartPage = ({ params }: { params: Promise<any> }) => {
   const {branchSlug} = use(params);
    const {cart, setCart} = useCart();
    const router = useRouter()
+   const {table, branch} = useCustomer()
 
 
 
@@ -70,7 +72,7 @@ const CartPage = ({ params }: { params: Promise<any> }) => {
         </div>
 
         <p className="text-[#4B2E05] font-bold text-2xl mt-4">Order Summary</p>
-        <p className="text-[#92400E] flex items-center gap-1 mt-1">The Chef & Bar<LuDot size={20} />Table 23</p>
+        <p className="text-[#92400E] flex items-center gap-1 mt-1">{branch.restaurant.name}<LuDot size={20} />Table {table}</p>
       </section>
 
       {/* cart items */}
@@ -109,11 +111,12 @@ const CartPage = ({ params }: { params: Promise<any> }) => {
 
       {/* Summary */}
       <section className="bg-white m-5 py-5 px-4 rounded-xl shadow-sm border border-gray-50">
-        <div className="flex justify-between mb-3">
+        {/* <div className="flex justify-between mb-3">
           <h5 className="text-[#92400E] font-medium flex items-center gap-2"> <BsClockHistory />Estimated prep time</h5>
           <p className="text-[#92400E] font-bold">20 mins</p>
-        </div>
-        <div className="flex justify-between items-center border-t border-orange-100 pt-3">
+        </div> */}
+        {/* border-t border-orange-100 pt-3 */}
+        <div className="flex justify-between items-center  ">
           <h5 className="text-[#4B2E05] font-bold text-lg">Total</h5>
           <p className="text-[#F97316] font-bold text-2xl">₦{totalPrice.toLocaleString()}</p>
         </div>
@@ -121,7 +124,7 @@ const CartPage = ({ params }: { params: Promise<any> }) => {
 
      {/* Buttons */}
       <div className="px-5 pb-8">
-        <Link href={`/${branchSlug}/cart/summary`} className="block w-full" >
+        <Link href={`/${branchSlug}/cart/summary?table=${table}`} className="block w-full" >
           <Button
           bg='#F97316'
           text={'Proceed to summary'}

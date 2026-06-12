@@ -8,6 +8,7 @@ import { CategoryProvider } from '@/context/CategoryContext';
 import { Navbar } from '@/components/userAdmin/ui/layouts/Navbar'; // Assuming this import
 import { Header } from "@/components/userAdmin/ui/layouts/Haeder";
 import { UserAdminProvider } from "@/context/UserAdminContext";
+import GlobalOrderListener from "@/context/GlobalOrderListener";
 
 export default async function UserAdminDashboardLayout({
   children,
@@ -29,9 +30,8 @@ export default async function UserAdminDashboardLayout({
     <UserAdminProvider branch={branch}>
     <CategoryProvider branch={branch}>
         <MenuItemProvider branch={branch}>
-          {/* 1. Changed h-screen to min-h-screen so it can grow if content is long.
-            2. Added flex and flex-col to prevent margin collapse and allow children to stretch.
-          */}
+          
+        <GlobalOrderListener />
           <div className=' min-h-screen flex flex-col'>
             <Header branch={branch} />
             <Navbar branch={branch} />

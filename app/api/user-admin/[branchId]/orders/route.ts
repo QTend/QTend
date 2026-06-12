@@ -1,6 +1,7 @@
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 import { connectToDB } from '@/utils/connectToDb';
 import OrderItem from '@/utils/models/OrderItem';
+import { pusherServer } from '@/utils/pusher/pusher';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
@@ -30,22 +31,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ branchId
     }
 }
 
-// =======================================================================
-// PATCH: Kitchen Admin marks an order as "Completed"
-// =======================================================================
 export async function PATCH(req: Request, { params }: { params: Promise<{ branchId: string }> }) {
-
      const session: any = await getServerSession(authOptions);
     if (!session?.user.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const resolvedParams = await params;
+        const { branchId } = resolvedParams;
     try {
         await connectToDB();
 
-        // In a real app, your middleware ensures only admins get this far
         
         const body = await req.json();
-        const { orderId, status } = body; // We expect the frontend to send the Mongo _id and the new status
+        const { orderId, status } = body; 
 
         if (!orderId || !status) {
             return NextResponse.json({ error: 'Missing orderId or status' }, { status: 400 });
@@ -62,6 +61,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ branch
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
+        await pusherServer.trigger(`branch-${branchId}`, 'order-status-updated', {
+            _id: orderId,
+            status
+        });
         return NextResponse.json({ 
             success: true, 
             message: `Order marked as ${status}`,

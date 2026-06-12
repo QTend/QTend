@@ -11,11 +11,12 @@ import { IoIosArrowDown, IoIosClose } from 'react-icons/io'
 import { FiBell } from 'react-icons/fi' 
 import { LuDot } from 'react-icons/lu' // Needed for the Orders modal
 import { useCustomer } from '@/context/CustomerContext'
+import { pusherClient } from '@/utils/pusher/pusherClient'
 
 
 
 export const CustomerMenuInterface = () => {
-  const {branch} = useCustomer()
+  const {branch, table} = useCustomer()
   // Category tracking
   const [openMenus, setOpenMenus] = useState<string[]>([])
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('All')
@@ -42,7 +43,6 @@ export const CustomerMenuInterface = () => {
     }
   }, [setCart])
 
-  // Load "My Orders" and Sync with Database on Refresh ---
   useEffect(() => {
     const loadAndSyncOrders = async () => {
       try {
@@ -52,10 +52,10 @@ export const CustomerMenuInterface = () => {
         const storedOrders = JSON.parse(storedOrdersText)
         if (storedOrders.length === 0) return;
 
-        // 1. Instantly display what is in local storage (keeps the UI feeling lightning fast)
+        // Instantly display what is in local storage
         setMyOrders([...storedOrders].reverse())
 
-        // 2. Fetch the real, current statuses from the database
+        // Fetch the real, current statuses from the database
         const orderIds = storedOrders.map((order: any) => order._id);
         const res = await fetch(`/api/${branch.restaurant.id}/orders/status`, {
             method: 'POST',
@@ -68,7 +68,7 @@ export const CustomerMenuInterface = () => {
         if (data.success && data.statuses.length > 0) {
             let hasChanges = false;
             
-            // 3. Compare the Database reality vs the Phone's memory
+            // Compare the Database reality vs the Phone's memory
             const updatedOrders = storedOrders.map((order: any) => {
                 const dbMatch = data.statuses.find((dbOrder: any) => dbOrder._id === order._id);
                 
@@ -80,7 +80,7 @@ export const CustomerMenuInterface = () => {
                 return order;
             });
 
-            // 4. If the kitchen changed anything, save it to the phone and update the UI
+            // If the kitchen changed anything, save it to the phone and update the UI
             if (hasChanges) {
                 localStorage.setItem('my_orders', JSON.stringify(updatedOrders));
                 setMyOrders(updatedOrders.reverse()); 
@@ -93,6 +93,49 @@ export const CustomerMenuInterface = () => {
 
     loadAndSyncOrders();
   }, [branch.restaurant.id])
+
+ // --- REAL-TIME PUSHER LISTENER ---
+  useEffect(() => {
+    if (!branch?.restaurant.id) return;
+
+    // 1. Tune into the exact same channel the kitchen broadcasts to
+    const channelName = `branch-${branch.restaurant.id}`;
+    const channel = pusherClient.subscribe(channelName);
+
+    // 2. Listen for the specific event you created in your PATCH route
+    channel.bind('order-status-updated', (updatedData: { _id: string, status: string }) => {
+      
+      // Pull the current memory from the phone
+      const storedOrdersText = localStorage.getItem('my_orders');
+      if (storedOrdersText) {
+        const storedOrders = JSON.parse(storedOrdersText);
+        let hasChanges = false;
+        
+        // Find the specific order and update its status
+        const updatedStoredOrders = storedOrders.map((o: any) => {
+          if (o._id === updatedData._id && o.status !== updatedData.status) {
+            hasChanges = true;
+            return { ...o, status: updatedData.status };
+          }
+          return o;
+        });
+
+        // If a change happened, save it to the phone AND update the UI
+        if (hasChanges) {
+          localStorage.setItem('my_orders', JSON.stringify(updatedStoredOrders));
+          
+          // Reverse it just like your loadAndSyncOrders function does!
+          setMyOrders([...updatedStoredOrders].reverse());
+        }
+      }
+    });
+
+    // Cleanup to prevent memory leaks if they leave the page
+    return () => {
+      channel.unbind('order-status-updated');
+      pusherClient.unsubscribe(channelName);
+    };
+  }, [branch?.restaurant.id]);
 
   // Lock scroll when ANY modal opens
   useEffect(() => {
@@ -173,7 +216,7 @@ export const CustomerMenuInterface = () => {
               <h2 className='text-3xl font-bold text-[#4B2E05] leading-tight mb-1'>
                 {branch.restaurant.name}
               </h2>
-              <p className='text-[#4B2E05] text-lg font-medium'>Table 23</p>
+              <p className='text-[#4B2E05] text-lg font-medium'>Table {table}</p>
             </div>
           </div>
 
@@ -276,7 +319,7 @@ export const CustomerMenuInterface = () => {
       </section>
 
       {/* Checkout Summary Bar */}
-      {showSummary && <Order cart={cart} slug={branch.restaurant.slug} />}
+      {showSummary && <Order cart={cart} slug={branch.restaurant.slug} table={table} />}
 
       {/* ================= FOOD DETAILS MODAL ================= */}
       <div className={`fixed inset-0 z-50 flex items-end justify-center ${showMealDetails ? 'pointer-events-auto' : 'pointer-events-none'}`}>
@@ -314,12 +357,12 @@ export const CustomerMenuInterface = () => {
       {/* ================= CALL WAITER MODAL ================= */}
       <div className={`fixed inset-0 z-60 flex items-end justify-center ${showWaiterModal ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <div onClick={() => setShowWaiterModal(false)} className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity ${showWaiterModal ? 'opacity-100' : 'opacity-0'}`} />
-        <div className={`relative w-full bg-white rounded-t-[2rem] transition-transform duration-500 p-6 ${showWaiterModal ? 'translate-y-0' : 'translate-y-full'}`}>
+        <div className={`relative w-full bg-white rounded-t-4xl transition-transform duration-500 p-6 ${showWaiterModal ? 'translate-y-0' : 'translate-y-full'}`}>
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-bold text-[#4B2E05]">Call Waiter</h3>
             <div className="bg-gray-100 rounded-full p-2 cursor-pointer" onClick={() => setShowWaiterModal(false)}><IoIosClose size={24} /></div>
           </div>
-          <p className="text-gray-500 mb-5 font-medium">What do you need help with at Table 23?</p>
+          <p className="text-gray-500 mb-5 font-medium">What do you need help with at Table {table}?</p>
           <div className="grid grid-cols-2 gap-4 mb-6">
             {[
               { icon: '🚰', label: 'Need Water' }, { icon: '💳', label: 'Bring POS/Bill' },
@@ -374,6 +417,8 @@ export const CustomerMenuInterface = () => {
                       </div>
                     ))}
                   </div>
+
+                  <p className='text-[#4B2E05] text-sm'>{order.specialInstructions}</p>
                   
                   <div className="flex gap-2 pt-2">
                     {order.status === 'Completed' &&  (

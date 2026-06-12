@@ -1,8 +1,9 @@
 'use client'
 
 import { useUserAdmin } from "@/context/UserAdminContext";
+import { pusherClient } from "@/utils/pusher/pusherClient";
 import { ChevronDown, ChevronUp, SlidersVertical } from "lucide-react"
-import { use, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 // Types matching our MongoDB Schema
 interface OrderItem {
@@ -29,14 +30,30 @@ export default function KitchenOrders() {
 
     const [orders, setOrders] = useState<Order[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const [completeLoading, setCompleteLoading] = useState(false)
     const [activeFilter, setActiveFilter] = useState<'All Orders' | 'Active' | 'Completed'>('All Orders') // Default to Active is usually best for the kitchen!
     const [expandedOrders, setExpandedOrders] = useState<string[]>([]) 
 
     const filters = ['All Orders', 'Active', 'Completed']
 
-    // =======================================================================
-    // 1. FETCH ORDERS (With 10-second Polling for MVP "Real-Time")
-    // =======================================================================
+    useEffect(() =>{
+        if(!branch?._id) {
+            console.log('pusher didnt subscribe')
+            return;
+        };
+
+        const channel = pusherClient.subscribe(`branch-${branch?._id}`);
+
+        channel.bind('new-order', (incomingOrder: any) =>  {
+            setOrders((prevOrder => [incomingOrder, ...prevOrder]))
+        })
+
+
+        return () => {
+            pusherClient.unsubscribe(`branch-${branch?._id}`)
+        }
+    },[branch?._id]);
+
     const fetchOrders = async (showLoadingState = false) => {
         if (showLoadingState) setIsLoading(true);
         try {
@@ -45,11 +62,7 @@ export default function KitchenOrders() {
             console.log('odeer', data)
             if (res.ok) {
                 setOrders(data.orders);
-                // Automatically expand the newest active order if none are expanded
-                if (expandedOrders.length === 0 && data.orders.length > 0) {
-                    const firstActive = data.orders.find((o: Order) => o.status === 'Active');
-                    if (firstActive) setExpandedOrders([firstActive._id]);
-                }
+            
             }
         } catch (error) {
             console.error("Failed to fetch orders:", error);
@@ -69,17 +82,10 @@ export default function KitchenOrders() {
         return () => clearInterval(interval);
     }, [branchId]);
 
-
-    // =======================================================================
-    // 2. MARK ORDER AS COMPLETE
-    // =======================================================================
     const markOrderComplete = async (orderId: string, e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevents accordion from toggling
+        e.stopPropagation(); 
 
-        // Optimistic UI Update: Instantly change it on the screen so it feels fast
-        setOrders(prev => prev.map(order => 
-            order._id === orderId ? { ...order, status: 'Completed' } : order
-        ));
+        setCompleteLoading(true)
 
         try {
             const res = await fetch(`/api/user-admin/${branchId}/orders`, {
@@ -89,11 +95,16 @@ export default function KitchenOrders() {
             });
 
             if (!res.ok) throw new Error("Failed to update status");
+
+            setOrders(prev => prev.map(order => 
+            order._id === orderId ? { ...order, status: 'Completed' } : order
+        ));
             
         } catch (error) {
+            setCompleteLoading(false)
             console.error(error);
             alert("Failed to update order. Reverting.");
-            fetchOrders(); // Re-fetch to fix the optimistic update if it failed
+
         }
     }
 

@@ -8,11 +8,10 @@ import { FiCheckCircle } from 'react-icons/fi'
 
 // Notice the page accepts BOTH branchId and orderId from Next.js dynamic routing
 const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: string }> }) => {
-
   const resolvedParams = use(params);
    const { branchSlug, id } = resolvedParams;
+   
 
-  console.log(id)
   
   const [showModal, setShowModal] = useState(false)
   const [cooldown, setCooldown] = useState(0)
@@ -69,14 +68,14 @@ const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: str
                   #{exactOrder ? exactOrder.tableNumber : '23'}
                 </p>
             </div>
-            <div className='flex justify-between items-center py-3'>
+            {/* <div className='flex justify-between items-center py-3'>
                 <p className='text-[#92400E] font-medium'>Estimated Time</p>
                 <p className='text-[#F97316] font-bold'>20 mins</p>
-            </div>
+            </div> */}
         </section>
 
       {/* Buttons */}
-      <Link href={`/${branchSlug}/menu`} className="block px-5 mt-7">
+      <Link href={`/${branchSlug}/menu?table=${exactOrder.tableNumber}`} className="block px-5 mt-7">
         <Button
           onClick={() =>{ }}
           bg='#F97316'
@@ -94,10 +93,7 @@ const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: str
           disabled={cooldown > 0}
         />
       </div>
-      
-      <Link href={`/${branchSlug}/menu`} className='text-[#F97316] text-center font-bold block mb-10 active:scale-95 transition-transform'>
-        View your active orders
-      </Link>
+    
 
       {/* MODAL */}
       {showModal && (
