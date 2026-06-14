@@ -75,7 +75,7 @@ function FeatureBadge({ text, bgColor = '#F67D26', Icon}: any) {
 
 export const Product = () => {
   return (
-    <section className='p-16'>
+    <section className='p-16 bg-[#FAFAF9]'>
         <SmallHeader text='PRODUCT' color='#F67D26' />
         <Header text='Built for Every Role in Your Business' />
         <DescHeader text='A seamless experience for guests, and a powerful command center for your

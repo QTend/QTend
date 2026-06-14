@@ -24,9 +24,8 @@ const IndustriesComponents = ({
     label, 
     desc,
     color,
-    key
 }: any) => (
-    <div key={key} className='flex gap-2 items-start bg-white py-5 px-4 rounded-3xl'>
+    <div className='flex gap-2 items-start bg-white py-5 px-4 rounded-3xl'>
         <div 
         style={{backgroundColor: color}}
         className="w-10 h-10 flex justify-center items-center border-[#E8E8E8] rounded-lg">
@@ -53,7 +52,10 @@ adapts to every hospitality format.' />
                 {industries.slice(0, 4).map(i => {
                     const IconComponent = i.icon
                     return(
-                        <IndustriesComponents key={i.id} color={i.color} IconComponent={IconComponent} label={i.label} desc={i.desc}  />
+                        <div key={i.id}>
+                            <IndustriesComponents  color={i.color} IconComponent={IconComponent} label={i.label} desc={i.desc}  />
+                        </div>
+                       
                     )
                 })}
             </div>
