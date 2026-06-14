@@ -8,7 +8,7 @@ body {
   /* AND… a default background of transparent or white depending on browser */
 }
 @theme {
-  --max-width-desktop : 1400px; 
+  --max-width-desktop : 1300px; 
 }
 
 /* this is for no scrolling bar showing  */

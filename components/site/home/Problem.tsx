@@ -1,3 +1,6 @@
+import { DescHeader } from "../DescHeader"
+import { Header } from "../Header"
+import { SmallHeader } from "../SmallHeader"
 
 const problems = [
     {id:1, number:'12 mins',  label: "Avg wait time per order", desc: 'Customers leave due to slow service', icon: ''},
@@ -11,10 +14,10 @@ const problems = [
 export const Problem = () => {
   return (
     <section className="bg-[#111110]  p-16">
-        <p className="text-sm font-medium text-[#68A544] text-center">THE PROBLEM</p>
-        <h2 className="font-bold text-4xl text-[#F7F7F7] text-center my-3">Old Ordering Systems Are Costing You</h2>
-        <p className="text-center text-lg text-[#F0F0F0] max-w-[620] mx-auto">Manual order-taking bottlenecks frustrate customers and overload your team
-— every single day.</p>    
+        <SmallHeader  color="#68A544" text="THE PROBLEM"/>
+        <Header text="Old Ordering Systems Are Costing You" color="#F7F7F7" />
+        <DescHeader text="Manual order-taking bottlenecks frustrate customers and overload your team
+— every single day." color="#F0F0F0" />   
 
         <div className="grid grid-cols-3 gap-5 max-w-desktop mx-auto mt-16">
             {problems.map(p => (

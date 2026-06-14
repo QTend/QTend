@@ -3,7 +3,7 @@ import Image from 'next/image'
 
 const Hero = () => {
   return (
-    <section className='relative h-[138vh] w-full overflow-hidden flex flex-col justify-between pt-16'>
+    <section className='relative h-[748px] w-full overflow-hidden flex flex-col justify-between pt-16'>
         {/* Background Layer */}
         <div className='absolute inset-0 -z-20'>
             <Image 
@@ -26,7 +26,7 @@ const Hero = () => {
 
             <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight mt-6 text-center leading-tight">
                 Let Customers Order <br />
-                <span className="bg-gradient-to-r from-[#F67D26] to-[#1AB653] bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-[#F67D26] to-[#1AB653] bg-clip-text text-transparent">
                      From Their Table
                 </span>{' '}
                 in Seconds
