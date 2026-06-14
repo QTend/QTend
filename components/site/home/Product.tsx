@@ -1,6 +1,3 @@
-
-
-
 import React from 'react'
 import { SmallHeader } from '../SmallHeader'
 import { Header } from '../Header'
@@ -8,11 +5,10 @@ import { DescHeader } from '../DescHeader'
 import { Check, Monitor, Smartphone } from 'lucide-react'
 import Image from 'next/image'
 
-
 function FeatureBadge({ text, bgColor = '#F67D26', Icon}: any) {
   return (
     <div 
-      className="rounded-lg flex items-center w-fit px-2 py-0.5 text-white gap-1 text-xs font-medium mb-2"
+      className="rounded-lg flex items-center w-fit px-2 py-0.5 text-white gap-1 text-xs font-medium mb-3 md:mb-2"
       style={{ backgroundColor: bgColor }}
     >
       {Icon && <Icon size={14} />}
@@ -35,19 +31,19 @@ function FeatureBadge({ text, bgColor = '#F67D26', Icon}: any) {
   imageHeight
 }: any) {
   return (
-    <div className={`flex flex-col md:flex-row max-w-desktop mx-auto mt-16 items-center gap-8 ${reversed ? 'md:flex-row-reverse' : ''}`}>
+    <div className={`flex flex-col md:flex-row max-w-desktop mx-auto mt-12 md:mt-16 items-center gap-8 md:gap-12 ${reversed ? 'md:flex-row-reverse' : ''}`}>
       
       {/* Content Column */}
-      <div className='flex flex-col justify-center flex-1'>
+      <div className='flex flex-col justify-center flex-1 w-full'>
         {/* Reusable Badge */}
         <FeatureBadge text={badgeText} bgColor={badgeBgColor} Icon={badgeIcon} />
         
         {/* Typography */}
-        <p className='font-bold text-2xl text-[#1D1D1F] mb-1'>{title}</p>
-        <p className='text-lg text-[#6B6B6B] mb-5'>{description}</p>
+        <p className='font-bold text-2xl md:text-3xl text-[#1D1D1F] mb-2 md:mb-1'>{title}</p>
+        <p className='text-base md:text-lg text-[#6B6B6B] mb-6 md:mb-5'>{description}</p>
 
         {/* Checkmark List */}
-        <div className='flex flex-col gap-2'>
+        <div className='flex flex-col gap-3 md:gap-2'>
           {features.map((feature: any, index: any) => (
             <div key={index} className='flex gap-2 items-center'>
               <div className='bg-[#0E8A54] w-5 h-5 flex items-center justify-center rounded-full flex-shrink-0'>
@@ -60,13 +56,14 @@ function FeatureBadge({ text, bgColor = '#F67D26', Icon}: any) {
       </div>
 
       {/* Image Column */}
-      <div className='flex justify-center items-center flex-1'>
+      <div className='flex justify-center items-center flex-1 w-full'>
         <Image 
           src={imageSrc} 
           alt={imageAlt}
           width={imageWeight} 
           height={imageHeight} 
-          className='object-cover'
+          className='w-full h-auto object-contain'
+          style={{ maxWidth: imageWeight ? `${imageWeight}px` : '100%' }}
         />
       </div>
     </div>
@@ -75,15 +72,14 @@ function FeatureBadge({ text, bgColor = '#F67D26', Icon}: any) {
 
 export const Product = () => {
   return (
-    <section className='p-16 bg-[#FAFAF9]'>
+    <section className='px-4 py-12 md:p-16 bg-[#FAFAF9]'>
         <SmallHeader text='PRODUCT' color='#F67D26' />
         <Header text='Built for Every Role in Your Business' />
-        <DescHeader text='A seamless experience for guests, and a powerful command center for your
-team.' />
+        <DescHeader text='A seamless experience for guests, and a powerful command center for your team.' />
 
 
         <FeatureSection
-        badgeText="Guess Experience"
+        badgeText="Guest Experience"
         badgeBgColor="#F67D26"
         badgeIcon={Smartphone}
         title="Frictionless Ordering on Any Phone"
@@ -104,8 +100,8 @@ team.' />
       <FeatureSection
         reversed={true}
         badgeText="Secure Payments"
-        badgeBgColor="#0E8A54" // Different color
-        badgeIcon={Monitor}     // Different icon
+        badgeBgColor="#0E8A54" 
+        badgeIcon={Monitor}    
         title="Safe and Instant Checkouts"
         description="Give your guests peace of mind with encrypted processing features directly from their mobile browser viewport."
         imageSrc="/dashboard.png"
@@ -118,7 +114,6 @@ team.' />
           "Instant digital receipts via email"
         ]}
       />
-
 
     </section>
   )

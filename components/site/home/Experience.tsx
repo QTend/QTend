@@ -1,27 +1,27 @@
-
-
-
 import React from 'react'
 import { Header } from '../Header'
 import { DescHeader } from '../DescHeader'
 
 export const Experience = () => {
   return (
-    <section className='p-16 bg-[#F67D26]'>
-        <Header text="Ready to Modernize Your Ordering Experience?" color='#121212' />
-        <DescHeader text='Join hospitality businesses using QTend to serve customers faster and
-operate more efficiently.' color='#121212'/>
+    <section className='px-4 py-16 md:p-20 bg-[#F67D26]'>
+        <div className="max-w-3xl mx-auto">
+            <Header text="Ready to Modernize Your Ordering Experience?" color='#121212' />
+            <DescHeader text='Join hospitality businesses using QTend to serve customers faster and operate more efficiently.' color='#121212'/>
 
-        <div className='flex items-center gap-3 w-fit mx-auto mt-6'>
-            <div className="bg-black text-white font-medium text-sm rounded-lg py-2.5 px-4 cursor-pointer">
-                Start Free
+            <div className='flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-fit mx-auto mt-8'>
+                <div className="bg-black text-white font-medium text-sm rounded-lg py-3.5 sm:py-3 px-6 w-full sm:w-auto text-center cursor-pointer hover:bg-gray-900 transition-colors">
+                    Start Free
+                </div>
+                <div className="font-medium bg-transparent border-2 border-[#121212] text-[#121212] text-sm rounded-lg py-3.5 sm:py-3 px-6 w-full sm:w-auto text-center cursor-pointer hover:bg-black/5 transition-colors">
+                    Book a Demo
+                </div>
             </div>
-            <div className="font-medium bg-transparent border border-[#121212] text-[#1D1D1F] text-sm rounded-lg py-2.5 px-4 cursor-pointer">
-                Book a Demo
-            </div>
+
+            <p className='text-xs text-[#121212]/80 font-medium text-center mt-6'>
+                No credit card required. 14-day free trial. Cancel anytime.
+            </p>
         </div>
-
-        <p className='text-xs text-[#4E4E4E] text-center mt-5'>No credit card required. 14-day free trial. Cancel anytime.</p>
     </section>
   )
 }
