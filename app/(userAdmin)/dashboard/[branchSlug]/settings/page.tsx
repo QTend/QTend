@@ -12,23 +12,29 @@ export default function General() {
   // Simple state to hold form values matching the image defaults
   const [formData, setFormData] = useState({
     name: branch.name,
-    description: "Authentic Italian cuisine made with passion and fresh ingredients.",
+    description: branch.description,
     urlSlug: branch.slug,
-    phone: "+33 6 12 34 56 78",
-    email: "hello@bistrot-delicias.com",
-    website: "bistrot-delicias.com",
-    street: "123 Avenue des Champs-Elysées",
-    city: "Paris",
-    postalCode: "75008",
-    country: "France",
-    instagram: "instagram.com/bistrot-delicias",
-    twitter: "twitter.com/bistrot-delicias",
-    tiktok: "tiktok.com/@bistrot-delicias",
+    phone: branch.phone,
+    email: branch.email,
+    website: branch.website,
+    street: branch.location.address,
+    city: branch.location.city,
+    postalCode: branch.location.postalCode,
+    country: branch.location.country,
+    instagram: branch.socials.instagram,
+    x: branch.socials.x,
+    tiktok: branch.socials.tiktok,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+
+
+  const handleSaveInfo = () => {
+    console.log(formData)
+  }
 
   return (
     <div className="w-full ">
@@ -232,8 +238,8 @@ export default function General() {
             </div>
             <input
               type="text"
-              name="twitter"
-              value={formData.twitter}
+              name="x"
+              value={formData.x}
               onChange={handleChange}
               className="flex-1 bg-transparent px-3 py-2 text-sm text-slate-800 focus:outline-none"
             />
@@ -259,7 +265,7 @@ export default function General() {
 
       {/* Action Footer */}
       <div className="flex justify-end">
-        <button className="bg-[#68A544] hover:bg-green-700 transition-colors text-white px-6 py-2 rounded-md font-medium text-sm shadow-sm">
+        <button  onClick={handleSaveInfo} className="bg-[#68A544] hover:bg-green-700 transition-colors text-white px-6 py-2 rounded-md font-medium text-sm shadow-sm">
           Save changes
         </button>
       </div>

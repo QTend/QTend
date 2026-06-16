@@ -48,7 +48,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
     categoryId: getSafeCategoryId(), 
     image: {
       url: menu.image?.url || '',
-      publicI: menu.image?.publicId
+      publicId: menu.image?.publicId
     },
     isAvailable: menu.isAvailable || false
   });
@@ -69,7 +69,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
           categoryId: getSafeCategoryId(),
           image: {
             url: menu.image?.url || "",
-            publicI: menu.image?.publicId || ""
+            publicId: menu.image?.publicId || ""
           },
           isAvailable: menu.isAvailable || false 
       });
@@ -131,7 +131,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
     }
 
     setIsSaving(true);
-    let finalImagePayload = { url: formData.image.url, publicId: formData.image.publicI };
+    let finalImagePayload = { url: formData.image.url, publicId: formData.image.publicId };
 
     try {
       if (newImageFile) {
@@ -163,11 +163,11 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
         finalImagePayload = { url: cloudData.secure_url, publicId: cloudData.public_id };
         
         // Optional: Delete old image to save space
-        if (formData.image.publicI) {
+        if (formData.image.publicId) {
             fetch('/api/cloudinary/cloudinary-delete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ publicIds: [formData.image.publicI] })
+                body: JSON.stringify({ publicIds: [formData.image.publicId] })
             }).catch(e => console.error("Failed to delete old image"));
         }
       }

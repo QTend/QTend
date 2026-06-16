@@ -12,6 +12,8 @@ export default function GlobalOrderListener() {
     useEffect(() => {
         if (!branch?._id) return;
 
+        if (!pusherClient) return;
+
         const channel = pusherClient.subscribe(`branch-${branch._id}`);
 
         channel.bind('new-order', (incomingOrder: any) => {
@@ -28,7 +30,7 @@ export default function GlobalOrderListener() {
         // We STILL need cleanup here in case the user logs out!
         return () => {
             channel.unbind('new-order');
-            pusherClient.unsubscribe(`branch-${branch._id}`);
+            pusherClient?.unsubscribe(`branch-${branch._id}`);
         };
     }, [branch?._id]);
 
