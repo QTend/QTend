@@ -10,7 +10,7 @@ export interface ITable extends Document {
   updatedAt: Date;
 }
 
-const TableSchema = new Schema<ITable>(
+const TableSchema = new Schema<ITable>( 
   {
     branchId: {
       type: Schema.Types.ObjectId,
