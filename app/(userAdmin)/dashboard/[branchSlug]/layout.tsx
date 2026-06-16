@@ -32,8 +32,7 @@ export default async function UserAdminDashboardLayout({
         <MenuItemProvider branch={branch}>
           
         <GlobalOrderListener />
-          <div className=' min-h-screen flex flex-col'>
-            <Header branch={branch} />
+          <div className=' min-h-screen flex flex-col gap-8'>
             <Navbar branch={branch} />
             <div className='max-w-7xl mx-auto flex-1 w-full pb-10'>
               {children} 

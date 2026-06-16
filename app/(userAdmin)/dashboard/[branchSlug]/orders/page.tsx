@@ -144,7 +144,7 @@ export default function KitchenOrders() {
     })
 
     return  (
-        <div className="mx-auto p-4 md:p-6">
+        <div className="mx-auto  md:p-6">
             {/* ================= HEADER & FILTERS ================= */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 

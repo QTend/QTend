@@ -24,6 +24,9 @@ export const CategoryProvider = ({children, branch}: {children: ReactNode, branc
         const res = await fetch(`/api/user-admin/${branch._id}/menu/category`)
         const data = await res.json();
 
+        console.log('cat', data)
+        console.log("status", res.status);
+
         if (!res.ok) {
             showToast(data.error, "error")
             throw new Error(data.error || 'Failed to add category');

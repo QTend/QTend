@@ -18,11 +18,6 @@ export default function SignIn(){
   const [isLoading, setIsLoading] = useState(false)
   const {showToast} = useToast()
 
-
-
-  
-
-
   const handleNext = async () => {
     if(!email || !password)return;
 
@@ -34,10 +29,6 @@ export default function SignIn(){
         email,
         password
       })
-
-     
-
-
 
       if(!res?.ok){
         console.log(res)
