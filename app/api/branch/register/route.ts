@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import Branches from "@/utils/models/Branches";
 import { getToken } from "next-auth/jwt";
 
+// Prevents Next.js from caching this route and causing 404s in production!
+export const dynamic = 'force-dynamic'; 
+
 export async function POST(req: NextRequest) {
   try {
     // 1. Get the token from the request
@@ -18,9 +21,11 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = token.sub;
-    const { name, address, category } = await req.json();
+    
+    // Extract EXACTLY what the frontend is sending now (no city, no postalCode)
+    const { name, category, address, state, country } = await req.json();
 
-    if (!name || !address || !category) {
+    if (!name || !address || !category || !state || !country) {
         return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -29,9 +34,13 @@ export async function POST(req: NextRequest) {
     // 2. Create the Business
     const newBranch = await Branches.create({
       name,
-      address,
       category,
-      slug: name.toLowerCase().split(' ').join('-'), 
+      slug: name.toLowerCase().trim().replace(/\s+/g, '-'), 
+      location: {
+          address,
+          state,
+          country
+      }
     });
 
     // 3. Create the Membership linking the user to the business
@@ -53,5 +62,6 @@ export async function POST(req: NextRequest) {
     console.error("Onboarding Error:", error);
     return NextResponse.json({ 
       error: error.code === 11000 ? "Business name already taken" : "Internal Server Error" 
-    }, { status: 500 });  }
+    }, { status: 500 });  
+  }
 }

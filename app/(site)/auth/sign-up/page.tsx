@@ -2,8 +2,9 @@
 'use client'
 
 import { GradientButton } from '@/components/userAdmin/ui/Buttons'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Home } from 'lucide-react'
 import { signIn } from 'next-auth/react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { FaPhoneAlt } from 'react-icons/fa'
@@ -107,14 +108,22 @@ const page = () => {
     
         <GradientButton 
         label='Sign up' variant='gradient' disabled={buttonDisable}
-        onClick={handleNext} className='w-full mt-5'
+        onClick={handleNext}
+        loading= {loading}
+        className='w-full mt-5'
           />
+        <p className='text-black/70 text-xs text-center mt-3'>By continuing, you agree to our Terms of Service and Privacy Policy</p>            
+        <p className='text-[#f67d26] font-medium text-sm text-center mt-1' >Already have any account?{''} <Link href={'/auth/sign-up'}  className='underline'>click here</Link> </p>
 
+       <Link  href={'/'} className="py-3 rounded-xl flex justify-center items-center gap-2 cursor-pointer">
+          <Home size={20} className="text-[#f67d26]" />
+          <p className="text-[#f67d26] font-medium text-sm m-0">
+            Go Home
+          </p>
+      </Link>
+     </div>
 
-        <p className='text-black/70 text-xs text-center mt-3'>By continuing, you agree to our Terms of Service and Privacy Policy</p>
-    
-            
-      </div>
+      
     </section>
   )
 }

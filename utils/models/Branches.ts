@@ -21,7 +21,8 @@ const BranchSchema = new mongoose.Schema({
         default: ''
     },
     category: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'AdminCategory',
         required: true
     },
     slug: {
@@ -33,6 +34,7 @@ const BranchSchema = new mongoose.Schema({
             type: String, 
             required: true
         },
+        state: { type: String },
         city: { type: String },
         country: { type: String },
         postalCode: { type: String }

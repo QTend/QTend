@@ -48,13 +48,13 @@ const Hero = () => {
         </div>
 
         {/* Product Image */}
-        <div className='w-full max-w-[800px] mx-auto px-4 sm:px-6 md:px-4 mt-12 md:mt-auto translate-y-12 md:translate-y-24 relative z-10'>
+        <div className='w-full max-w-200 mx-auto px-4 sm:px-6 md:px-4 mt-12 md:mt-auto translate-y-12 md:translate-y-24 relative z-10'>
             <Image 
             src='/productHero.png'
             alt='Product preview'
             width={1024}
             height={724}
-            className='w-full h-auto rounded-t-xl sm:rounded-t-2xl shadow-2xl border-t border-x border-white/20'
+            className='w-full h-auto '
             priority
             />
         </div>

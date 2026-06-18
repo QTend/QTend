@@ -39,7 +39,7 @@ export const Navbar = () => {
                 <Link href={'/auth/sign-in'} className="font-medium text-sm rounded-lg py-2 px-2.5 text-[#1D1D1F] hover:bg-gray-50 transition-colors">
                     Log in
                 </Link>
-                <Link href={'/auth/sign-in'} className="bg-[#F67D26] text-white font-medium text-sm rounded-lg py-2 px-2.5 hover:bg-[#e06d1e] transition-colors">
+                <Link href={'/auth/sign-up'} className="bg-[#F67D26] text-white font-medium text-sm rounded-lg py-2 px-2.5 hover:bg-[#e06d1e] transition-colors">
                  Get started
                 </Link>
             </div>
@@ -89,7 +89,7 @@ export const Navbar = () => {
                             Log in
                         </Link>
                         <Link 
-                            href={'/auth/sign-in'} 
+                            href={'/auth/sign-up'} 
                             onClick={() => setIsMenuOpen(false)}
                             className="bg-[#F67D26] text-white font-medium text-sm rounded-lg py-2.5 px-4 text-center"
                         >

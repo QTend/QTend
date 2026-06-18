@@ -3,7 +3,7 @@
 
 import { GradientButton } from '@/components/userAdmin/ui/Buttons'
 import { useToast } from '@/context/ToastContext'
-import { Eye, EyeOff, Store, Target } from 'lucide-react'
+import { Eye, EyeOff, Home, Store, Target } from 'lucide-react'
 import { signIn, signOut, getSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -50,7 +50,6 @@ export default function SignIn(){
     }finally{
       setIsLoading(false)
     }
-    
    }
   
   return (
@@ -99,7 +98,14 @@ export default function SignIn(){
               <GradientButton 
               label='Sign in' variant='gradient'  disabled={!email || !password || isLoading}
               onClick={handleNext} className='w-full mt-6'
-              />     
+              />    
+
+              <Link  href={'/'} className="py-3 rounded-xl flex justify-center items-center gap-2 cursor-pointer">
+                <Home size={20} className="text-[#f67d26]" />
+                <p className="text-[#f67d26] font-medium text-sm m-0">
+                  Go Home
+                </p>
+            </Link> 
 
               <GradientButton 
               label='Sign in' variant='gradient' 
