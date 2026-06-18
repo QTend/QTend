@@ -24,16 +24,17 @@ export default async function UserAdminDashboardLayout({
     redirect('/auth/sign-in');
   }
 
-  const branch = await getCurrentBranch(branchSlug)
+  const data = await getCurrentBranch(branchSlug)
+  console.log('useradmin', data)
 
   return (
-    <UserAdminProvider branch={branch}>
-    <CategoryProvider branch={branch}>
-        <MenuItemProvider branch={branch}>
+    <UserAdminProvider branch={data?.branch} user={data?.user}>
+  <CategoryProvider branch={data?.branch}>
+    <MenuItemProvider branch={data?.branch}>
           
         <GlobalOrderListener />
           <div className=' min-h-screen flex flex-col gap-8'>
-            <Navbar branch={branch} />
+            <Navbar branch={data?.branch} />
             <div className='max-w-7xl mx-auto flex-1 w-full pb-10'>
               {children} 
             </div> 

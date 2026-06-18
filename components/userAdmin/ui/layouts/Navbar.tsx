@@ -2,7 +2,6 @@
 
 import { BranchProps } from "@/types/BranchType"
 import { ChartColumn, Settings } from "lucide-react"
-import { SuffixPathnameNormalizer } from "next/dist/server/normalizers/request/suffix"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { FiShoppingBag } from "react-icons/fi"
@@ -16,28 +15,17 @@ const navs = [
 ]
 
 export function Navbar({branch}: {branch : BranchProps}){
+    console.log('navbar', branch)
     const pathname = usePathname()
     const activeSegment = pathname.split('/').pop() 
 
-
-    const renderMenuTitle = () => {
-        const title = navs.find(n => n.label.toLocaleLowerCase() === activeSegment)?.title
-        return(
-            <div>
-                <p className="text-[#333333] text-xl">{title}</p>
-                {/* <div>
-                    {}
-                </div> */}
-            </div>
-        )
-    }
 
     return(
         <div className=" bg-white py-5">
              <nav className=" flex max-w-7xl justify-between mx-auto mb-5">
                 <div>
                     <p className="text-2xl font-medium text-[#333333]">{branch.name}</p>
-                    <p className="text-[#666666] text-sm">{branch.address}</p>
+                    <p className="text-[#666666] text-sm">{branch.location.address}</p>
                 </div>
                 
                 <div className="flex justify-between items-center gap-5">

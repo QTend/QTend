@@ -3,41 +3,91 @@
 import React, { useState } from "react";
 import { Phone, Mail, Globe, MapPin, Instagram, Twitter, ChevronDown } from "lucide-react";
 import { useUserAdmin } from "@/context/UserAdminContext";
+import { useToast } from "@/context/ToastContext";
+import { signOut } from "next-auth/react"; // <-- Import signOut from NextAuth
+import { useRouter } from "next/navigation";
+import { nigerianStates } from "@/constant/nigerianStates";
 
 
 
 export default function General() {
-  const {branch} = useUserAdmin()
+  const { branch, user } = useUserAdmin();
+  const [saveLoading, setSaveLoading] = useState(false);
+  const { showToast } = useToast();
+  const router = useRouter();
 
-  // Simple state to hold form values matching the image defaults
   const [formData, setFormData] = useState({
-    name: branch.name,
-    description: branch.description,
-    urlSlug: branch.slug,
-    phone: branch.phone,
-    email: branch.email,
-    website: branch.website,
-    street: branch.location.address,
-    city: branch.location.city,
-    postalCode: branch.location.postalCode,
-    country: branch.location.country,
-    instagram: branch.socials.instagram,
-    x: branch.socials.x,
-    tiktok: branch.socials.tiktok,
+    name: branch?.name || "",
+    description: branch?.description || "",
+    urlSlug: branch?.slug || "",
+    phone: branch?.phone || "",
+    email: user?.email || "", 
+    website: branch?.website || "",
+    street: branch?.location?.address || "",
+    state: branch?.location?.state || "",
+    postalCode: branch?.location?.postalCode || "",
+    country: branch?.location?.country || "Nigeria", 
+    instagram: branch?.socials?.instagram || "",
+    x: branch?.socials?.x || "",
+    tiktok: branch?.socials?.tiktok || "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "name") {
+      // Auto-generate slug from the name
+      const generatedSlug = value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, "") 
+        .replace(/[\s-]+/g, "-");     
+
+      setFormData((prev) => ({ 
+        ...prev, 
+        name: value, 
+        urlSlug: generatedSlug 
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
+  const handleSaveInfo = async () => {
+    setSaveLoading(true);
+    try {
+      const res = await fetch(`/api/user-admin/${branch?._id}/profile`, { 
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
 
+      if (data.success) {
+        showToast(data.message);
 
-  const handleSaveInfo = () => {
-    console.log(formData)
-  }
+        if (formData.urlSlug !== branch?.slug) {
+          showToast("Name changed. Logging you out to refresh your session...");
+          setTimeout(() => {
+            signOut({ callbackUrl: '/login' }); 
+          }, 2000);
+        } else {
+          // 3. Force Next.js to re-fetch the server components (like your layout)
+          router.refresh(); 
+        }
+      } else {
+        showToast(data.error);
+      }
+    } catch (error: any) {
+      console.log("Error during saving", error);
+      showToast(error.message);
+    } finally {
+      setSaveLoading(false);
+    }
+  };
 
   return (
-    <div className="w-full ">
+    <div className="w-full">
       {/* 1. Restaurant Info Card */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm mb-6">
         <h2 className="text-lg font-semibold text-slate-800">Restaurant Info</h2>
@@ -69,15 +119,15 @@ export default function General() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* URL Slug */}
+            {/* URL Slug (Disabled & Auto-filled) */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">URL slug</label>
               <input
                 type="text"
                 name="urlSlug"
                 value={formData.urlSlug}
-                onChange={handleChange}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                disabled
+                className="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-500 cursor-not-allowed focus:outline-none"
               />
             </div>
 
@@ -98,7 +148,7 @@ export default function General() {
               </div>
             </div>
 
-            {/* Email Address */}
+            {/* Email Address (Disabled) */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Email address</label>
               <div className="relative">
@@ -109,8 +159,8 @@ export default function General() {
                   type="email"
                   name="email"
                   value={formData.email}
-                  onChange={handleChange}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                  disabled
+                  className="w-full bg-slate-100 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-500 cursor-not-allowed focus:outline-none"
                 />
               </div>
             </div>
@@ -160,19 +210,22 @@ export default function General() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* City Dropdown */}
+            {/* State Dropdown */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">City</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">State</label>
               <div className="relative">
                 <select
-                  name="city"
-                  value={formData.city}
+                  name="state"
+                  value={formData.state}
                   onChange={handleChange}
                   className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
                 >
-                  <option value="Paris">Paris</option>
-                  <option value="Lyon">Lyon</option>
-                  <option value="Marseille">Marseille</option>
+                  <option value="" disabled>Select a state</option>
+                  {nigerianStates.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
+                    </option>
+                  ))}
                 </select>
                 <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
@@ -201,9 +254,7 @@ export default function General() {
                 onChange={handleChange}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
               >
-                <option value="France">France</option>
-                <option value="United States">United States</option>
-                <option value="United Kingdom">United Kingdom</option>
+                <option value="Nigeria">Nigeria</option>
               </select>
               <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
@@ -245,7 +296,7 @@ export default function General() {
             />
           </div>
 
-          {/* TikTok (Using custom SVG) */}
+          {/* TikTok */}
           <div className="relative flex items-center bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
             <div className="flex items-center justify-center w-10 h-full border-r border-slate-200 bg-slate-100">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-black">
@@ -265,8 +316,12 @@ export default function General() {
 
       {/* Action Footer */}
       <div className="flex justify-end">
-        <button  onClick={handleSaveInfo} className="bg-[#68A544] hover:bg-green-700 transition-colors text-white px-6 py-2 rounded-md font-medium text-sm shadow-sm">
-          Save changes
+        <button 
+          onClick={handleSaveInfo} 
+          disabled={saveLoading}
+          className="bg-[#68A544] hover:bg-green-700 disabled:opacity-70 transition-colors text-white px-6 py-2 rounded-md font-medium text-sm shadow-sm"
+        >
+          {saveLoading ? "Saving..." : "Save changes"}
         </button>
       </div>
     </div>

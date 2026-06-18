@@ -1,6 +1,7 @@
 'use client'
 
 import { GradientButton } from '@/components/userAdmin/ui/Buttons'
+import { nigerianStates } from '@/constant/nigerianstates'
 import { useToast } from '@/context/ToastContext'
 import { Store, ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -8,13 +9,7 @@ import { useEffect, useState } from 'react'
 
 
 
-const nigerianStates = [
-    'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
-    'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT - Abuja', 'Gombe',
-    'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos',
-    'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto',
-    'Taraba', 'Yobe', 'Zamfara'
-]
+
 
 const countries = ['Nigeria'] // Locked to Nigeria for now
 

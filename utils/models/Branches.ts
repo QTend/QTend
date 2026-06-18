@@ -35,7 +35,6 @@ const BranchSchema = new mongoose.Schema({
             required: true
         },
         state: { type: String },
-        city: { type: String },
         country: { type: String },
         postalCode: { type: String }
     },

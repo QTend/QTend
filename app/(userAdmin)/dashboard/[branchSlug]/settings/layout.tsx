@@ -19,14 +19,14 @@ export default async function UserAdminSettingsLayout({
     redirect('/auth/sign-in');
   }
 
-  const branch = await getCurrentBranch(branchSlug)
+  const data = await getCurrentBranch(branchSlug)
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 mt-8 max-w-7xl mx-auto w-full px-4 lg:px-8">
       
       <div className="w-full lg:w-[320px] shrink-0">
         <div className="sticky top-8">
-          <SettingsSideBar branch={branch} />
+          <SettingsSideBar branch={data?.branch} />
         </div>
       </div>
 
