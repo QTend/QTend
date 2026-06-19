@@ -100,10 +100,10 @@ export const CustomerMenuInterface = () => {
 
     // 1. Tune into the exact same channel the kitchen broadcasts to
     const channelName = `branch-${branch.restaurant.id}`;
-    const channel = pusherClient.subscribe(channelName);
+    const channel = pusherClient?.subscribe(channelName);
 
     // 2. Listen for the specific event you created in your PATCH route
-    channel.bind('order-status-updated', (updatedData: { _id: string, status: string }) => {
+    channel?.bind('order-status-updated', (updatedData: { _id: string, status: string }) => {
       
       // Pull the current memory from the phone
       const storedOrdersText = localStorage.getItem('my_orders');
@@ -132,8 +132,8 @@ export const CustomerMenuInterface = () => {
 
     // Cleanup to prevent memory leaks if they leave the page
     return () => {
-      channel.unbind('order-status-updated');
-      pusherClient.unsubscribe(channelName);
+      channel?.unbind('order-status-updated');
+      pusherClient?.unsubscribe(channelName);
     };
   }, [branch?.restaurant.id]);
 

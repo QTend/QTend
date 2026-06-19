@@ -14,7 +14,7 @@ export function Header({branch}: {branch :BranchProps}){
             <div className="max-w-7xl flex justify-between mx-auto ">
                 <div>
                     <p className="text-2xl font-medium text-[#333333]">{branch.name}</p>
-                    <p className="text-[#666666] text-sm">{branch.address}</p>
+                    <p className="text-[#666666] text-sm">{branch.location.address}</p>
                 </div>
                 <div className="flex items-center gap-4 ">
                     <Link href={`/dashboard/${branch.slug}/settings/general`} className="bg-[#F2F2F2] w-12 h-12 rounded-full flex justify-center items-center relative">

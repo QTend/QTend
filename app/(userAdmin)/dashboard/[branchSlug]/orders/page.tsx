@@ -42,15 +42,15 @@ export default function KitchenOrders() {
             return;
         };
 
-        const channel = pusherClient.subscribe(`branch-${branch?._id}`);
+        const channel = pusherClient?.subscribe(`branch-${branch?._id}`);
 
-        channel.bind('new-order', (incomingOrder: any) =>  {
+        channel?.bind('new-order', (incomingOrder: any) =>  {
             setOrders((prevOrder => [incomingOrder, ...prevOrder]))
         })
 
 
         return () => {
-            pusherClient.unsubscribe(`branch-${branch?._id}`)
+            pusherClient?.unsubscribe(`branch-${branch?._id}`)
         }
     },[branch?._id]);
 
