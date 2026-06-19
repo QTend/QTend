@@ -1,7 +1,7 @@
 'use client'
 
 import { GradientButton } from '@/components/userAdmin/ui/Buttons'
-import { nigerianStates } from '@/constant/nigerianstates'
+import { nigerianStates } from '@/constant/nigerianStates'
 import { useToast } from '@/context/ToastContext'
 import { Store, ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'

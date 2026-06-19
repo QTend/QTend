@@ -1,5 +1,6 @@
 import { Dot } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 const Hero = () => {
   return (
@@ -38,9 +39,9 @@ const Hero = () => {
             </p>
 
             <div className='flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-fit mx-auto mt-8'>
-                <div className="bg-[#F67D26] text-white font-medium text-sm rounded-lg py-3 sm:py-2.5 px-4 w-full sm:w-auto text-center cursor-pointer hover:bg-[#e06d1e] transition-colors">
+                <Link href={'/auth/sign-up'} className="bg-[#F67D26] text-white font-medium text-sm rounded-lg py-3 sm:py-2.5 px-4 w-full sm:w-auto text-center cursor-pointer hover:bg-[#e06d1e] transition-colors">
                   Get started
-                </div>
+                </Link>
                 <div className="font-medium bg-white text-slate-900 text-sm rounded-lg py-3 sm:py-2.5 px-4 w-full sm:w-auto text-center cursor-pointer hover:bg-gray-100 transition-colors">
                   Book a Demo
                 </div>
