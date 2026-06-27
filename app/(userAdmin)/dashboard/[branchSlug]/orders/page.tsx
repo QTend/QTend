@@ -36,23 +36,26 @@ export default function KitchenOrders() {
 
     const filters = ['All Orders', 'Active', 'Completed']
 
-    useEffect(() =>{
-        if(!branch?._id) {
-            console.log('pusher didnt subscribe')
-            return;
+   useEffect(() =>{
+        if(!branch?._id || !pusherClient) return;
+
+        const channelName = `branch-${branch._id}`;
+        const channel = pusherClient.subscribe(channelName);
+
+        // 1. Give the function a name
+        const handleNewOrder = (incomingOrder: any) =>  {
+            setOrders((prevOrder => [incomingOrder, ...prevOrder]))
         };
 
-        const channel = pusherClient?.subscribe(`branch-${branch?._id}`);
-
-        channel?.bind('new-order', (incomingOrder: any) =>  {
-            setOrders((prevOrder => [incomingOrder, ...prevOrder]))
-        })
-
+        // 2. Bind it
+        channel.bind('new-order', handleNewOrder);
 
         return () => {
-            pusherClient?.unsubscribe(`branch-${branch?._id}`)
+            // 3. ONLY unbind this specific list update. 
+            // Do NOT unsubscribe from the whole channel here, or you kill the Global Ding!
+            channel.unbind('new-order', handleNewOrder);
         }
-    },[branch?._id]);
+    }, [branch?._id]);
 
     const fetchOrders = async (showLoadingState = false) => {
         if (showLoadingState) setIsLoading(true);

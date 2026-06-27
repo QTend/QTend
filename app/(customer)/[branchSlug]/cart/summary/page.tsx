@@ -13,6 +13,7 @@ const SummaryPage = () => {
   const router = useRouter()
   const { cart, setCart } = useCart() 
 
+
   const [showModal, setShowModal] = useState(false)
   const [cooldown, setCooldown] = useState(0)
   
@@ -40,7 +41,7 @@ const SummaryPage = () => {
   }
 
   const handlePlaceOrder = async () => {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || isLoading) return;
 
     setIsLoading(true)
 
@@ -134,7 +135,7 @@ const SummaryPage = () => {
           onClick={handlePlaceOrder}
           bg='#F97316'
           text={cart.length > 0 ? (isLoading ? 'please wait...' : 'Place order') : 'Cart is empty'}
-          disabled={cart.length === 0}
+          disabled={cart.length === 0 || isLoading}
         />
       </div>
 

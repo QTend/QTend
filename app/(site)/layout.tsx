@@ -93,7 +93,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={` ${spaceGrotesk.variable} antialiased`}
+        className={` ${spaceGrotesk.variable} antialiased scroll-auto`}
       >
         <ToasTProvider>
           <main>

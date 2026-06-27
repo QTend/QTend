@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -18,10 +19,12 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="relative bg-white">
+    <nav className="sticky top-0 z-50 bg-white">
         <div className="flex items-center justify-between max-w-desktop p-4 mx-auto">
             {/* Logo */}
-            <Link href={'/'} className="font-bold text-[#1D1D1F]">Qtend</Link>
+            <Link href={'/'} className="font-bold text-[#1D1D1F]">
+            <Image src={'/logo.png'} width={741} height={321} alt="qtend logo" className=" object-cover w-24 h-auto" />
+            </Link>
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-5">
