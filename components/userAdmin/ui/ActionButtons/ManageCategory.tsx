@@ -203,7 +203,7 @@ export function ManageCategory({ branchId }: { branchId: string }) {
         if (!res.ok) throw new Error(data.error);
         
         showToast("Item deleted!", "success");
-        fetchCategoryItems(selectedCategory._id);
+        fetchCategoryItems(selectedCategory?._id);
         refreshMenuItems()
         
     } catch (error: any) {
@@ -235,7 +235,7 @@ export function ManageCategory({ branchId }: { branchId: string }) {
                 category={selectedCategory}
                 onSuccess={() => {
                   setOpenAddModal(false);
-                  fetchCategoryItems(selectedCategory._id);
+                  fetchCategoryItems(selectedCategory?._id);
                 }} />
             : (
               !isdelete ? (
@@ -448,7 +448,7 @@ export function ManageCategory({ branchId }: { branchId: string }) {
                             <div onClick={() => {
                               setSelectedCategory(c)
                               setCategoryMenu(true)
-                              fetchCategoryItems(c._id);
+                              fetchCategoryItems(c?._id);
                             }} className="flex cursor-pointer items-center gap-3">
                               <p className="text-lg">{c.name}</p>
                               <ChevronRight color={'#F67D26'} />

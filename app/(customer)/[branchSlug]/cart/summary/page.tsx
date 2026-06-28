@@ -95,7 +95,7 @@ const SummaryPage = () => {
         <p className="text-[#92400E] flex items-center gap-1 mt-1">
           {branch.restaurant.name}
           <LuDot size={20} />
-          Table {table}
+          {table}
         </p>
       </section>
 
@@ -140,7 +140,7 @@ const SummaryPage = () => {
       </div>
 
       {/* request pos */}
-      <div className="px-5 mt-3 mb-8">
+      {/* <div className="px-5 mt-3 mb-8">
         <Button
           onClick={handleRequestPOS}
           bg='#fff'
@@ -149,7 +149,7 @@ const SummaryPage = () => {
           color='#F97316'
           disabled={cooldown > 0}
         />
-      </div>
+      </div> */}
 
       {/* MODAL */}
       {showModal && (
