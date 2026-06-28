@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "../globals.css";
 import { ToasTProvider } from "@/context/ToastContext";
+import { SessionProvider } from "next-auth/react";
+import { Providers } from "../providers";
 
 
 const spaceGrotesk = Space_Grotesk({
@@ -96,11 +98,12 @@ export default function RootLayout({
       <body
         className={` ${spaceGrotesk.variable} antialiased scroll-auto`}
       >
-        <ToasTProvider>
+        <Providers>
           <main>
             {children}
           </main>
-        </ToasTProvider>
+        </Providers>
+            
       </body>
     </html>
   );

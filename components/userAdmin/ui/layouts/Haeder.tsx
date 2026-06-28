@@ -19,12 +19,19 @@ export function Header({branch}: {branch :BranchProps}){
                 </div>
                 <div className="flex items-center gap-4 ">
                     <Link href={`/dashboard/${branch.slug}/settings/tables`}>
-                        <GradientButton label="Download menu QR" icon={<QrCode />} />
+                        <GradientButton label="Download menu QR" icon={<QrCode />}  />
                     </Link>
                     {/* <div className="bg-[#F2F2F2] w-12 h-12 rounded-full flex justify-center items-center relative">
                     <PiBellSimpleLight size={30} />
                     <div className="w-2 h-2 rounded-full bg-[#FF4848] absolute right-3 bottom-4" />
                     </div> */}
+                    <button
+                    onClick={() => signOut()} 
+                    className="bg-red-600 px-5 py-2 rounded-lg text-white cursor-pointer"
+                    >
+                        logout
+                    </button>
+                      
                 </div>
             </div>
             

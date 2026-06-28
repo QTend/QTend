@@ -4,7 +4,7 @@
 import { GradientButton } from '@/components/userAdmin/ui/Buttons'
 import { useToast } from '@/context/ToastContext'
 import { Eye, EyeOff, Home, Store, Target } from 'lucide-react'
-import { signIn, signOut, getSession } from 'next-auth/react'
+import { signIn, getSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -107,10 +107,7 @@ export default function SignIn(){
                 </p>
             </Link> 
 
-              <GradientButton 
-              label='Sign in' variant='gradient' 
-              onClick={() => signOut()} className='w-full mt-10'
-                />     
+              
                 
           </div>
     </section>
