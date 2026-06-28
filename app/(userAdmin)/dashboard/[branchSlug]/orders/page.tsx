@@ -201,7 +201,7 @@ export default function KitchenOrders() {
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className="grid gap-1">
-                                            <p className="text-[#333333] font-bold text-lg">{order.orderNumber}</p>
+                                            <p className="text-[#333333] font-bold text-lg">{order.tableNumber}</p>
                                             <p className="text-sm text-[#F97316] font-medium">{getTimeAgo(order.createdAt)}</p>
                                         </div>
                                         
@@ -221,7 +221,7 @@ export default function KitchenOrders() {
                                     <div className="mt-5 pt-5 border-t border-gray-100 animate-in slide-in-from-top-2 fade-in duration-200">
                                         <div className="flex justify-between items-start mb-4">
                                             <p className="text-[#333333]">
-                                                Table: <span className="text-xl font-bold ml-1 text-[#F97316]">#{order.tableNumber}</span>
+                                                <span className="text-xl font-bold ml-1 text-[#F97316]">#{order.orderNumber}</span>
                                             </p>
                                         </div>
 
