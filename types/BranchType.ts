@@ -1,9 +1,22 @@
 export type BranchProps = {
     _id: string;
     name: string;
+    email: string
+    description: string;
+    phone: string;
+    website: string;
     category: string;
-    address: string;
     slug: string;
-    tableCount: number;
+    location: {
+        address: string;
+        state: string;
+        country: string;
+        postalCode: string;
+    } 
     isActive: boolean;
+    socials: {
+        instagram: string;
+        x:string;
+        tiktok: string
+    }
 } 

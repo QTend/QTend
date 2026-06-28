@@ -1,5 +1,7 @@
 "use client"
 
+import { useSession } from "next-auth/react"
+import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -12,22 +14,31 @@ const links = [
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Destructure 'data' as session and pull authentication loading status
+  const { data: session, status } = useSession();
+
+  console.log('session', session)
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Optional: Prevent buttons flashing layout transitions during auth loading phases
+  const isLoading = status === "loading";
+
   return (
-    <nav className="relative bg-white">
+    <nav className="sticky top-0 z-50 bg-white">
         <div className="flex items-center justify-between max-w-desktop p-4 mx-auto">
             {/* Logo */}
-            <Link href={'/'} className="font-bold text-[#1D1D1F]">Qtend</Link>
+            <Link href={'/'} className="font-bold text-[#1D1D1F]">
+              <Image src={'/logo.png'} width={741} height={321} alt="qtend logo" className="object-cover w-24 h-auto" />
+            </Link>
             
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation - FIXED: Native page hashes */}
             <div className="hidden md:flex items-center gap-5">
                 {
                     links.map(l => (
-                        <Link key={l.id} href={`/${l.link}`} className="text-sm font-medium text-[#1D1D1F] hover:opacity-80 transition-opacity">
+                        <Link key={l.id} href={l.link} className="text-sm font-medium text-[#1D1D1F] hover:opacity-80 transition-opacity">
                             {l.label}
                         </Link>
                     ))
@@ -36,12 +47,22 @@ export const Navbar = () => {
             
             {/* Desktop Auth Buttons */}
             <div className="hidden md:flex items-center justify-between gap-4">
-                <Link href={'/auth/sign-in'} className="font-medium text-sm rounded-lg py-2 px-2.5 text-[#1D1D1F] hover:bg-gray-50 transition-colors">
-                    Log in
-                </Link>
-                <Link href={'/auth/sign-in'} className="bg-[#F67D26] text-white font-medium text-sm rounded-lg py-2 px-2.5 hover:bg-[#e06d1e] transition-colors">
-                 Get started
-                </Link>
+                {!isLoading && (
+                    session?.user?.slug ? (
+                        <Link href={`/dashboard/${session?.user?.slug}/menu`} className="bg-[#F67D26] text-white font-medium text-sm rounded-lg py-2 px-4 hover:bg-[#e06d1e] transition-colors">
+                            Dashboard
+                        </Link>
+                    ) : (
+                        <>
+                            <Link href={'/auth/sign-in'} className="font-medium text-sm rounded-lg py-2 px-2.5 text-[#1D1D1F] hover:bg-gray-50 transition-colors">
+                                Log in
+                            </Link>
+                            <Link href={'/auth/sign-up'} className="bg-[#F67D26] text-white font-medium text-sm rounded-lg py-2 px-2.5 hover:bg-[#e06d1e] transition-colors">
+                                Get started
+                            </Link>
+                        </>
+                    )
+                )}
             </div>
 
             {/* Mobile Hamburger Button */}
@@ -71,7 +92,7 @@ export const Navbar = () => {
                             links.map(l => (
                                 <Link 
                                     key={l.id} 
-                                    href={`/${l.link}`} 
+                                    href={l.link} 
                                     onClick={() => setIsMenuOpen(false)}
                                     className="text-sm font-medium text-[#1D1D1F] py-2 border-b border-gray-50"
                                 >
@@ -80,21 +101,36 @@ export const Navbar = () => {
                             ))
                         }
                     </div>
+                    
                     <div className="flex flex-col gap-3 pt-2">
-                        <Link 
-                            href={'/auth/sign-in'} 
-                            onClick={() => setIsMenuOpen(false)}
-                            className="font-medium text-sm rounded-lg py-2.5 px-4 text-center border border-gray-200 text-[#1D1D1F]"
-                        >
-                            Log in
-                        </Link>
-                        <Link 
-                            href={'/auth/sign-in'} 
-                            onClick={() => setIsMenuOpen(false)}
-                            className="bg-[#F67D26] text-white font-medium text-sm rounded-lg py-2.5 px-4 text-center"
-                        >
-                         Get started
-                        </Link>
+                        {!isLoading && (
+                            session?.user?.slug ? (
+                                <Link 
+                                    href={`/dashboard/${session?.user?.slug}/menu`}
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="bg-[#F67D26] text-white font-medium text-sm rounded-lg py-2.5 px-4 text-center"
+                                >
+                                    Dashboard
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link 
+                                        href={'/auth/sign-in'} 
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="font-medium text-sm rounded-lg py-2.5 px-4 text-center border border-gray-200 text-[#1D1D1F]"
+                                    >
+                                        Log in
+                                    </Link>
+                                    <Link 
+                                        href={'/auth/sign-up'} 
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="bg-[#F67D26] text-white font-medium text-sm rounded-lg py-2.5 px-4 text-center"
+                                    >
+                                        Get started
+                                    </Link>
+                                </>
+                            )
+                        )}
                     </div>
                 </div>
             </div>

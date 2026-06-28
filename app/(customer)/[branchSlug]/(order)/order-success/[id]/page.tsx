@@ -75,7 +75,7 @@ const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: str
         </section>
 
       {/* Buttons */}
-      <Link href={`/${branchSlug}/menu?table=${exactOrder.tableNumber}`} className="block px-5 mt-7">
+      <Link href={`/${branchSlug}/menu?table=${exactOrder?.tableNumber}`} className="block px-5 mt-7">
         <Button
           onClick={() =>{ }}
           bg='#F97316'

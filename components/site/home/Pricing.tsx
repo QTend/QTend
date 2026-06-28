@@ -10,56 +10,57 @@ const pricingData = [
     {
         id: 1, 
         label: 'Starter', 
-        price: 6000, 
+        price: 25000, 
         currency: '₦',
         isCustom: false,
-        desc: 'Perfect for small cafés, bars, and single-location restaurants.',
+        desc: 'Perfect for small cafés, bars, and single-location dining spots looking to digitize.',
         features: [
-            'Up to 20 tables',
-            'Digital menu',
-            'Live order management',
-            'Basic analytics',
-            'Email support'
+            'Up to 15 tables',
+            'Digital QR menu',
+            'Live order management dashboard',
+            '1 Admin account',
+            'Standard email & WhatsApp support'
         ],
         btnText: 'Book a Demo',
         isPopular: false
     },
     {
         id: 2, 
-        label: 'Growth', 
-        price: 9500, 
-        currency: '₦', // Assuming Naira based on the first card, update if you prefer $
+        label: 'Pro', 
+        price: 40000, 
+        currency: '₦',
         isCustom: false,
-        desc: 'For growing restaurants that need more power and insights.',
+        desc: 'For busy restaurants and lounges needing premium real-time features and deep insights.',
         features: [
             'Unlimited tables',
-            'Kitchen display system',
-            'Advanced analytics & reports',
-            'Staff permissions',
-            'Menu availability controls',
-            'Priority support'
-        ],
-        btnText: 'Start Free Trial',
-        isPopular: true
-    },
-    {
-        id: 3, 
-        label: 'Enterprise', 
-        price: 0, 
-        currency: '',
-        isCustom: true,
-        desc: 'For hotel groups, chains, and multi-location hospitality businesses.',
-        features: [
-            'Multi-location management',
-            'Custom integrations (POS, PMS)',
-            'Dedicated onboarding',
-            'SLA & uptime guarantees',
-            'Account manager',
-            'Custom reporting'
+            'Call Waiter feature (Real-time requests)',
+            'Kitchen Display System (KDS)',
+            'Up to 5 staff/waiter accounts',
+            'Advanced analytics',
+            // 'Advanced analytics & busy hour reports',
+            'Priority customer support'
         ],
         btnText: 'Book a Demo',
-        isPopular: false
+        isPopular: true
     },
+    // {
+    //     id: 3, 
+    //     label: 'Enterprise', 
+    //     price: 0, 
+    //     currency: '',
+    //     isCustom: true,
+    //     desc: 'For hotel groups, chains, and multi-location hospitality empires.',
+    //     features: [
+    //         'Multi-location management centralized',
+    //         'Custom domains (e.g., menu.yourhotel.com)',
+    //         'Custom POS & PMS integrations',
+    //         'Unlimited staff accounts',
+    //         'Dedicated VIP account manager',
+    //         'SLA & uptime guarantees'
+    //     ],
+    //     btnText: 'Contact Sales',
+    //     isPopular: false
+    // },
 ]
 
 export const Pricing = () => {
@@ -95,7 +96,7 @@ export const Pricing = () => {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-desktop mx-auto mt-12'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-desktop mx-auto mt-12'>
             {pricingData.map((plan) => {
                 const isDark = plan.isPopular;
                 const checkColor = isDark ? '#F67D26' : '#0E8A54';

@@ -3,9 +3,8 @@
 import { useUserAdmin } from "@/context/UserAdminContext";
 import { pusherClient } from "@/utils/pusher/pusherClient";
 import { ChevronDown, ChevronUp, SlidersVertical } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 
-// Types matching our MongoDB Schema
 interface OrderItem {
     _id: string;
     name: string;
@@ -14,8 +13,8 @@ interface OrderItem {
 }
 
 interface Order {
-    _id: string;          // MongoDB _id
-    orderNumber: string;  // e.g., "ORD-12345"
+    _id: string;          
+    orderNumber: string;  
     tableNumber: string;
     totalAmount: number;
     status: 'Active' | 'Completed';
@@ -31,60 +30,61 @@ export default function KitchenOrders() {
     const [orders, setOrders] = useState<Order[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [completeLoading, setCompleteLoading] = useState(false)
-    const [activeFilter, setActiveFilter] = useState<'All Orders' | 'Active' | 'Completed'>('All Orders') // Default to Active is usually best for the kitchen!
+    const [activeFilter, setActiveFilter] = useState<'All Orders' | 'Active' | 'Completed'>('Active') // Changed default to Active!
     const [expandedOrders, setExpandedOrders] = useState<string[]>([]) 
+    
+    // NEW STATE: Tracks the time filter
+    const [timeframe, setTimeframe] = useState('today');
 
     const filters = ['All Orders', 'Active', 'Completed']
 
-    useEffect(() =>{
-        if(!branch?._id) {
-            console.log('pusher didnt subscribe')
-            return;
+   useEffect(() =>{
+        if(!branch?._id || !pusherClient) return;
+
+        const channelName = `branch-${branch._id}`;
+        const channel = pusherClient.subscribe(channelName);
+
+        const handleNewOrder = (incomingOrder: any) =>  {
+            setOrders((prevOrder => [incomingOrder, ...prevOrder]))
         };
 
-        const channel = pusherClient.subscribe(`branch-${branch?._id}`);
-
-        channel.bind('new-order', (incomingOrder: any) =>  {
-            setOrders((prevOrder => [incomingOrder, ...prevOrder]))
-        })
-
+        channel.bind('new-order', handleNewOrder);
 
         return () => {
-            pusherClient.unsubscribe(`branch-${branch?._id}`)
+            channel.unbind('new-order', handleNewOrder);
         }
-    },[branch?._id]);
+    }, [branch?._id]);
 
-    const fetchOrders = async (showLoadingState = false) => {
+    // WRAPPED IN useCallback so we can safely use it inside useEffect
+    const fetchOrders = useCallback(async (showLoadingState = false) => {
         if (showLoadingState) setIsLoading(true);
         try {
-            const res = await fetch(`/api/user-admin/${branchId}/orders`);
+            // Append the timeframe query parameter!
+            const res = await fetch(`/api/user-admin/${branchId}/orders?timeframe=${timeframe}`);
             const data = await res.json();
-            console.log('odeer', data)
+            
             if (res.ok) {
                 setOrders(data.orders);
-            
             }
         } catch (error) {
             console.error("Failed to fetch orders:", error);
         } finally {
             if (showLoadingState) setIsLoading(false);
         }
-    }
+    }, [branchId, timeframe]); // Dependency added here
 
     useEffect(() => {
-        fetchOrders(true); // Initial fetch shows loading spinner
+        fetchOrders(true); // Fetches immediately on mount or timeframe change
 
-        // Silently fetch new orders every 10 seconds
         const interval = setInterval(() => {
             fetchOrders(false); 
         }, 10000); 
 
         return () => clearInterval(interval);
-    }, [branchId]);
+    }, [fetchOrders]); // Re-runs if fetchOrders (which depends on timeframe) changes
 
     const markOrderComplete = async (orderId: string, e: React.MouseEvent) => {
         e.stopPropagation(); 
-
         setCompleteLoading(true)
 
         try {
@@ -101,16 +101,13 @@ export default function KitchenOrders() {
         ));
             
         } catch (error) {
-            setCompleteLoading(false)
             console.error(error);
             alert("Failed to update order. Reverting.");
-
+        } finally {
+            setCompleteLoading(false);
         }
     }
 
-    // =======================================================================
-    // 3. UI HELPERS
-    // =======================================================================
     const toggleOrder = (orderId: string) => {
         setExpandedOrders(prev => 
             prev.includes(orderId) 
@@ -119,21 +116,11 @@ export default function KitchenOrders() {
         )
     }
 
-    // Calculate "X mins ago" or "X hours ago" dynamically from MongoDB timestamp
     const getTimeAgo = (dateString: string) => {
         if (!dateString) return '';
-        
         const diffInMinutes = Math.floor((new Date().getTime() - new Date(dateString).getTime()) / 60000);
-        
-        if (diffInMinutes < 1) {
-            return 'Just now';
-        }
-        
-        if (diffInMinutes < 60) {
-            return `${diffInMinutes} min ago`;
-        }
-        
-        // If it reaches 60 minutes or more, convert to hours
+        if (diffInMinutes < 1) return 'Just now';
+        if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
         const diffInHours = Math.floor(diffInMinutes / 60);
         return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
     }
@@ -145,10 +132,8 @@ export default function KitchenOrders() {
 
     return  (
         <div className="mx-auto  md:p-6">
-            {/* ================= HEADER & FILTERS ================= */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 
-                {/* Status Tabs */}
                 <div className="bg-white p-1.5 flex items-center gap-1 rounded-2xl shadow-sm border border-gray-100 w-fit">
                     {filters.map(f => (
                         <button 
@@ -166,15 +151,27 @@ export default function KitchenOrders() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <div className="flex items-center bg-white py-2 px-3 gap-2 rounded-xl border border-gray-200 cursor-pointer shadow-sm hover:bg-gray-50 transition-colors">
+                    {/* UPDATED DROPDOWN WITH NATIVE SELECT */}
+                    <div className="relative flex items-center bg-white py-2 pl-3 pr-8 gap-2 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
                         <SlidersVertical size={16} className="text-gray-500" />
-                        <p className="text-sm font-medium text-gray-700">Last 30 mins</p>
-                        <ChevronDown size={16} className="text-gray-500" />
+                        
+                        <select 
+                            value={timeframe}
+                            onChange={(e) => setTimeframe(e.target.value)}
+                            className="text-sm font-medium text-gray-700 bg-transparent outline-none appearance-none cursor-pointer w-full z-10 relative"
+                        >
+                            <option value="today">Today</option>
+                            <option value="7days">Last 7 Days</option>
+                            <option value="14days">Last 14 Days</option>
+                            <option value="30days">Last 30 Days</option>
+                        </select>
+
+                        <ChevronDown size={16} className="text-gray-500 absolute right-3 pointer-events-none" />
                     </div>
                 </div>
             </div>
 
-            {/* ================= ORDERS LIST ================= */}
+            {/* Rest of the UI remains identical! */}
             <div className="flex flex-col gap-4">
                 {isLoading ? (
                     <div className="bg-white rounded-2xl p-10 text-center border border-gray-100 shadow-sm flex flex-col items-center">
@@ -198,14 +195,13 @@ export default function KitchenOrders() {
                                     isExpanded ? 'border-blue-200' : 'border-gray-100 hover:border-gray-200'
                                 }`}
                             >
-                                {/* Card Header */}
                                 <div 
                                     className="flex items-center justify-between cursor-pointer group"
                                     onClick={() => toggleOrder(order._id)}
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className="grid gap-1">
-                                            <p className="text-[#333333] font-bold text-lg">{order.orderNumber}</p>
+                                            <p className="text-[#333333] font-bold text-lg">{order.tableNumber}</p>
                                             <p className="text-sm text-[#F97316] font-medium">{getTimeAgo(order.createdAt)}</p>
                                         </div>
                                         
@@ -221,16 +217,14 @@ export default function KitchenOrders() {
                                     </div>
                                 </div>
 
-                                {/* Card Body */}
                                 {isExpanded && (
                                     <div className="mt-5 pt-5 border-t border-gray-100 animate-in slide-in-from-top-2 fade-in duration-200">
                                         <div className="flex justify-between items-start mb-4">
                                             <p className="text-[#333333]">
-                                                Table: <span className="text-xl font-bold ml-1 text-[#F97316]">#{order.tableNumber}</span>
+                                                <span className="text-xl font-bold ml-1 text-[#F97316]">#{order.orderNumber}</span>
                                             </p>
                                         </div>
 
-                                        {/* Display Special Instructions if they exist! */}
                                         {order.specialInstructions && (
                                             <div className="mb-4 bg-orange-50 border border-orange-100 p-3 rounded-xl">
                                                 <p className="text-xs text-orange-400 font-bold uppercase mb-1">Special Instructions:</p>
@@ -238,7 +232,6 @@ export default function KitchenOrders() {
                                             </div>
                                         )}
 
-                                        {/* Items List */}
                                         <div className="mb-6">
                                             <p className="text-[#666666] text-sm mb-2">Items:</p>
                                             <div className="flex flex-col gap-2">
@@ -256,7 +249,6 @@ export default function KitchenOrders() {
                                             </div>
                                         </div>
 
-                                        {/* Footer: Total & Action Button */}
                                         <div className="flex justify-between items-end border-t border-gray-100 pt-5">
                                             <div>
                                                 <p className="text-sm text-[#666666] mb-1">Total</p>
@@ -265,13 +257,12 @@ export default function KitchenOrders() {
                                                 </p>
                                             </div>
                                             
-                                            {/* Only show the action button if the order is Active */}
                                             {isActive && (
                                                 <button 
                                                     onClick={(e) => markOrderComplete(order._id, e)}
                                                     className="bg-[#16A34A] hover:bg-[#15803d] text-white font-bold rounded-xl py-3 px-6 transition-colors active:scale-95 shadow-sm"
                                                 >
-                                                    Mark Complete
+                                                    {completeLoading ? "..." : "Mark Complete"}
                                                 </button>
                                             )}
                                         </div>

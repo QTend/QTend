@@ -5,15 +5,17 @@ import { BranchProps } from "@/types/BranchType";
 
 interface UserAdminProps {
     branch: BranchProps;
+    user: any;
 }
 
 export const UserAdminContext = createContext<UserAdminProps | null>(null)
 
-export const UserAdminProvider = ({children, branch}: {children: ReactNode, branch: BranchProps}) => {
+export const UserAdminProvider = ({children, branch, user}: {children: ReactNode, branch: BranchProps, user: any}) => {
     
     return(
         <UserAdminContext.Provider value={{
-            branch
+            branch,
+            user
         }}>
             {children}
         </UserAdminContext.Provider>

@@ -9,6 +9,10 @@ import { NextRequest, NextResponse } from "next/server";
 type RouteParams = {
     params: Promise<{ branchId: string }>
 }
+
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest, {params}: RouteParams){
     try {
         const session: any = await getServerSession(authOptions)
@@ -52,15 +56,19 @@ export async function POST(req: NextRequest, {params}: RouteParams){
 }
 
 
-
 export async function GET(req: NextRequest, {params}: RouteParams){
     try {
         const session: any = await getServerSession(authOptions)
          if(!session?.user.id){
+            console.log('session', 'proble')
             return NextResponse.json({ error: "Unauthorized. Please log in again." }, { status: 401 });
         }
 
         const {branchId} = await params;
+        if(!branchId){
+            console.log('No branch Is')
+            return NextResponse.json({ error: "No branchId." }, { status: 404});
+        }
         
 
         await connectToDB();

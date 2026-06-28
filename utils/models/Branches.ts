@@ -5,32 +5,54 @@ const BranchSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    category: {
+    description: {
         type: String,
-        required: true
+        trim: true,
+        default: ''
     },
-    address: {
+    phone: {
         type: String,
+        trim: true,
+        default: ''
+    },
+    website: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'AdminCategory',
         required: true
     },
     slug: {
         type: String,
         unique: true
     },
-    logo: {
-        type: String,
-    },
-    tableCount: {
-        type: Number,
-        default: 0
+    location: {
+        address: { 
+            type: String, 
+            required: true
+        },
+        state: { type: String },
+        country: { type: String },
+        postalCode: { type: String }
     },
     isActive: {
         type: Boolean,
         default: true
-    }
+    },
+    socials: {
+        instagram: { type: String, default: "" },
+        x: { type: String, default: "" },
+        tiktok: { type: String, default: "" }
+    },
+    logo: { 
+        url: { type: String, default: "" },
+        publicId: { type: String, default: "" }
+    },
 }, 
-{timestamps: true}
-)
-
+{ timestamps: true }
+);
 
 export default mongoose.models.Branch || mongoose.model('Branch', BranchSchema);

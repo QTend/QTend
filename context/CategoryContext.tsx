@@ -22,10 +22,12 @@ export const CategoryProvider = ({children, branch}: {children: ReactNode, branc
     const fetchCategories = async () => {
         try {
         const res = await fetch(`/api/user-admin/${branch._id}/menu/category`)
+
+        // console.log("Raw Response Status:", res);
         const data = await res.json();
 
-        console.log('cat', data)
-        console.log("status", res.status);
+        // console.log('cat', data)
+        // console.log("status", res.status);
 
         if (!res.ok) {
             showToast(data.error, "error")
@@ -40,9 +42,11 @@ export const CategoryProvider = ({children, branch}: {children: ReactNode, branc
         }
     }
 
-    useEffect(() => {
-        fetchCategories()
-    }, []);
+   useEffect(() => {
+    if (branch?._id) {
+        fetchCategories();
+    }
+  }, [branch?._id]);
 
     return(
         <CategoryContext.Provider value={{

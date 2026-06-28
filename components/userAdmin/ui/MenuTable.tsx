@@ -160,24 +160,24 @@ export default function MenuTable(){
                                         const visuallyAvailable = f.isAvailable && isCategoryAvailable;
                                         return(
                                             <tr key={f._id} className="group cursor-pointer text-[#333333] hover:bg-linear-to-r from-[#f67d261b] to-[#68a54429]">
-<td className="py-4 px-6 text-left flex items-center gap-3">
-    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-        {f.image?.url ? (
-            <Image 
-                src={f.image.url} 
-                alt={f.name} 
-                fill 
-                className="object-cover"
-            />
-        ) : (
-            // Fallback if no image exists
-            <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                <span className="text-[10px] text-gray-400">No Img</span>
-            </div>
-        )}
-    </div>
-    <span className="font-medium text-[#101828]">{f.name}</span>
-</td>                                                
+                                            <td className="py-4 px-6 text-left flex items-center gap-3">
+                                                <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                                                    {f.image?.url ? (
+                                                        <Image 
+                                                            src={f.image.url} 
+                                                            alt={f.name} 
+                                                            fill 
+                                                            className="object-cover"
+                                                        />
+                                                    ) : (
+                                                        // Fallback if no image exists
+                                                        <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                                            <span className="text-[10px] text-gray-400">No Img</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <span className="font-medium text-[#101828]">{f.name}</span>
+                                            </td>                                                
                                                 <td className="py-4 px-6 text-left">
                                                     <p className="text-sm line-clamp-2 max-w-62.5 leading-relaxed">
                                                         {f.description}

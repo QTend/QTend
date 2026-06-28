@@ -1,24 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Sora, Space_Grotesk } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import "../globals.css";
 import { ToasTProvider } from "@/context/ToastContext";
-import { Navbar } from "@/components/site/layout/Navbar";
+import { SessionProvider } from "next-auth/react";
+import { Providers } from "../providers";
 
 
 const spaceGrotesk = Space_Grotesk({
-      variable: "--font-space-grotesk",
-      subsets: ["latin"],
-    });
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+});
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1, // Prevents auto-zooming on inputs on iOS
-  themeColor: "#F97316", // Matches your brand orange! Changes the browser UI bar color.
+  maximumScale: 1,
+  themeColor: "#F97316",
 };
 
 export const metadata: Metadata = {
-  // metadataBase: new URL("https://qtend.com"), // Replace with your actual live domain
+  metadataBase: new URL("https://getqtend.com"),
   
   // The %s allows child pages to inject their own title (e.g. "Menu | Qtend")
   title: {
@@ -26,14 +27,16 @@ export const metadata: Metadata = {
     template: "%s | Qtend",
   },
   
-  description: "Streamline your restaurant operations with Qtend. Experience seamless contactless QR ordering, real-time kitchen displays, and smart digital menus built for modern dining.",
+  description: "Streamline your kitchen operations with Qtend. Experience seamless contactless QR ordering, real-time kitchen displays, and smart digital menus built for modern dining.",
   
   applicationName: "Qtend",
-  // authors: [{ name: "Qtend Team", url: "https://qtend.com" }],
+  authors: [{ name: "Qtend Team", url: "https://getqtend.com" }],
   generator: "Next.js",
   
   keywords: [
     "Qtend",
+    "QR code",
+    "QR code menu",
     "digital menu",
     "QR code ordering",
     "restaurant management software",
@@ -48,7 +51,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://qtend.com",
+    url: "https://getqtend.com",
     siteName: "Qtend",
     title: "Qtend | Smart QR Menus & Kitchen Management System",
     description: "Transform your restaurant with seamless contactless ordering and real-time kitchen displays.",
@@ -93,13 +96,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={` ${spaceGrotesk.variable} antialiased`}
+        className={` ${spaceGrotesk.variable} antialiased scroll-auto`}
       >
-        <ToasTProvider>
+        <Providers>
           <main>
             {children}
           </main>
-        </ToasTProvider>
+        </Providers>
+            
       </body>
     </html>
   );

@@ -9,6 +9,7 @@ import { Navbar } from '@/components/userAdmin/ui/layouts/Navbar'; // Assuming t
 import { Header } from "@/components/userAdmin/ui/layouts/Haeder";
 import { UserAdminProvider } from "@/context/UserAdminContext";
 import GlobalOrderListener from "@/context/GlobalOrderListener";
+import { WaiterNotification } from "@/components/userAdmin/ui/WaiterNotification";
 
 export default async function UserAdminDashboardLayout({
   children,
@@ -24,21 +25,23 @@ export default async function UserAdminDashboardLayout({
     redirect('/auth/sign-in');
   }
 
-  const branch = await getCurrentBranch(branchSlug)
+  const data = await getCurrentBranch(branchSlug)
+  // console.log('useradmin', data)
 
   return (
-    <UserAdminProvider branch={branch}>
-    <CategoryProvider branch={branch}>
-        <MenuItemProvider branch={branch}>
-          
+    <UserAdminProvider branch={data?.branch} user={data?.user}>
+    <CategoryProvider branch={data?.branch}>
+      <MenuItemProvider branch={data?.branch}>
         <GlobalOrderListener />
-          <div className=' min-h-screen flex flex-col gap-8'>
-            <Navbar branch={branch} />
-            <div className='max-w-7xl mx-auto flex-1 w-full pb-10'>
-              {children} 
-            </div> 
+        <div className=' min-h-screen flex flex-col gap-5'>
+          <Header  branch={data?.branch} />
+          <WaiterNotification />
+          <Navbar branch={data?.branch} />
+          <div className='max-w-7xl mx-auto flex-1 w-full pb-10'>
+            {children} 
           </div> 
-        </MenuItemProvider>
+        </div> 
+       </MenuItemProvider>
     </CategoryProvider>
     </UserAdminProvider>
   );

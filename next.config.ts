@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+
+const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -7,7 +9,8 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
         port: '',
-        pathname: '/dborozfgg/**', // This matches your specific cloud name!
+        pathname: `/**`
+      //  pathname: `/${cloudName}/**`, // This matches your specific cloud name!
       },
     ],
   },
