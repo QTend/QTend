@@ -6,77 +6,102 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 import Branches from '@/utils/models/Branches';
 
 export async function POST(req: Request, { params }: { params: Promise<{ branchId: string }> }) {
-    const session: any = await getServerSession(authOptions);
-    if (!session?.user.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
     try {
         await connectToDB();
         const resolvedParams = await params;
         const { branchId } = resolvedParams;
 
         const body = await req.json();
-        const { prefix = "", count } = body; 
-        
-        const targetCount = parseInt(count);
-        if (isNaN(targetCount) || targetCount <= 0) {
-            return NextResponse.json({ error: 'A valid number count is required' }, { status: 400 });
+        const { areas } = body; 
+
+        if (!areas || !Array.isArray(areas) || areas.length === 0) {
+            return NextResponse.json({ error: 'Please provide at least one area to create tables' }, { status: 400 });
         }
 
-        const cleanPrefix = prefix.trim();
-
-        // 1. Fetch the branch
         const branch = await Branches.findById(branchId);
         if (!branch) {
             return NextResponse.json({ error: 'Branch not found' }, { status: 404 });
         }
 
-        // 2. Fetch all existing tables to check where we should start numbering
         const existingTables = await Table.find({ branchId });
-        
-        let maxNum = 0;
+        const newTablesData = [];
+        const tableIdsToDelete: string[] = [];
 
-        existingTables.forEach(t => {
-            const nameLower = t.name.toLowerCase();
-            const prefixLower = cleanPrefix.toLowerCase();
+        for (const area of areas) {
+            const cleanAreaName = area.areaName.trim();
+            const cleanPrefix = (area.prefix || area.areaName).trim().toUpperCase(); 
+            const targetCount = parseInt(area.count);
 
-            // Only look at tables that match the current prefix (or all of them if prefix is blank)
-            if (cleanPrefix === "" || nameLower.startsWith(prefixLower)) {
-                // Regex: Extract the numbers at the VERY END of the string (e.g., "Room-42" -> 42)
-                const match = t.name.match(/\d+$/);
-                if (match) {
-                    const num = parseInt(match[0]);
-                    if (num > maxNum) maxNum = num; // Find the highest existing number
+            if (isNaN(targetCount) || targetCount <= 0 || !cleanAreaName) continue;
+
+            const existingNumbers = new Set<number>();
+
+            // 1. Scan existing tables for this specific prefix
+            existingTables.forEach(t => {
+                const nameLower = t.name.toLowerCase();
+                const prefixLower = cleanPrefix.toLowerCase();
+                
+                if (nameLower.startsWith(prefixLower)) {
+                    const match = t.name.match(/\d+$/);
+                    if (match) {
+                        const num = parseInt(match[0]);
+                        
+                        // If the table number is greater than what they want, mark it for deletion
+                        if (num > targetCount) {
+                            tableIdsToDelete.push(t._id.toString());
+                        } else {
+                            // Otherwise, record that this number already exists
+                            existingNumbers.add(num);
+                        }
+                    }
+                }
+            });
+
+            // 2. Generate only the missing tables up to the target count
+            for (let i = 1; i <= targetCount; i++) {
+                if (!existingNumbers.has(i)) {
+                    const finalName = `${cleanPrefix}-${i}`;
+
+                    newTablesData.push({
+                        branchId: branchId,
+                        name: finalName,
+                        area: cleanAreaName, 
+                        isActive: true
+                    });
                 }
             }
-        });
-
-        // 3. Generate the new tables starting exactly where the DB left off
-        const newTablesData = [];
-        for (let i = 1; i <= targetCount; i++) {
-            const nextNum = maxNum + i;
-            
-            // Format: "Room-1" or just "1" if they left prefix blank
-            const finalName = cleanPrefix ? `${cleanPrefix}-${nextNum}` : `${nextNum}`;
-
-            newTablesData.push({
-                branchId: branchId,
-                name: finalName,
-                isActive: true
-            });
         }
 
-        // 4. Bulk Insert
-        const insertedTables = await Table.insertMany(newTablesData);
+        // 3. Execute Database Operations
+        let deletedCount = 0;
+        if (tableIdsToDelete.length > 0) {
+            const deleteResult = await Table.deleteMany({ _id: { $in: tableIdsToDelete } });
+            deletedCount = deleteResult.deletedCount || 0;
+        }
+
+        let insertedTables = [];
+        if (newTablesData.length > 0) {
+            insertedTables = await Table.insertMany(newTablesData);
+        }
+
+        // If nothing was added and nothing was deleted, tell the user it was already synced
+        if (insertedTables.length === 0 && deletedCount === 0) {
+             return NextResponse.json({ 
+                success: true, 
+                message: `Areas are already perfectly synced.`,
+                newTables: [] 
+            }, { status: 200 });
+        }
 
         return NextResponse.json({ 
             success: true, 
-            message: `Successfully created ${targetCount} tables`,
+            message: `Synced! Added ${insertedTables.length} tables and removed ${deletedCount} excess tables.`,
             newTables: insertedTables 
         }, { status: 201 });
 
     } catch (error: any) {
-        console.error("Create Bulk Tables Error:", error);
-        return NextResponse.json({ error: error.message || 'Failed to create tables' }, { status: 500 });
+        console.error("Sync Bulk Tables Error:", error);
+        return NextResponse.json({ error: error.message || 'Failed to sync tables' }, { status: 500 });
     }
 }
 

@@ -5,6 +5,7 @@ export interface ITable extends Document {
   name: string;      // We use 'name' instead of 'number' since it's a string (e.g., "10" or "Pool-A")
   qrLink: string;    // The full URL for the QR code
   isActive: boolean; // For soft-deleting or temporarily closing tables
+  area: string;
   zoneId?: mongoose.Types.ObjectId; // Optional: The blank slot for your future hotel/zone update!
   createdAt: Date;
   updatedAt: Date;
@@ -26,6 +27,10 @@ const TableSchema = new Schema<ITable>(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    area: { 
+      type: String, 
+      default: 'Main' 
     },
     zoneId: {
       type: Schema.Types.ObjectId,

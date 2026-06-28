@@ -184,7 +184,7 @@ export const CustomerMenuInterface = () => {
               <h2 className='text-3xl font-bold text-[#4B2E05] leading-tight mb-1'>
                 {branch.restaurant.name}
               </h2>
-              <p className='text-[#4B2E05] text-lg font-medium'>Table {table}</p>
+              <p className='text-[#4B2E05] text-lg font-medium'>{table}</p>
             </div>
           </div>
 

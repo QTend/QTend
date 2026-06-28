@@ -21,10 +21,10 @@ export function Header({branch}: {branch :BranchProps}){
                     <Link href={`/dashboard/${branch.slug}/settings/tables`}>
                         <GradientButton label="Download menu QR" icon={<QrCode />} />
                     </Link>
-                    <div className="bg-[#F2F2F2] w-12 h-12 rounded-full flex justify-center items-center relative">
+                    {/* <div className="bg-[#F2F2F2] w-12 h-12 rounded-full flex justify-center items-center relative">
                     <PiBellSimpleLight size={30} />
                     <div className="w-2 h-2 rounded-full bg-[#FF4848] absolute right-3 bottom-4" />
-                    </div>
+                    </div> */}
                 </div>
             </div>
             

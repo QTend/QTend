@@ -9,16 +9,19 @@ import { IoMenuOutline } from "react-icons/io5"
 const navs = [
     {label: 'Menu', icon: <IoMenuOutline />, title: 'Your Menu'},
     {label: 'Orders', icon: <FiShoppingBag />, title: 'Orders'},
-    {label: 'Analytics', icon: <ChartColumn />, title: 'Analytics'},
+    // {label: 'Analytics', icon: <ChartColumn />, title: 'Analytics'},
     {label: 'Settings', icon: <Settings />, title: 'Settings'},
 ]
 
 export function Navbar({branch}: {branch : BranchProps}){
     const pathname = usePathname()
-    const activeSegment = pathname.split('/').pop()
 
-    // Find the currently active navigation item to get its specific title
-    const currentNav = navs.find(n => n.label.toLowerCase() === activeSegment)
+    // 1. Find the active nav by checking if the current pathname STARTS WITH the nav link's path.
+    // This ensures sub-pages like /settings/tables still trigger the "Settings" active state.
+    const currentNav = navs.find(n => 
+        pathname.startsWith(`/dashboard/${branch.slug}/${n.label.toLowerCase()}`)
+    )
+    
     // Fallback to a default title if no match is found
     const displayTitle = currentNav ? currentNav.title : 'Dashboard'
 
@@ -34,20 +37,28 @@ export function Navbar({branch}: {branch : BranchProps}){
 
                 {/* Right Side: Navigation Links */}
                 <div className="flex items-center gap-5">
-                    {navs.map((n, index) => (
-                        <Link 
-                            href={`/dashboard/${branch.slug}/${n.label.toLowerCase()}`} 
-                            key={index} 
-                            className={`flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2 cursor-pointer transition-colors ${
-                                activeSegment === n.label.toLowerCase() 
-                                    ? 'text-white bg-[#68A544] border-transparent' 
-                                    : 'text-black hover:bg-black/5'
-                            }`}
-                        >
-                            <span className="text-xl">{n.icon}</span>
-                            <p className="font-medium text-sm">{n.label}</p>
-                        </Link>
-                    ))}
+                    {navs.map((n, index) => {
+                        // 2. Define exactly what the base URL is for this specific nav item
+                        const navBasePath = `/dashboard/${branch.slug}/${n.label.toLowerCase()}`;
+                        
+                        // 3. Check if the current URL contains this base path
+                        const isActive = pathname.startsWith(navBasePath);
+
+                        return (
+                            <Link 
+                                href={navBasePath} 
+                                key={index} 
+                                className={`flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2 cursor-pointer transition-colors ${
+                                    isActive 
+                                        ? 'text-white bg-[#68A544] border-transparent' 
+                                        : 'text-black hover:bg-black/5'
+                                }`}
+                            >
+                                <span className="text-xl">{n.icon}</span>
+                                <p className="font-medium text-sm">{n.label}</p>
+                            </Link>
+                        )
+                    })}
                 </div>
             </nav>
         </div>

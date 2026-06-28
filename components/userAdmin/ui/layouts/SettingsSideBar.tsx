@@ -10,9 +10,9 @@ const menus = [
   { id: 1, path: '', icon: Settings, label: 'General', desc: 'Restaurant info & preferences' },
   { id: 2, path: '/tables', icon: QrCode, label: 'Menu and tables', desc: 'Tables and QR options' },
   { id: 3, path: '/branding', icon: Palette, label: 'Branding', desc: 'Logo, colors & appearance' },
-  { id: 4, path: '/financial-settings', icon: DollarSign, label: 'Financial Settings', desc: 'Tax, VAT & payment options' },
-  { id: 5, path: '/roles-and-permissions', icon: ShieldCheck, label: 'Roles & Permissions', desc: 'Team access & security' },
-  { id: 6, path: '/danger-zone', icon: BadgeInfo, label: 'Danger Zone', desc: 'Destructive actions' },
+  // { id: 4, path: '/financial-settings', icon: DollarSign, label: 'Financial Settings', desc: 'Tax, VAT & payment options' },
+  // { id: 5, path: '/roles-and-permissions', icon: ShieldCheck, label: 'Roles & Permissions', desc: 'Team access & security' },
+  // { id: 6, path: '/danger-zone', icon: BadgeInfo, label: 'Danger Zone', desc: 'Destructive actions' },
 ];
 
 export const SettingsSideBar = ({branch}: {branch :BranchProps}) => {
