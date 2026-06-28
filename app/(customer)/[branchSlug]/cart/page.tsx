@@ -72,7 +72,7 @@ const CartPage = ({ params }: { params: Promise<any> }) => {
         </div>
 
         <p className="text-[#4B2E05] font-bold text-2xl mt-4">Order Summary</p>
-        <p className="text-[#92400E] flex items-center gap-1 mt-1">{branch.restaurant.name}<LuDot size={20} />Table {table}</p>
+        <p className="text-[#92400E] flex items-center gap-1 mt-1">{branch.restaurant.name}<LuDot size={20} />{table}</p>
       </section>
 
       {/* cart items */}
