@@ -54,10 +54,10 @@ export const metadata: Metadata = {
     url: "https://getqtend.com",
     siteName: "Qtend",
     title: "Qtend | Smart QR Menus & Kitchen Management System",
-    description: "Transform your restaurant with seamless contactless ordering and real-time kitchen displays.",
+    description: "Modernize your business with seamless contactless ordering and real-time operational displays—the ultimate solution for restaurants, hospitality, and entertainment venues",
     images: [
       {
-        url: "/og-image.jpg", // Create a 1200x630px image and put it in your /public folder
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "Qtend Restaurant Management Dashboard Preview",

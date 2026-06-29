@@ -1,4 +1,3 @@
-import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
@@ -10,6 +9,12 @@ import { Header } from "@/components/userAdmin/ui/layouts/Haeder";
 import { UserAdminProvider } from "@/context/UserAdminContext";
 import GlobalOrderListener from "@/context/GlobalOrderListener";
 import { WaiterNotification } from "@/components/userAdmin/ui/WaiterNotification";
+import { Metadata } from "next";
+
+
+export const metadata: Metadata = {
+  title: "Qtend | Smart QR Menus & Kitchen Management System",
+};
 
 export default async function UserAdminDashboardLayout({
   children,
