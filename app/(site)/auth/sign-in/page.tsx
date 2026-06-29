@@ -31,15 +31,13 @@ export default function SignIn(){
       })
 
       if(!res?.ok){
-        console.log(res)
-        showToast('Error while trying to login', 'error')
-        return;
+        if (res?.error === "CredentialsSignin") {
+          showToast("Invalid email or password", 'error' )
+          return;
+        }
       }
 
-       if (res?.error === "CredentialsSignin") {
-        showToast("Invalid email or password", 'error' )
-        return;
-      }
+      
       const session: any = await getSession()
        console.log('first', session.user.id)
       showToast('Login successful', 'success')
