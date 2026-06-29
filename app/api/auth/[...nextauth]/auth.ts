@@ -4,6 +4,7 @@ import Membership from "@/utils/models/Membership"; // Import your Membership mo
 import bcrypt from "bcryptjs";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import Branches from "@/utils/models/Branches";
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -28,9 +29,17 @@ export const authOptions: NextAuthOptions = {
 
                         if (isPasswordCorrect) {
                             // 2. Query the Membership table to find their active workspace
-                            // We populate 'branchId' to pull the unique slug out of it
-                            const activeMembership = await Membership.findOne({ userId: user._id })
-                            .populate("branchId");
+                            const activeMembership = await Membership.findOne({ userId: user._id.toString() });
+                            let branchSlug = null;
+
+                            // 3. Safely query the Branch collection manually if membership exists
+                            if (activeMembership && activeMembership.branchId) {
+                                // Fallback to fetching model metadata directly from Mongoose connection
+                                const branch = await Branches.findById(activeMembership.branchId);
+                                if (branch) {
+                                    branchSlug = branch.slug;
+                                }
+                            }
 
                             return {
                                 id: user._id.toString(),
@@ -38,7 +47,7 @@ export const authOptions: NextAuthOptions = {
                                 // Fallback to 'user-admin' type if no membership row exists yet
                                 role: activeMembership ? activeMembership.role : 'user-admin',
                                 // Extract the string slug from the populated branch reference
-                                slug: activeMembership?.branchId?.slug || null
+                                slug: branchSlug || null
                             };
                         }
                     }
