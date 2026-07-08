@@ -34,6 +34,8 @@ export async function PATCH(
       instagram,
       x,
       tiktok,
+      logo, 
+      coverImage,
     } = body;
 
     await connectToDB();
@@ -64,6 +66,16 @@ export async function PATCH(
     if (instagram !== undefined) updatedFields["socials.instagram"] = instagram;
     if (x !== undefined) updatedFields["socials.x"] = x;
     if (tiktok !== undefined) updatedFields["socials.tiktok"] = tiktok;
+
+    if (logo !== undefined) {
+    if (logo?.url !== undefined) updatedFields["branding.logo.url"] = logo.url;
+    if (logo?.publicId !== undefined) updatedFields["branding.logo.publicId"] = logo.publicId;
+    }
+
+    if (coverImage !== undefined) {
+      if (coverImage?.url !== undefined) updatedFields["branding.coverImage.url"] = coverImage.url;
+      if (coverImage?.publicId !== undefined) updatedFields["branding.coverImage.publicId"] = coverImage.publicId;
+    }
 
     const branch = await Branches.findByIdAndUpdate(
       branchId,
