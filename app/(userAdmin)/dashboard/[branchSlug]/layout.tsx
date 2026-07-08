@@ -10,6 +10,7 @@ import { UserAdminProvider } from "@/context/UserAdminContext";
 import GlobalOrderListener from "@/context/GlobalOrderListener";
 import { WaiterNotification } from "@/components/userAdmin/ui/WaiterNotification";
 import { Metadata } from "next";
+import { NotificationProvider } from "@/context/NotificationContext";
 
 
 export const metadata: Metadata = {
@@ -38,14 +39,17 @@ export default async function UserAdminDashboardLayout({
     <CategoryProvider branch={data?.branch}>
       <MenuItemProvider branch={data?.branch}>
         <GlobalOrderListener />
-        <div className=' min-h-screen flex flex-col gap-5'>
-          <Header  branch={data?.branch} />
-          <WaiterNotification />
-          <Navbar branch={data?.branch} />
-          <div className='max-w-7xl mx-auto flex-1 w-full pb-10'>
-            {children} 
+        <NotificationProvider>
+          <div className=' min-h-screen flex flex-col gap-5'>
+            <Header  branch={data?.branch} />
+            <WaiterNotification />
+            <Navbar branch={data?.branch} />
+            <div className='max-w-7xl mx-auto flex-1 w-full pb-10'>
+              {children} 
+            </div> 
           </div> 
-        </div> 
+        </NotificationProvider>
+        
        </MenuItemProvider>
     </CategoryProvider>
     </UserAdminProvider>

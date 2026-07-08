@@ -19,7 +19,11 @@ const UserSchema = new mongoose.Schema({
     isFoundingMember: {
         type: Boolean,
         default: false
-    }
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
 },
 {timestamps: true}
 );

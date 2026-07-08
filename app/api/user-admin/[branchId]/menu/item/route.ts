@@ -53,7 +53,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         const [items, totalItems] = await Promise.all([
             MenuItem.find(query)
                 .populate('categoryId', 'name _id')
-                .sort({ createdAt: -1 }) // Good practice: sort so newest items are on page 1
+                .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit),
             MenuItem.countDocuments(query)
@@ -149,7 +149,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
         if (deletedItem.image && deletedItem.image.publicId) {
             // Notice we do NOT use "await" here.
             // This runs in the background so the user gets a fast response!
-            deleteCloudinaryImage(deletedItem.image.publicId)
+            await deleteCloudinaryImage(deletedItem.image.publicId)
                 .catch((err: any) => console.error("Failed to clean up Cloudinary image:", err));
         }
 

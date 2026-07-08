@@ -33,23 +33,34 @@ export const MenuItemProvider = ({children, branch}: {children: ReactNode, branc
 
     // 1. Fetch whenever the page or the active category changes
     useEffect(() => {
-        fetchMenu(activeCategory);
+        const controller = new AbortController();
+        fetchMenu(activeCategory, controller.signal);
+
+        return () => {
+            controller.abort(); 
+        };
     }, [currentPage, activeCategory])
 
     // 2. Handle search with a debounce
     useEffect(() => {
+
+        const controller = new AbortController();
+
         const delaySearch = setTimeout(() => {
-            // If we search, we want to go back to page 1.
             if (currentPage !== 1) {
-                setCurrentPage(1); // This state change will auto-trigger the useEffect above
+                setCurrentPage(1);
             } else {
-                fetchMenu(activeCategory); // If we are already on page 1, fetch immediately
+                fetchMenu(activeCategory, controller.signal); 
             }
         }, 2000)
-        return () => clearTimeout(delaySearch)
+        return () => {
+            clearTimeout(delaySearch); 
+            
+            controller.abort(); 
+        }
     }, [search])
 
-    const fetchMenu = async(categoryId = activeCategory) => {
+    const fetchMenu = async(categoryId = activeCategory, signal?: AbortSignal) => {
         setIsLoading(true)
         
         // Keep track of which category is currently selected for pagination
@@ -63,7 +74,8 @@ export const MenuItemProvider = ({children, branch}: {children: ReactNode, branc
                 branchId: branch._id, 
                 categoryId, 
                 q: search,
-                page: currentPage 
+                page: currentPage,
+                signal
             });
             
             setMenuItems(data.items || []);

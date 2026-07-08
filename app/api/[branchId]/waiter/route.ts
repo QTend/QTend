@@ -1,3 +1,4 @@
+import { createNotification } from '@/lib/notificationHelper';
 import { connectToDB } from '@/utils/connectToDb';
 import WaiterRequest from '@/utils/models/WaiterRequest';
 import { pusherServer } from '@/utils/pusher/pusher';
@@ -46,12 +47,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ branchI
 
         // 4. Fire the real-time Pusher event to the Admin Dashboard
         // Notice this matches the exact channel and event name we put in WaiterNotification.tsx
-        await pusherServer.trigger(`branch-${branchId}`, 'waiter-called', {
-            _id: newRequest._id,
-            tableNumber: newRequest.tableNumber,
-            requestType: newRequest.requestType,
-            status: newRequest.status
-        });
+        await Promise.all([
+            pusherServer.trigger(`branch-${branchId}`, 'waiter-called', {
+                _id: newRequest._id,
+                tableNumber: newRequest.tableNumber,
+                requestType: newRequest.requestType,
+                status: newRequest.status
+            }),
+            createNotification({
+                branchId,
+                title: requestType, 
+                message: `${tableNumber} needs assistance.`,
+                type: 'Waiter_Call',
+                referenceId: newRequest._id.toString(),
+            })
+        ]);
 
         // 5. Respond back to the customer's phone
         return NextResponse.json({ 

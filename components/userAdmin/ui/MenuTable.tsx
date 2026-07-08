@@ -33,9 +33,6 @@ export default function MenuTable(){
     const [selectedCategory, setSelectedCategory] = useState<CategoryProps | null>(null)
     const [togglingItemId, setTogglingItemId] = useState<string | null>(null);
 
-    useEffect(() => {
-        refreshMenuItems();
-    },[])
 
     const handleFilterCategory = async (c: CategoryProps) => {
         setSelectedCategory(c)
@@ -216,8 +213,7 @@ export default function MenuTable(){
                                 totalPages={totalPages} 
                                 onPageChange={(page) => setCurrentPage(page)} 
                             />
-                            </>
-                            
+                            </> 
                         )}
                         
                     </div>

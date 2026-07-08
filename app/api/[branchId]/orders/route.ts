@@ -38,7 +38,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ branchI
 
         await pusherServer.trigger(`branch-${branchId}`, 'new-order', newOrder);
 
-        // 6. Send success response back to the phone
+      
         return NextResponse.json({ 
             success: true, 
             message: 'Order placed successfully',

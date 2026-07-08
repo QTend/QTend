@@ -119,6 +119,7 @@ export async function DELETE(req: NextRequest, {params} : RouteParams){
         await connectToDB();
 
         const branchExist = await Branches.findById(branchId);
+        
         if(!branchExist){
             return NextResponse.json(
                 {error: 'Branch does not exist'},

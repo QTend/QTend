@@ -55,7 +55,7 @@ const page = () => {
           if (result?.error) {
             alert("Login failed after registration: " + result.error);
           } else {
-            router.push('/onboarding/about-business');
+            router.push(`/onboarding/verify-email?email=${encodeURIComponent(email)}`);
           }
         }
       } catch (error) {

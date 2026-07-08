@@ -53,30 +53,31 @@ export default function CallWaiterModal({ isOpen, onClose, table, branchId }: Ca
         </div>
         <p className="text-gray-500 mb-5 font-medium">What do you need help with at Table {table}?</p>
         
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          {[
-            { icon: '🚰', label: 'Need Water' }, 
-            { icon: '💳', label: 'Bring POS/Bill' },
-            { icon: '🧹', label: 'Clean Table' }, 
-            { icon: '🙋', label: 'Order Question' }
-          ].map((request) => (
-            <button 
-              key={request.label} 
-              onClick={() => handleCallWaiter(request.label)}
-              disabled={loadingType !== null}
-              className={`flex flex-col items-center justify-center p-5 rounded-2xl border transition-colors active:scale-95 ${
-                  loadingType === request.label 
-                  ? 'border-orange-400 bg-orange-50 opacity-50' 
-                  : 'border-gray-100 bg-gray-50 shadow-sm hover:bg-orange-50 hover:border-orange-200 hover:text-orange-600'
-              }`}
-            >
-              <span className="text-4xl mb-3">
-                  {loadingType === request.label ? '⏳' : request.icon}
-              </span>
-              <span className="font-bold text-[#4B2E05]">{request.label}</span>
-            </button>
-          ))}
-        </div>
+        <div className="grid grid-cols-2 gap-4">
+        {[ 
+          { icon: '💳', label: 'Bring POS/Bill'}, 
+          { icon: '🧹', label: 'Clean Table'}, 
+          { icon: '🙋', label: 'Order Question'} 
+        ].map((request, index, array) => ( 
+          <button 
+            key={request.label} 
+            onClick={() => handleCallWaiter(request.label)} 
+            disabled={loadingType !== null} 
+            className={`
+              flex flex-col items-center justify-center p-5 rounded-2xl border transition-colors active:scale-95
+              ${index === array.length - 1 ? 'col-span-full' : ''}
+              ${loadingType === request.label 
+                ? 'border-orange-400 bg-orange-50 opacity-50' 
+                : 'border-gray-100 bg-gray-50 shadow-sm hover:bg-orange-50 hover:border-orange-200 hover:text-orange-600'
+              }
+            `}
+          >
+            <span>{request.icon}</span>
+            <span>{request.label}</span>
+          </button> 
+        ))}
+      </div>
+
       </div>
     </div>
   )

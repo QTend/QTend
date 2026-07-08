@@ -6,10 +6,14 @@ import { signOut } from "next-auth/react";
 import { BranchProps } from "@/types/BranchType";
 import Link from "next/link";
 import { GradientButton } from "../Buttons";
+import { useState } from "react";
+import NotificationComp from "../NotificationComp";
+import { useNotify } from "@/context/NotificationContext";
 
 
 
 export function Header({branch}: {branch :BranchProps}){
+    const {isOpen, setIsOpen} = useNotify()
     return(
         <div className=" bg-white py-5">
             <div className="max-w-7xl flex justify-between mx-auto ">
@@ -21,10 +25,7 @@ export function Header({branch}: {branch :BranchProps}){
                     <Link href={`/dashboard/${branch.slug}/settings/tables`}>
                         <GradientButton label="Download menu QR" icon={<QrCode />}  />
                     </Link>
-                    {/* <div className="bg-[#F2F2F2] w-12 h-12 rounded-full flex justify-center items-center relative">
-                    <PiBellSimpleLight size={30} />
-                    <div className="w-2 h-2 rounded-full bg-[#FF4848] absolute right-3 bottom-4" />
-                    </div> */}
+                    <NotificationComp branchId={branch._id} isOpen={isOpen} setIsOpen={setIsOpen} />
                     <button
                     onClick={() => signOut()} 
                     className="bg-red-600 px-5 py-2 rounded-lg text-white cursor-pointer"

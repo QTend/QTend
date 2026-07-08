@@ -4,7 +4,8 @@ const MenuTypeSchema = new mongoose.Schema({
   branchId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Branch', 
-    required: true 
+    required: true,
+    index: true
   },
   // Relational Link: Belongs to a specific Category
   categoryId: { 

@@ -30,11 +30,23 @@ export default function SignIn(){
         password
       })
 
-      if(!res?.ok){
-        if (res?.error === "CredentialsSignin") {
-          showToast("Invalid email or password", 'error' )
+      console.log(res)
+
+      if (!res?.ok) {
+        // 1. Catch the custom Unverified error from your NextAuth backend
+        if (res?.error?.includes("UnverifiedEmail:")) {
+          const unverifiedEmail = res.error.split("UnverifiedEmail:")[1].trim();
+          showToast("Please verify your email to continue", 'error');
+          // Instantly route them to the verify page with their email attached!
+          router.push(`/onboarding/verify-email?email=${encodeURIComponent(unverifiedEmail)}`);
+          setIsLoading(false);
           return;
         }
+
+        // 2. Handle standard invalid credentials
+        showToast("Invalid email or password", 'error');
+        setIsLoading(false);
+        return;
       }
 
       
@@ -89,7 +101,7 @@ export default function SignIn(){
                     </div>
                   </div>
               </div>
-              <Link href={'/'} className='text-[#F67D26] text-sm'>
+              <Link href={'/auth/forgot-password'} className='text-[#F67D26] text-sm'>
               Forgot password
               </Link>
         

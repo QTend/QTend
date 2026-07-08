@@ -33,7 +33,8 @@ const OrderSchema = new Schema<IOrder>(
     branchId: { 
         type: Schema.Types.ObjectId, 
         ref: 'Branch', 
-        required: true 
+        required: true,
+        index: true
     },
     // The human-readable ID (e.g., "ORD-12345")
     orderNumber: { 

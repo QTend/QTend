@@ -5,7 +5,8 @@ const MenuCategorySchema = new mongoose.Schema({
   branchId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Branch', 
-    required: true 
+    required: true,
+    index: true
   },
   name: { 
     type: String, 
