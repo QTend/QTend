@@ -4,7 +4,7 @@ import { GradientButton } from '@/components/userAdmin/ui/Buttons'
 import { useToast } from '@/context/ToastContext'
 import { Mail, Eye, EyeOff } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useState, Suspense } from 'react' // 1. Added Suspense import
 
 function maskEmail(email: any) {
   if (!email) return '';
@@ -13,7 +13,8 @@ function maskEmail(email: any) {
   return `${visiblePart}...@${domain}`;          
 }
 
-const Page = () => {
+// 2. Renamed your main logic to ResetPasswordContent
+const ResetPasswordContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const rawEmail = searchParams.get('email') || '';
@@ -56,7 +57,6 @@ const Page = () => {
 
             showToast(data.message, 'success');
             
-            // Give them a moment to read the success toast, then route to login
             setTimeout(() => {
                 router.push('/auth/sign-in');
             }, 2000);
@@ -85,7 +85,7 @@ const Page = () => {
                     type="text"
                     maxLength={6}
                     value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} // Numbers only
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                     placeholder='Enter 6-digit code'
                     className='px-3 py-2 focus:outline-none border-gray-300 border rounded-xl tracking-widest text-center font-semibold'
                     disabled={isLoading}
@@ -131,6 +131,19 @@ const Page = () => {
           </div>
     </section>
   )
+}
+
+// 3. New Default Export wrapping the content in Suspense
+const Page = () => {
+    return (
+        <Suspense fallback={
+            <div className="flex justify-center items-center min-h-screen text-gray-500">
+                Loading password reset...
+            </div>
+        }>
+            <ResetPasswordContent />
+        </Suspense>
+    )
 }
 
 export default Page

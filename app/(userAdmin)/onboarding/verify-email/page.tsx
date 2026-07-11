@@ -3,7 +3,7 @@
 import { GradientButton } from '@/components/userAdmin/ui/Buttons'
 import { Mail } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react' // Included Suspense
 
 function maskEmail(email: any) {
   if (!email) return '';
@@ -12,7 +12,8 @@ function maskEmail(email: any) {
   return `${visiblePart}...@${domain}`;          
 }
 
-const Page = () => {
+// 1. Core verification logic component
+const VerifyEmailContent = () => {
     const router = useRouter()
     const searchParams = useSearchParams();
     const rawEmail = searchParams.get('email') || '';
@@ -141,6 +142,19 @@ const Page = () => {
                 </p>
             </div>
         </section>
+    )
+}
+
+// 2. Default export containing the Suspense Boundary wrapping your view
+const Page = () => {
+    return (
+        <Suspense fallback={
+            <div className="flex justify-center items-center min-h-screen text-gray-500">
+                Loading verification...
+            </div>
+        }>
+            <VerifyEmailContent />
+        </Suspense>
     )
 }
 
