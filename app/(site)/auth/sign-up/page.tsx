@@ -52,11 +52,7 @@ const page = () => {
             email,
             password,
           });
-          if (result?.error) {
-            alert("Login failed after registration: " + result.error);
-          } else {
-            router.push(`/onboarding/verify-email?email=${encodeURIComponent(email)}`);
-          }
+          router.push(`/onboarding/verify-email?email=${encodeURIComponent(email)}`);
         }
       } catch (error) {
         console.error("Network or Parsing Error:", error);
@@ -113,7 +109,7 @@ const page = () => {
         className='w-full mt-5'
           />
         <p className='text-black/70 text-xs text-center mt-3'>By continuing, you agree to our Terms of Service and Privacy Policy</p>            
-        <p className='text-[#f67d26] font-medium text-sm text-center mt-1' >Already have any account?{''} <Link href={'/auth/sign-up'}  className='underline'>click here</Link> </p>
+        <p className='text-[#f67d26] font-medium text-sm text-center mt-1' >Already have any account?{''} <Link href={'/auth/sign-in'}  className='underline'>click here</Link> </p>
 
        <Link  href={'/'} className="py-3 rounded-xl flex justify-center items-center gap-2 cursor-pointer">
           <Home size={20} className="text-[#f67d26]" />

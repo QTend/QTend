@@ -2,8 +2,9 @@
 
 import { GradientButton } from '@/components/userAdmin/ui/Buttons'
 import { Mail } from 'lucide-react'
+import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useState, Suspense } from 'react' // Included Suspense
+import { useState, Suspense } from 'react' // Included Suspense
 
 function maskEmail(email: any) {
   if (!email) return '';
@@ -28,40 +29,64 @@ const VerifyEmailContent = () => {
 
     // --- Verify OTP Handler ---
     const handleVerification = async () => {
-        if (!code || code.length !== 6) {
-            setStatusMessage({ type: 'error', text: 'Please enter a valid 6-digit code.' });
-            return;
+    if (!code || code.length !== 6) {
+        setStatusMessage({ type: 'error', text: 'Please enter a valid 6-digit code.' });
+        return;
+    }
+
+    setIsVerifying(true);
+    setStatusMessage({ type: null, text: '' });
+
+    try {
+        const res = await fetch('/api/account/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: rawEmail, code }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.error || 'Verification failed');
         }
 
-        setIsVerifying(true);
-        setStatusMessage({ type: null, text: '' });
-
-        try {
-            const res = await fetch('/api/account/auth/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: rawEmail, code }),
+        setStatusMessage({ type: 'success', text: data.message });
+        
+        
+        const tempPassword = sessionStorage.getItem('temp_pass');
+        
+        if (tempPassword) {
+            // Attempt to sign in with the newly verified email and temp password
+            const loginRes = await signIn('user-credentials', {
+                redirect: false,
+                email: rawEmail,
+                password: tempPassword
             });
 
-            const data = await res.json();
+            // Immediately clear it for security!
+            sessionStorage.removeItem('temp_pass');
 
-            if (!res.ok) {
-                throw new Error(data.error || 'Verification failed');
+            if (loginRes?.ok) {
+                // Successfully logged in! Go to the next onboarding step
+                setTimeout(() => {
+                    router.push('/onboarding/about-business');
+                }, 1000);
+                return;
             }
-
-            setStatusMessage({ type: 'success', text: data.message });
-            
-            // Delays briefly so the user can read the success message before transition
-            setTimeout(() => {
-                router.push('/onboarding/about-business');
-            }, 1500);
-
-        } catch (err: any) {
-            setStatusMessage({ type: 'error', text: err.message || 'Something went wrong.' });
-        } finally {
-            setIsVerifying(false);
         }
+
+        // 🚀 FALLBACK: If sessionStorage was empty or login failed for some reason, 
+        // force them to manually log in instead of crashing.
+        setTimeout(() => {
+            router.push('/auth/sign-in'); // Note: Adjust this route to your actual sign-in page
+        }, 1500);
+
+    } catch (err: any) {
+        setStatusMessage({ type: 'error', text: err.message || 'Something went wrong.' });
+    } finally {
+        setIsVerifying(false);
     }
+}
 
     // --- Resend OTP Handler ---
     const handleResend = async () => {

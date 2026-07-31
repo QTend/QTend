@@ -8,6 +8,7 @@ import { Modal } from '../screen/Modal'
 import { MenuItem } from '@/types/MenuItemType'
 import { useToast } from '@/context/ToastContext'
 import Image from 'next/image'
+import { useZone } from '@/context/ZoneContext'
 
 interface EditMenuProps {
   menu: MenuItem;
@@ -17,6 +18,7 @@ interface EditMenuProps {
 
 export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
   const { showToast } = useToast();
+  const { zones } = useZone();
   const [openEdit, setOpenEdit] = useState(false);
   const [update, setUpdate] = useState(false);
   
@@ -38,6 +40,15 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
     return menu.categoryId as string;
   };
 
+  // 🚀 NEW: Safely extract Zone ID
+  const getSafeZoneId = () => {
+    if (!menu.zoneId) return '';
+    if (typeof menu.zoneId === 'object') {
+        return (menu.zoneId as any)._id || '';
+    }
+    return menu.zoneId as unknown as string;
+  };
+
   const [categories, setCategories] = useState<any[]>([]);
   
   // Form states initialized safely!
@@ -46,6 +57,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
     description: menu.description || '',
     price: menu.price || '',
     categoryId: getSafeCategoryId(), 
+    zoneId: getSafeZoneId(), // 🚀 Added zoneId
     image: {
       url: menu.image?.url || '',
       publicId: menu.image?.publicId
@@ -67,6 +79,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
           description: menu.description || '',
           price: menu.price || '',
           categoryId: getSafeCategoryId(),
+          zoneId: getSafeZoneId(), // 🚀 Added zoneId
           image: {
             url: menu.image?.url || "",
             publicId: menu.image?.publicId || ""
@@ -124,7 +137,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
 
   // PATCH Request to save changes
   const handleUpdate = async () => {
-    if (!formData.name.trim() || !formData.categoryId || !formData.price) {
+    if (!formData.name.trim() || !formData.categoryId || !formData.price || !formData.zoneId) {
         showToast("Please fill in all required fields", "error");
         setUpdate(false); // Go back to form
         return;
@@ -182,6 +195,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
           description: formData.description,
           price: Number(formData.price),
           categoryId: formData.categoryId, 
+          zoneId: formData.zoneId, // 🚀 Added zoneId to payload
           isAvailable: formData.isAvailable,
           image: finalImagePayload
         }),
@@ -264,13 +278,15 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
                   {/* Form */}
                   <form className='flex flex-col flex-1' onSubmit={(e) => e.preventDefault()}>
                     <div className="flex-1">
-                      <div className='flex items-center justify-between gap-1'>
-                         <div className='mb-4 flex-1'>
-                            <label className='text-sm font-medium text-[#344054] mb-1 block'>Name of item</label>
-                            <input type="text" name="name" value={formData.name} onChange={handleChange} className='border-[#D0D5DD] border w-full p-2 text-[#101828] rounded-lg focus:outline-0 focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26]' />
-                          </div>
+                      
+                      {/* 🚀 Changed layout: Name gets its own row so Category and Zone can sit side-by-side */}
+                      <div className='mb-4'>
+                        <label className='text-sm font-medium text-[#344054] mb-1 block'>Name of item</label>
+                        <input type="text" name="name" value={formData.name} onChange={handleChange} className='border-[#D0D5DD] border w-full p-2 text-[#101828] rounded-lg focus:outline-0 focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26]' />
+                      </div>
 
-                          <div className='mb-4 flex-1'>
+                      <div className='flex items-center justify-between gap-3 mb-4'>
+                          <div className='flex-1'>
                             <label className='text-sm font-medium text-[#344054] mb-1 block'>Category</label>
                             {isCategoriesLoading ? (
                               <p className="text-sm text-gray-400 p-2 border border-gray-200 rounded-lg animate-pulse">Loading categories...</p>
@@ -287,6 +303,22 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
                                 ))}
                               </select>
                             )}
+                          </div>
+
+                          {/* 🚀 NEW: Zone Selection Dropdown */}
+                          <div className='flex-1'>
+                            <label className='text-sm font-medium text-[#344054] mb-1 block'>Zone</label>
+                            <select 
+                              name="zoneId" 
+                              value={formData.zoneId} 
+                              onChange={handleChange}
+                              className="w-full border border-[#D0D5DD] rounded-lg bg-white px-3 py-2 outline-none focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26] cursor-pointer"
+                            >
+                              <option value="" disabled>Select a zone</option>
+                              {zones?.map((z) => (
+                                  <option key={z._id} value={z._id}>{z.name}</option>
+                              ))}
+                            </select>
                           </div>
                       </div>
 

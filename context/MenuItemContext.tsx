@@ -79,7 +79,7 @@ export const MenuItemProvider = ({children, branch}: {children: ReactNode, branc
             });
             
             setMenuItems(data.items || []);
-            setTotalPages(data.totalPages || 1); // Update the total pages from the API response
+            setTotalPages(data.totalPages || 1);
         } catch (err: any) {
             console.log(err.message || 'Failed to fetch Menu')
             showToast(err.message);

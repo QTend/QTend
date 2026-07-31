@@ -12,7 +12,7 @@ import { useNotify } from "@/context/NotificationContext";
 
 
 
-export function Header({branch}: {branch :BranchProps}){
+export function Header({branch, zone}: {branch :BranchProps, zone?: boolean}){
     const {isOpen, setIsOpen} = useNotify()
     return(
         <div className=" bg-white py-5">
@@ -21,7 +21,9 @@ export function Header({branch}: {branch :BranchProps}){
                     <p className="text-2xl font-medium text-[#333333]">{branch?.name}</p>
                     <p className="text-[#666666] text-sm">{branch?.location?.address}</p>
                 </div>
-                <div className="flex items-center gap-4 ">
+                {
+                    !zone && (
+                        <div className="flex items-center gap-4 ">
                     <Link href={`/dashboard/${branch.slug}/settings/tables`}>
                         <GradientButton label="Download menu QR" icon={<QrCode />}  />
                     </Link>
@@ -34,6 +36,9 @@ export function Header({branch}: {branch :BranchProps}){
                     </button>
                       
                 </div>
+                    )
+                }
+                
             </div>
             
         </div>

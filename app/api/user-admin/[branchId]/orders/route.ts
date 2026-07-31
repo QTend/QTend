@@ -1,6 +1,6 @@
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 import { connectToDB } from '@/utils/connectToDb';
-import OrderItem from '@/utils/models/OrderItem';
+import Order from '@/utils/models/OrderItem';
 import { pusherServer } from '@/utils/pusher/pusher';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
@@ -40,10 +40,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ branchId
         }
 
         // 3. Query MongoDB using $gte (Greater Than or Equal to)
-        const orders = await OrderItem.find({ 
+        const orders = await Order.find({ 
             branchId,
             createdAt: { $gte: dateThreshold } 
-        }).sort({ createdAt: -1 });
+        })
+        .populate('items.zoneId', 'name')
+        .sort({ createdAt: -1 });
 
         return NextResponse.json({ success: true, orders }, { status: 200 });
 
@@ -54,42 +56,54 @@ export async function GET(req: Request, { params }: { params: Promise<{ branchId
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ branchId: string }> }) {
-     const session: any = await getServerSession(authOptions);
+    const session: any = await getServerSession(authOptions);
     if (!session?.user.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const resolvedParams = await params;
-        const { branchId } = resolvedParams;
+    const { branchId } = resolvedParams;
+    
     try {
         await connectToDB();
 
-        
         const body = await req.json();
-        const { orderId, status } = body; 
+        // 1. Extract both potential statuses from the request body
+        const { orderId, status, paymentStatus } = body; 
 
-        if (!orderId || !status) {
-            return NextResponse.json({ error: 'Missing orderId or status' }, { status: 400 });
+        // 2. Validate that we have an ID, and AT LEAST ONE of the statuses to update
+        if (!orderId) {
+            return NextResponse.json({ error: 'Missing orderId' }, { status: 400 });
+        }
+        if (!status && !paymentStatus) {
+            return NextResponse.json({ error: 'Missing status or paymentStatus to update' }, { status: 400 });
         }
 
-        // Find the order and update its status
-        const updatedOrder = await OrderItem.findByIdAndUpdate(
+        // 3. Dynamically build the update object based on what the frontend sent
+        const updateData: any = {};
+        if (status) updateData.status = status;
+        if (paymentStatus) updateData.paymentStatus = paymentStatus;
+
+        // 4. Update using the main Order model (🚀 FIX: Changed OrderItem to Order)
+        const updatedOrder = await Order.findByIdAndUpdate(
             orderId,
-            { status: status },
-            { new: true } // Returns the updated document
+            updateData, // Pass the dynamic object here
+            { new: true } 
         );
 
         if (!updatedOrder) {
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
+        // 5. Trigger the pusher event so all connected screens update instantly
         await pusherServer.trigger(`branch-${branchId}`, 'order-status-updated', {
             _id: orderId,
-            status
+            ...updateData // Send whatever actually changed to the frontend
         });
+
         return NextResponse.json({ 
             success: true, 
-            message: `Order marked as ${status}`,
+            message: `Order updated successfully`,
             order: updatedOrder 
         }, { status: 200 });
 

@@ -12,6 +12,11 @@ const MenuItemSchema = new mongoose.Schema({
     ref: 'MenuCategory', 
     required: true 
   },
+  zoneId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Zone', 
+    required: true 
+  },
   // typeId: { 
   //   type: mongoose.Schema.Types.ObjectId, 
   //   ref: 'MenuType', 

@@ -3,13 +3,9 @@
 import { GradientButton } from '@/components/userAdmin/ui/Buttons'
 import { nigerianStates } from '@/constant/nigerianStates'
 import { useToast } from '@/context/ToastContext'
-import { Store, ChevronDown } from 'lucide-react'
+import { Store, ChevronDown, Check } from 'lucide-react' // 🚀 Added Check icon
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-
-
-
-
 
 const countries = ['Nigeria'] // Locked to Nigeria for now
 
@@ -18,18 +14,16 @@ const page = () => {
   
   // Form State
   const [name, setName] = useState('')
-  const [category, setCategory] = useState('')
+  // 🚀 UPDATED: Changed from string to array for multiple selections
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [address, setAddress] = useState('')
   const [state, setState] = useState('')
   const [country, setCountry] = useState('Nigeria') 
   const [categories, setCategories] = useState<any[]>([])
   const [fetching, setFetching] = useState(true)
   
-  
   // UI State
   const [loading, setLoading] = useState(false);
-  
-  // We use a single string to track which dropdown is open so they don't overlap!
   const [activeDropdown, setActiveDropdown] = useState<'category' | 'state' | 'country' | null>(null);
   
   const { showToast } = useToast()
@@ -51,8 +45,8 @@ const page = () => {
       fetchCategories()
     }, [])
 
-  // Ensure all fields are filled before enabling the button
-  const handleDisable = !name || !category || !address || !state || !country
+  // 🚀 UPDATED: Check array length instead of single string
+  const handleDisable = !name || selectedCategories.length === 0 || !address || !state || !country
 
   const handleContinue = async() => {
     if (handleDisable) {
@@ -65,8 +59,8 @@ const page = () => {
       const res = await fetch('/api/branch/register', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // Sending 'state' instead of 'city'
-        body: JSON.stringify({ name, category, address, state, country }),
+        // 🚀 UPDATED: Send the array of categories
+        body: JSON.stringify({ name, categories: selectedCategories, address, state, country }),
       });
 
       const data = await res.json();
@@ -86,10 +80,24 @@ const page = () => {
     }
   }
 
-  // Helper to toggle dropdowns safely
   const toggleDropdown = (dropdownName: 'category' | 'state' | 'country') => {
       setActiveDropdown(prev => prev === dropdownName ? null : dropdownName);
   }
+
+  // 🚀 NEW: Function to handle multi-select toggling
+  const toggleCategory = (categoryId: string) => {
+      setSelectedCategories(prev => 
+          prev.includes(categoryId) 
+          ? prev.filter(id => id !== categoryId) // Remove if already selected
+          : [...prev, categoryId] // Add if not selected
+      );
+  }
+
+  // 🚀 NEW: Get comma-separated names of selected categories for UI display
+  const selectedCategoryNames = categories
+      .filter((c: any) => selectedCategories.includes(c._id))
+      .map((c: any) => c.name)
+      .join(', ');
 
   return (
     <section className='flex justify-center items-center min-h-screen bg-transparent p-4'>
@@ -113,40 +121,48 @@ const page = () => {
                 />
             </div>
 
-            {/* --- CATEGORY SELECT --- */}
+            {/* --- CATEGORY MULTI-SELECT --- */}
             <div className='grid gap-2 mb-5 relative'>
                 <label className='text-sm text-[#333333] font-bold'>Business category</label>
                 <div 
                     onClick={() => toggleDropdown('category')}
                     className='px-3 py-2 flex justify-between items-center bg-white border-gray-300 border rounded-xl cursor-pointer select-none'
                 >
-                    {/* Updated state lookup: finding by _id instead of a string lowercase search */}
-                    <span className={category ? 'text-[#333333]' : 'text-gray-400'}>
-                        {category 
-                        ? categories.find((c: any) => c._id === category)?.name 
-                        : 'Select Category'}
+                    {/* 🚀 UPDATED: Display logic for multiple selections */}
+                    <span className={`truncate mr-2 ${selectedCategories.length > 0 ? 'text-[#333333]' : 'text-gray-400'}`}>
+                        {selectedCategories.length > 0 ? selectedCategoryNames : 'Select Categories'}
                     </span>
-                    <ChevronDown size={20} className={`text-gray-400 transition-transform duration-200 ${activeDropdown === 'category' ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={20} className={`text-gray-400 shrink-0 transition-transform duration-200 ${activeDropdown === 'category' ? 'rotate-180' : ''}`} />
                 </div>
 
                 {activeDropdown === 'category' && (
-                    <div className='absolute z-20 top-18.75 left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg py-2 max-h-48 overflow-y-auto'>
-                        {categories.map((c: any) => (
-                            <div 
-                                key={c._id}
-                                onClick={() => {
-                                    setCategory(c._id); 
-                                    setActiveDropdown(null);
-                                }}
-                                className='px-4 py-2.5 hover:bg-gray-50 cursor-pointer text-[#333333] transition-colors capitalize'
-                            >
-                                {c.name}
-                            </div>
-                        ))}
+                    <div className='absolute z-20 top-[75px] left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg py-2 max-h-48 overflow-y-auto'>
+                        {categories.map((c: any) => {
+                            const isSelected = selectedCategories.includes(c._id);
+                            return (
+                                <div 
+                                    key={c._id}
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // Keep dropdown open when clicking
+                                        toggleCategory(c._id); 
+                                    }}
+                                    className={`px-4 py-2.5 hover:bg-gray-50 cursor-pointer flex items-center justify-between transition-colors capitalize ${isSelected ? 'bg-orange-50/50' : ''}`}
+                                >
+                                    <span className={isSelected ? 'text-[#F97316] font-medium' : 'text-[#333333]'}>
+                                        {c.name}
+                                    </span>
+                                    {/* 🚀 NEW: Shows a checkmark if selected */}
+                                    {isSelected && (
+                                        <div className="w-5 h-5 rounded-full bg-[#F97316] flex items-center justify-center">
+                                            <Check size={12} className="text-white" />
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
                     </div>
                 )}
             </div>
-
 
             <div className='grid gap-2 mb-5'>
                 <label htmlFor="address" className='font-bold text-sm text-[#333333]'>Street address</label>

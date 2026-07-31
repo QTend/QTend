@@ -20,11 +20,11 @@ const BranchSchema = new mongoose.Schema({
         trim: true,
         default: ''
     },
-    category: {
+    categories: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'AdminCategory',
         required: true
-    },
+    }],
     slug: {
         type: String,
         unique: true

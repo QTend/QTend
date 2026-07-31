@@ -20,9 +20,9 @@ export async function POST(req: NextRequest) {
   
     
     // Extract EXACTLY what the frontend is sending now (no city, no postalCode)
-    const { name, category, address, state, country } = await req.json();
+    const { name, categories, address, state, country } = await req.json();
 
-    if (!name || !address || !category || !state || !country) {
+    if (!name || !address || !categories || categories.length === 0 || !state || !country) {
         return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     // 2. Create the Business
     const newBranch = await Branches.create({
       name,
-      category,
+      categories,
       slug: name.toLowerCase().trim().replace(/\s+/g, '-'), 
       location: {
           address,

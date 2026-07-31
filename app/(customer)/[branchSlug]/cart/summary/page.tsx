@@ -45,13 +45,21 @@ const SummaryPage = () => {
 
     setIsLoading(true)
 
+    const formattedItems = cart.map((item) => ({
+      _id: item._id,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      zoneId: typeof item.zoneId === 'object' ? (item.zoneId as any)._id : item.zoneId
+    }));
+
     try {
         const res = await fetch(`/api/${branch.restaurant.id}/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 tableNumber: table, 
-                items: cart,
+                items: formattedItems,
                 totalAmount: totalPrice,
                 specialInstructions: specialRequest 
             })
