@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 
 const MembershipSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  branchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Branch', required: true },
+  branchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Branch', required: true, index: true },
   
   role: { 
     type: String, 

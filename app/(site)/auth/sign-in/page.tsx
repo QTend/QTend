@@ -30,16 +30,28 @@ export default function SignIn(){
         password
       })
 
-      if(!res?.ok){
-        if (res?.error === "CredentialsSignin") {
-          showToast("Invalid email or password", 'error' )
+
+      if (!res?.ok) {
+        // 1. Catch the custom Unverified error from your NextAuth backend
+        if (res?.error?.includes("UnverifiedEmail:")) {
+          const unverifiedEmail = res.error.split("UnverifiedEmail:")[1].trim();
+          sessionStorage.setItem('temp_pass', password);
+          showToast("Please verify your email to continue", 'error');
+          // Instantly route them to the verify page with their email attached!
+          router.push(`/onboarding/verify-email?email=${encodeURIComponent(unverifiedEmail)}`);
+          setIsLoading(false);
           return;
         }
+
+        // 2. Handle standard invalid credentials
+        showToast("Invalid email or password", 'error');
+        setIsLoading(false);
+        return;
       }
 
       
       const session: any = await getSession()
-       console.log('first', session.user.id)
+      console.log('first', session.user.id)
       showToast('Login successful', 'success')
       router.push('/dashboard-redirect')
     }catch(error){
@@ -89,7 +101,7 @@ export default function SignIn(){
                     </div>
                   </div>
               </div>
-              <Link href={'/'} className='text-[#F67D26] text-sm'>
+              <Link href={'/auth/forgot-password'} className='text-[#F67D26] text-sm'>
               Forgot password
               </Link>
         
@@ -98,14 +110,13 @@ export default function SignIn(){
               onClick={handleNext} className='w-full mt-6'
               />    
 
+              <p className='text-[#f67d26] font-medium text-sm text-center mt-1' >Don't have any account?{''} <Link href={'/auth/sign-up'}  className='underline'>click here</Link> </p>
               <Link  href={'/'} className="py-3 rounded-xl flex justify-center items-center gap-2 cursor-pointer">
                 <Home size={20} className="text-[#f67d26]" />
                 <p className="text-[#f67d26] font-medium text-sm m-0">
                   Go Home
                 </p>
             </Link> 
-
-              
                 
           </div>
     </section>

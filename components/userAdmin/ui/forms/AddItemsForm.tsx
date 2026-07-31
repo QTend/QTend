@@ -6,6 +6,9 @@ import Image from "next/image";
 import { useToast } from "@/context/ToastContext"; 
 import { useMenuItem } from "@/context/MenuItemContext";
 import { useCategory } from "@/context/CategoryContext";
+import { useZone } from "@/context/ZoneContext";
+import { useRouter } from "next/navigation";
+import { useUserAdmin } from "@/context/UserAdminContext";
 
 interface Props {
     closeModal: () => void;
@@ -20,6 +23,7 @@ interface Props {
 interface LocalItem {
     name: string;
     category: string;
+    zoneId: string;
     price: number | ''; 
     description: string;
     image?: { url: string; publicId: string };
@@ -29,13 +33,16 @@ interface LocalItem {
 }
 
 export default function AddItemsForm({ closeModal, onSuccess, branchId, category }: Props) {
+    const router = useRouter();
     const { showToast } = useToast();
     const { refreshMenuItems } = useMenuItem()
     const [isLoading, setIsLoading] = useState(false);
     const {categories} = useCategory()
+    const {branch} = useUserAdmin()
+    const {zones} = useZone()
     
     const [menu, setMenu] = useState<LocalItem>({
-        name: '', category: category?._id || '', price: '', description: '', isAvailable: false, preview: null, file: null
+        name: '', category: category?._id || '', zoneId: '', price: '', description: '', isAvailable: false, preview: null, file: null
     });
     
     const [menusItems, setMenusItems] = useState<LocalItem[]>([]);
@@ -43,7 +50,7 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
     const [draggingIndex, setDraggingIndex] = useState<number | 'new' | null>(null);
 
     const handleClose = () => {
-        setMenu({ name: '', category: category?._id || '', price: '', description: '', isAvailable: false, preview: null, file: null }); 
+        setMenu({ name: '', category: category?._id || '', zoneId: '', price: '', description: '', isAvailable: false, preview: null, file: null }); 
         setMenusItems([]);
         closeModal();
     }
@@ -82,12 +89,12 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
 
     const handleAddMoreItems = () => {
         if (expandedIndex === 'new') {
-            if (!menu.category || !menu.name) {
-                showToast("Please provide a name and select a category", "error");
+            if (!menu.category || !menu.name || !menu.zoneId) {
+                showToast("Please provide a name, category, and zone", "error");
                 return;
             }
             setMenusItems(prev => [...prev, menu]);
-            setMenu({ name: '', category: category?._id || '', price: '', description: '', isAvailable: false, preview: null, file: null }); 
+            setMenu({ name: '', category: category?._id || '', zoneId: '', price: '', description: '', isAvailable: false, preview: null, file: null }); 
         }
         setExpandedIndex('new');
     }
@@ -99,8 +106,8 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
         let rawItems = [...menusItems];
         
         if (menu.name.trim() !== '') {
-            if (!menu.category) {
-                showToast("Please select a category for your new item", "error");
+            if (!menu.category || !menu.zoneId) {
+                showToast("Please select a category and zone for your new item", "error");
                 return;
             }
             rawItems.push(menu);
@@ -171,7 +178,8 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
                     price: Number(item.price) || 0,
                     isAvailable: item.isAvailable, 
                     categoryId: item.category, 
-                    image: finalImage 
+                    image: finalImage ,
+                    zoneId: item.zoneId
                 };
             }));
 
@@ -213,24 +221,68 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
 
     const renderForm = (itemData: LocalItem, index: number | 'new') => (
         <div className="bg-[#EAECF0] p-4 rounded-b-2xl grid gap-5 border-t border-gray-200">
-            <div className="flex gap-3">
-                <div className="flex flex-col gap-1 flex-1">
-                    <label className="text-sm font-medium text-[#344054]">Name of item</label>
-                    <input type="text" name="name" value={itemData.name} onChange={(e) => handleChange(index, e)} className="w-full rounded-lg bg-white px-3 py-2 outline-none focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26]" placeholder="e.g. Jollof Rice" />
-                </div>
-                <div className="flex flex-col gap-1 flex-1">
-                    <label className="text-sm font-medium text-[#344054]">Category</label>
+           <div className="flex gap-3">
+            <div className="flex flex-col gap-1 flex-1">
+                <label className="text-sm font-medium text-[#344054]">Name of item</label>
+                <input type="text" name="name" value={itemData.name} onChange={(e) => handleChange(index, e)} className="w-full rounded-lg bg-white px-3 py-2 outline-none focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26]" placeholder="e.g. Jollof Rice" />
+            </div>
+            
+            {/* 🚀 SMART CATEGORY DROPDOWN */}
+            <div className="flex flex-col gap-1 flex-1">
+                <label className="text-sm font-medium text-[#344054]">Category</label>
+                {categories.length === 0 ? (
+                    <div 
+                        onClick={() => {
+                            showToast("Opening category manager...", "error"); // Adjusted text slightly
+                            closeModal();
+                            // 🚀 FIX: Deep link directly to the modal
+                            router.push(`/dashboard/${branch?.slug}/menu?modal=new-category`); 
+                        }}
+                        className="w-full rounded-lg bg-red-50 border border-red-100 px-3 py-2 flex justify-between items-center cursor-pointer hover:bg-red-100 transition-colors"
+                    >
+                        <span className="text-sm text-red-600">No categories found</span>
+                        <span className="text-xs font-bold text-red-700 uppercase tracking-wider">+ Create</span>
+                    </div>
+                ) : (
                     <select name="category" value={itemData.category} onChange={(e) => handleChange(index, e)} className="w-full rounded-lg bg-white px-3 py-2 outline-none focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26] cursor-pointer">
                         <option value="" disabled>Select a category</option>
                         {categories.map((c) => (<option key={c._id} value={c._id}>{c.name}</option>))}
                     </select>
-                </div>
+                )}
             </div>
+        </div>
 
+        <div className="flex gap-3">
             <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-[#344054]">Price of item</label>
                 <input type="number" name="price" value={itemData.price} onChange={(e) => handleChange(index, e)} className="w-full rounded-lg bg-white px-3 py-2 outline-none focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26]" placeholder="₦ 0.00" />
             </div>
+
+            {/* 🚀 SMART ZONE DROPDOWN */}
+            <div className="flex flex-col gap-1 flex-1">
+                <label className="text-sm font-medium text-[#344054]">Zone</label>
+                {zones.length === 0 ? (
+                    <div 
+                        onClick={() => {
+                            showToast("Please create a table zone first", "error");
+                            closeModal();
+                            // Update this route to wherever your zone/table management lives!
+                            router.push(`/dashboard/${branchId}/tables`); 
+                        }}
+                        className="w-full rounded-lg bg-red-50 border border-red-100 px-3 py-2 flex justify-between items-center cursor-pointer hover:bg-red-100 transition-colors"
+                    >
+                        <span className="text-sm text-red-600">No zones found</span>
+                        <span className="text-xs font-bold text-red-700 uppercase tracking-wider">+ Create</span>
+                    </div>
+                ) : (
+                    <select name="zoneId" value={itemData.zoneId} onChange={(e) => handleChange(index, e)} className="w-full rounded-lg bg-white px-3 py-2 outline-none focus:border-[#F67D26] focus:ring-1 focus:ring-[#F67D26] cursor-pointer">
+                        <option value="" disabled>Select a zone</option>
+                        {zones.map((z) => (<option key={z._id} value={z._id}>{z.name}</option>))}
+                    </select>
+                )}
+            </div>
+        </div>
+            
 
             <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-[#344054]">Description</label>

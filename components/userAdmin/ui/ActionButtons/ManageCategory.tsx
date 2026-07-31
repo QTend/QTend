@@ -10,9 +10,12 @@ import AddItemsForm from "../forms/AddItemsForm";
 import { MenuItem } from "@/types/MenuItemType";
 import { useMenuItem } from "@/context/MenuItemContext";
 import { useCategory } from "@/context/CategoryContext";
+import { useSearchParams, useRouter } from "next/navigation";
 
-export function ManageCategory({ branchId }: { branchId: string }) {
+export function ManageCategory({ branchId, branchSlug }: { branchId: string, branchSlug: string }) {
   const { showToast } = useToast()
+  const searchParams = useSearchParams(); 
+  const router = useRouter();
   const [openModal, setOpenModal] = useState(false);
   const [openAddModal, setOpenAddModal] = useState(false)
   const [isdelete, setIsDelete] = useState(false);
@@ -32,7 +35,17 @@ export function ManageCategory({ branchId }: { branchId: string }) {
   const [isItemsLoading, setIsItemsLoading] = useState(false);
   
   const { refreshMenuItems } = useMenuItem()
-      const {refreshCategories, categories} = useCategory()
+  const {refreshCategories, categories} = useCategory()
+
+  useEffect(() => {
+    if (searchParams.get("modal") === "new-category") {
+      setOpenModal(true);
+      setAddCategory(true); 
+      
+      // Clean up the URL silently so it doesn't re-trigger if the user refreshes the page
+      router.replace(`/dashboard/${branchSlug}/menu`, { scroll: false }); 
+    }
+  }, [searchParams, branchId, router]);
 
   useEffect(() => {
     if (openModal) {

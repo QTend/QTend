@@ -4,11 +4,17 @@ const MenuItemSchema = new mongoose.Schema({
   branchId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Branch', 
-    required: true 
+    required: true,
+    index: true
   },
   categoryId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'MenuCategory', 
+    required: true 
+  },
+  zoneId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Zone', 
     required: true 
   },
   // typeId: { 

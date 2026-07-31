@@ -18,5 +18,15 @@ export type BranchProps = {
         instagram: string;
         x:string;
         tiktok: string
+    };
+    branding: {
+        logo: {
+            url: String;
+            publicId: String
+        };
+        coverImage: {
+            url: String;
+            publicId: String
+        };
     }
 } 

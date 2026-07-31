@@ -8,7 +8,7 @@ import { BranchProps } from "@/types/BranchType";
 // Added a 'path' property here so you can edit the link strings easily
 const menus = [
   { id: 1, path: '', icon: Settings, label: 'General', desc: 'Restaurant info & preferences' },
-  { id: 2, path: '/tables', icon: QrCode, label: 'Menu and tables', desc: 'Tables and QR options' },
+  { id: 2, path: '/tables', icon: QrCode, label: 'Zone and area management', desc: 'Tables and QR options' },
   { id: 3, path: '/branding', icon: Palette, label: 'Branding', desc: 'Logo, colors & appearance' },
   // { id: 4, path: '/financial-settings', icon: DollarSign, label: 'Financial Settings', desc: 'Tax, VAT & payment options' },
   // { id: 5, path: '/roles-and-permissions', icon: ShieldCheck, label: 'Roles & Permissions', desc: 'Team access & security' },

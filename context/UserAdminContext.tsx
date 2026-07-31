@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useEffect } from "react";
 import { BranchProps } from "@/types/BranchType";
 
 interface UserAdminProps {
@@ -11,7 +11,7 @@ interface UserAdminProps {
 export const UserAdminContext = createContext<UserAdminProps | null>(null)
 
 export const UserAdminProvider = ({children, branch, user}: {children: ReactNode, branch: BranchProps, user: any}) => {
-    
+   
     return(
         <UserAdminContext.Provider value={{
             branch,

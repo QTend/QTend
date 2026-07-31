@@ -15,7 +15,6 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
     try {
-
         const session: any = await getServerSession(authOptions);
         if (!session?.user.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -53,7 +52,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         const [items, totalItems] = await Promise.all([
             MenuItem.find(query)
                 .populate('categoryId', 'name _id')
-                .sort({ createdAt: -1 }) // Good practice: sort so newest items are on page 1
+                .populate('zoneId', 'name _id')
+                .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit),
             MenuItem.countDocuments(query)
@@ -93,6 +93,13 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
         if (!items || items.length === 0) {
             return NextResponse.json({ error: "No items provided" }, { status: 400 });
+        }
+
+        // Check all items BEFORE processing
+        for (const item of items) {
+            if (!item.zoneId) {
+                return NextResponse.json({ error: "Every item must be assigned to a zone." }, { status: 400 });
+            }
         }
 
         // Map over the items to attach the branch, category, and a dummy typeId
@@ -149,7 +156,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
         if (deletedItem.image && deletedItem.image.publicId) {
             // Notice we do NOT use "await" here.
             // This runs in the background so the user gets a fast response!
-            deleteCloudinaryImage(deletedItem.image.publicId)
+            await deleteCloudinaryImage(deletedItem.image.publicId)
                 .catch((err: any) => console.error("Failed to clean up Cloudinary image:", err));
         }
 
@@ -173,8 +180,8 @@ export async function PATCH(req: NextRequest, {params}: RouteParams) {
         const {branchId} = await params;
         const body = await req.json();
         
-        // Destructure itemId and all possible fields that could be updated
-        const { itemId, categoryId, name, isAvailable, price, description, image } = body;
+        
+        const { itemId, categoryId, zoneId, name, isAvailable, price, description, image } = body;
 
         if (!itemId) {
             return NextResponse.json(
@@ -185,11 +192,10 @@ export async function PATCH(req: NextRequest, {params}: RouteParams) {
 
         await connectToDB();
 
-        // Build a dynamic update object. 
-        // This ensures we ONLY overwrite the fields the frontend actually sent!
         const updateFields: any = {};
         if (name !== undefined) updateFields.name = name;
         if (categoryId !== undefined) updateFields.categoryId = categoryId;
+        if (zoneId !== undefined) updateFields.zoneId = zoneId; // 🚀 FIX: Add zoneId to update fields
         if (isAvailable !== undefined) updateFields.isAvailable = isAvailable;
         if (price !== undefined) updateFields.price = price;
         if (description !== undefined) updateFields.description = description;
@@ -197,8 +203,8 @@ export async function PATCH(req: NextRequest, {params}: RouteParams) {
 
         const updatedItem = await MenuItem.findOneAndUpdate(
             { _id: itemId, branchId: branchId },
-            { $set: updateFields }, // Mongoose applies the specific field updates here
-            { new: true } // Returns the newly updated document
+            { $set: updateFields },
+            { new: true } 
         );
 
         if (!updatedItem) {

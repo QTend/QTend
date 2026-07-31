@@ -1,7 +1,6 @@
 'use client'
 
 import Button from '@/components/customer/ui/Button'
-import { useCustomer } from '@/context/CustomerContext'
 import Link from 'next/link'
 import { useEffect, useState, use } from 'react'
 import { FiCheckCircle } from 'react-icons/fi'

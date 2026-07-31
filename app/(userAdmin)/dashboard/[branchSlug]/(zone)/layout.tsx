@@ -10,6 +10,8 @@ import { UserAdminProvider } from "@/context/UserAdminContext";
 import GlobalOrderListener from "@/context/GlobalOrderListener";
 import { WaiterNotification } from "@/components/userAdmin/ui/WaiterNotification";
 import { Metadata } from "next";
+import { NotificationProvider } from "@/context/NotificationContext";
+import { ZoneProvider } from "@/context/ZoneContext";
 
 
 export const metadata: Metadata = {
@@ -31,23 +33,30 @@ export default async function UserAdminDashboardLayout({
   }
 
   const data = await getCurrentBranch(branchSlug)
-  // console.log('useradmin', data)
+
 
   return (
-    <UserAdminProvider branch={data?.branch} user={data?.user}>
-    <CategoryProvider branch={data?.branch}>
-      <MenuItemProvider branch={data?.branch}>
-        <GlobalOrderListener />
-        <div className=' min-h-screen flex flex-col gap-5'>
-          <Header  branch={data?.branch} />
-          <WaiterNotification />
-          <Navbar branch={data?.branch} />
-          <div className='max-w-7xl mx-auto flex-1 w-full pb-10'>
-            {children} 
-          </div> 
-        </div> 
-       </MenuItemProvider>
-    </CategoryProvider>
-    </UserAdminProvider>
+    <div className="px-3">
+        <UserAdminProvider branch={data?.branch} user={data?.user}>
+        <CategoryProvider branch={data?.branch}>
+        {/* <ZoneProvider branch={data?.branch}> */}
+            {/* <MenuItemProvider branch={data?.branch}> */}
+            <GlobalOrderListener />
+            <NotificationProvider>
+            <div className=' min-h-screen flex flex-col gap-5'>
+                <Header  branch={data?.branch} zone={true} />
+                <div className='max-w-7xl mx-auto flex-1 w-full pb-10'>
+                {children} 
+                </div> 
+            </div> 
+            </NotificationProvider>
+            
+        {/* </MenuItemProvider> */}
+        {/* </ZoneProvider> */}
+        
+        </CategoryProvider>
+        </UserAdminProvider>
+    </div>
+    
   );
 }

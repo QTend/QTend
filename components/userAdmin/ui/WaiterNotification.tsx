@@ -4,6 +4,7 @@ import { Hand, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useUserAdmin } from "@/context/UserAdminContext"
 import { pusherClient } from "@/utils/pusher/pusherClient"
+import { useNotify } from "@/context/NotificationContext"
 
 interface WaiterRequest {
     _id: string;
@@ -14,6 +15,7 @@ interface WaiterRequest {
 export const WaiterNotification = () => {
   const { branch } = useUserAdmin();
   const [activeRequests, setActiveRequests] = useState<WaiterRequest[]>([]);
+  const {setIsOpen} = useNotify()
 
   useEffect(() => {
     // TRAP 1: Did the branch load correctly so we can build the channel name?
@@ -59,12 +61,12 @@ export const WaiterNotification = () => {
   const formattedTypes = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' }).format(uniqueTypes);
 
   const title = isMultiple 
-    ? "Several tables are requesting a waiter" 
-    : `Table ${activeRequests[0].tableNumber} is requesting a waiter`;
+    ? "Several customers are requesting a waiter" 
+    : `${activeRequests[0].tableNumber} is requesting a waiter`;
 
   const description = isMultiple
-    ? `Tables ${formattedTables} have active service requests including ${formattedTypes}. Please assign waiters to attend to them.`
-    : `A guest at Table ${activeRequests[0].tableNumber} needs ${activeRequests[0].requestType}. Please respond to this request.`;
+    ? `${formattedTables} have active service requests including ${formattedTypes}. Please assign waiters to attend to them.`
+    : `A guest at ${activeRequests[0].tableNumber} needs ${activeRequests[0].requestType}. Please respond to this request.`;
 
   const dismissNotifications = () => {
       setActiveRequests([]);
@@ -83,12 +85,25 @@ export const WaiterNotification = () => {
                 </div>
             </div>
             
-            <button 
-                onClick={dismissNotifications}
-                className="bg-[#7D7D7D26] hover:bg-[#7D7D7D40] transition-colors w-8 h-8 rounded-full flex justify-center items-center shrink-0 cursor-pointer"
-            >
-                <X size={18} className="text-[#333333]" />
-            </button>
+            <div className="flex items-center gap-5">
+                {isMultiple && (
+                    <button 
+                    onClick={() => {
+                        dismissNotifications
+                        setIsOpen(true)
+                    }}
+                    className="bg-white transition-colors px-5 py-2 rounded-xl text-sm text-[#1C3B2F] cursor-pointer"
+                >
+                    View all requests
+                </button>
+                )}
+                <button 
+                    onClick={dismissNotifications}
+                    className="bg-[#7D7D7D26] hover:bg-[#7D7D7D40] transition-colors w-8 h-8 rounded-full flex justify-center items-center shrink-0 cursor-pointer"
+                >
+                    <X size={18} className="text-[#333333]" />
+                </button>
+            </div>
         </div>
     </div>
   )

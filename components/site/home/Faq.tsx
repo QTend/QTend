@@ -13,7 +13,7 @@ const faqs = [
 
 export const Faq = () => {
   return (
-    <section className='px-4 py-12 md:p-16 bg-[#F7F7F7]'>
+    <section id="faq" className='px-4 py-12 md:p-16 bg-[#F7F7F7]'>
         <SmallHeader text='FAQ' color='#0E8A54' />
         <Header text='Questions? We Have Answers.' />
 

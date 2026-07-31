@@ -10,6 +10,7 @@ interface OrderItem {
     name: string;
     quantity: number;
     price: number;
+    zoneId?: { _id: string, name: string } | string; // 🚀 Added zoneId support
 }
 
 interface Order {
@@ -21,6 +22,7 @@ interface Order {
     items: OrderItem[];
     createdAt: string;
     specialInstructions?: string;
+    paymentStatus: 'Paid' | 'Unpaid';
 }
 
 export default function KitchenOrders() {
@@ -30,10 +32,11 @@ export default function KitchenOrders() {
     const [orders, setOrders] = useState<Order[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [completeLoading, setCompleteLoading] = useState(false)
-    const [activeFilter, setActiveFilter] = useState<'All Orders' | 'Active' | 'Completed'>('Active') // Changed default to Active!
+    const [activeFilter, setActiveFilter] = useState<'All Orders' | 'Active' | 'Completed'>('Active') 
     const [expandedOrders, setExpandedOrders] = useState<string[]>([]) 
+    const [paymentFilter, setPaymentFilter] = useState<'All' | 'Paid' | 'Unpaid'>('All');
+    const [paymentLoading, setPaymentLoading] = useState<string | null>(null);
     
-    // NEW STATE: Tracks the time filter
     const [timeframe, setTimeframe] = useState('today');
 
     const filters = ['All Orders', 'Active', 'Completed']
@@ -55,11 +58,9 @@ export default function KitchenOrders() {
         }
     }, [branch?._id]);
 
-    // WRAPPED IN useCallback so we can safely use it inside useEffect
     const fetchOrders = useCallback(async (showLoadingState = false) => {
         if (showLoadingState) setIsLoading(true);
         try {
-            // Append the timeframe query parameter!
             const res = await fetch(`/api/user-admin/${branchId}/orders?timeframe=${timeframe}`);
             const data = await res.json();
             
@@ -71,17 +72,11 @@ export default function KitchenOrders() {
         } finally {
             if (showLoadingState) setIsLoading(false);
         }
-    }, [branchId, timeframe]); // Dependency added here
+    }, [branchId, timeframe]); 
 
     useEffect(() => {
-        fetchOrders(true); // Fetches immediately on mount or timeframe change
-
-        const interval = setInterval(() => {
-            fetchOrders(false); 
-        }, 10000); 
-
-        return () => clearInterval(interval);
-    }, [fetchOrders]); // Re-runs if fetchOrders (which depends on timeframe) changes
+        fetchOrders(true); 
+    }, [fetchOrders]); 
 
     const markOrderComplete = async (orderId: string, e: React.MouseEvent) => {
         e.stopPropagation(); 
@@ -108,6 +103,30 @@ export default function KitchenOrders() {
         }
     }
 
+    const markOrderPaid = async (orderId: string, e: React.MouseEvent) => {
+        e.stopPropagation(); 
+        setPaymentLoading(orderId);
+
+        try {
+            const res = await fetch(`/api/user-admin/${branchId}/orders`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: orderId, paymentStatus: 'Paid' })
+            });
+
+            if (!res.ok) throw new Error("Failed to update payment status");
+
+            setOrders(prev => prev.map(order => 
+                order._id === orderId ? { ...order, paymentStatus: 'Paid' } : order
+            ));
+        } catch (error) {
+            console.error(error);
+            alert("Failed to update payment. Reverting.");
+        } finally {
+            setPaymentLoading(null);
+        }
+    }
+
     const toggleOrder = (orderId: string) => {
         setExpandedOrders(prev => 
             prev.includes(orderId) 
@@ -126,9 +145,10 @@ export default function KitchenOrders() {
     }
 
     const filteredOrders = orders.filter(order => {
-        if (activeFilter === 'All Orders') return true;
-        return order.status === activeFilter;
-    })
+        const matchesStatus = activeFilter === 'All Orders' || order.status === activeFilter;
+        const matchesPayment = paymentFilter === 'All' || order.paymentStatus === paymentFilter;
+        return matchesStatus && matchesPayment;
+    });
 
     return  (
         <div className="mx-auto  md:p-6">
@@ -151,7 +171,6 @@ export default function KitchenOrders() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {/* UPDATED DROPDOWN WITH NATIVE SELECT */}
                     <div className="relative flex items-center bg-white py-2 pl-3 pr-8 gap-2 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
                         <SlidersVertical size={16} className="text-gray-500" />
                         
@@ -168,10 +187,22 @@ export default function KitchenOrders() {
 
                         <ChevronDown size={16} className="text-gray-500 absolute right-3 pointer-events-none" />
                     </div>
+
+                    <div className="relative flex items-center bg-white py-2 pl-3 pr-8 gap-2 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
+                        <select 
+                            value={paymentFilter}
+                            onChange={(e) => setPaymentFilter(e.target.value as any)}
+                            className="text-sm font-medium text-gray-700 bg-transparent outline-none appearance-none cursor-pointer w-full z-10 relative"
+                        >
+                            <option value="All">All Payments</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Unpaid">Unpaid</option>
+                        </select>
+                        <ChevronDown size={16} className="text-gray-500 absolute right-3 pointer-events-none" />
+                    </div>
                 </div>
             </div>
 
-            {/* Rest of the UI remains identical! */}
             <div className="flex flex-col gap-4">
                 {isLoading ? (
                     <div className="bg-white rounded-2xl p-10 text-center border border-gray-100 shadow-sm flex flex-col items-center">
@@ -205,10 +236,18 @@ export default function KitchenOrders() {
                                             <p className="text-sm text-[#F97316] font-medium">{getTimeAgo(order.createdAt)}</p>
                                         </div>
                                         
-                                        <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${
-                                            isActive ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-green-50 text-green-600 border-green-200'
-                                        }`}>
-                                            {isActive ? 'Active' : 'Completed'}
+                                        <div className="flex gap-2">
+                                            <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${
+                                                isActive ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-green-50 text-green-600 border-green-200'
+                                            }`}>
+                                                {isActive ? 'Active' : 'Completed'}
+                                            </div>
+
+                                            <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${
+                                                order.paymentStatus === 'Paid' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'
+                                            }`}>
+                                                {order.paymentStatus || 'Unpaid'}
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -234,18 +273,29 @@ export default function KitchenOrders() {
 
                                         <div className="mb-6">
                                             <p className="text-[#666666] text-sm mb-2">Items:</p>
-                                            <div className="flex flex-col gap-2">
-                                                {order.items.map((item, index) => (
-                                                    <div key={item._id || index} className="flex justify-between items-start text-[#333333]">
-                                                        <p className="font-medium">
-                                                            <span className="text-gray-400 mr-2 font-bold">{item.quantity}x</span>
-                                                            {item.name}
-                                                        </p>
-                                                        <p className="text-gray-500 font-medium whitespace-nowrap ml-4">
-                                                            ₦{(item.price * item.quantity).toLocaleString()}
-                                                        </p>
-                                                    </div>
-                                                ))}
+                                            <div className="flex flex-col gap-3">
+                                                {order.items.map((item, index) => {
+                                                    const zoneName = typeof item.zoneId === 'object' ? item.zoneId?.name : null;
+                                                    
+                                                    return (
+                                                        <div key={item._id || index} className="flex justify-between items-start text-[#333333]">
+                                                            <div className="flex ">
+                                                                <p className="font-medium">
+                                                                    <span className="text-gray-400 mr-2 font-bold">{item.quantity}x</span>
+                                                                    {item.name}
+                                                                </p>
+                                                                {zoneName && (
+                                                                    <div className="ml-3 inline-block px-2 py-0.5 bg-orange-50 text-orange-600 border border-orange-100 rounded text-[10px] font-bold tracking-wider uppercase">
+                                                                        {zoneName}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-gray-500 font-medium whitespace-nowrap ml-4">
+                                                                ₦{(item.price * item.quantity).toLocaleString()}
+                                                            </p>
+                                                        </div>
+                                                    )
+                                                })}
                                             </div>
                                         </div>
 
@@ -257,14 +307,26 @@ export default function KitchenOrders() {
                                                 </p>
                                             </div>
                                             
-                                            {isActive && (
-                                                <button 
-                                                    onClick={(e) => markOrderComplete(order._id, e)}
-                                                    className="bg-[#16A34A] hover:bg-[#15803d] text-white font-bold rounded-xl py-3 px-6 transition-colors active:scale-95 shadow-sm"
-                                                >
-                                                    {completeLoading ? "..." : "Mark Complete"}
-                                                </button>
-                                            )}
+                                            <div className="flex gap-3">
+                                                {isActive && (
+                                                    <button 
+                                                        onClick={(e) => markOrderComplete(order._id, e)}
+                                                        className="bg-[#16A34A] hover:bg-[#15803d] text-white font-bold rounded-xl py-3 px-6 transition-colors active:scale-95 shadow-sm"
+                                                    >
+                                                        {completeLoading ? "..." : "Mark Complete"}
+                                                    </button>
+                                                )}
+
+                                                {order.paymentStatus !== 'Paid' && (
+                                                    <button 
+                                                        onClick={(e) => markOrderPaid(order._id, e)}
+                                                        disabled={paymentLoading === order._id}
+                                                        className="bg-[#F97316] hover:bg-[#ea580c] text-white font-bold rounded-xl py-3 px-6 transition-colors active:scale-95 shadow-sm disabled:opacity-50"
+                                                    >
+                                                        {paymentLoading === order._id ? "..." : "Mark as Paid"}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 )}

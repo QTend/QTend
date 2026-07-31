@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {connectToDB} from "@/utils/connectToDb"
 import User from "@/utils/models/User";
 import bcrypt from "bcryptjs";
+import { requestOtp } from "@/app/actions/requestOtp";
 
 
 
@@ -48,9 +49,18 @@ export const POST = async(req: NextRequest) => {
             isFoundingMember: true
         });
 
+        const otpResult = await requestOtp({
+            email,
+            type: 'emailVerification'
+        })
+
+        if (!otpResult.success) {
+            console.log("OTP Warning:", otpResult.message);
+        }
+
         return NextResponse.json({
             success: true,
-            message: 'Account created successfully',
+            message: 'Account created! Please check your email for the verification code.',
         },
         {status: 201}
         )

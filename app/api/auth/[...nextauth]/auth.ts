@@ -28,6 +28,10 @@ export const authOptions: NextAuthOptions = {
                         );
 
                         if (isPasswordCorrect) {
+
+                            if (!user.isVerified) {
+                                throw new Error(`UnverifiedEmail:${user.email}`);
+                            }
                             // 2. Query the Membership table to find their active workspace
                             const activeMembership = await Membership.findOne({ userId: user._id.toString() });
                             let branchSlug = null;

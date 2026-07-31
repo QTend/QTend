@@ -19,6 +19,7 @@ import Image from "next/image";
 const tableHeads = [
     'Menu items',
     'Descriptions',
+    'Zone',
     'Category',
     'Price',
     'Availability'
@@ -33,9 +34,6 @@ export default function MenuTable(){
     const [selectedCategory, setSelectedCategory] = useState<CategoryProps | null>(null)
     const [togglingItemId, setTogglingItemId] = useState<string | null>(null);
 
-    useEffect(() => {
-        refreshMenuItems();
-    },[])
 
     const handleFilterCategory = async (c: CategoryProps) => {
         setSelectedCategory(c)
@@ -132,7 +130,7 @@ export default function MenuTable(){
                 {/* s */}
                 <div className="flex items-center gap-2">
                     <AddMenu branchId={branch._id}  />
-                    <ManageCategory branchId={branch._id} />
+                    <ManageCategory branchId={branch?._id} branchSlug={branch?.slug} />
                 </div>
             </div>
             
@@ -184,6 +182,11 @@ export default function MenuTable(){
                                                     </p>
                                                 </td> 
                                                 <td className="py-4 px-6 text-left">
+                                                    <p className="text-sm line-clamp-2 max-w-62.5 leading-relaxed">
+                                                        {f.zoneId.name}
+                                                    </p>
+                                                </td>
+                                                <td className="py-4 px-6 text-left">
                                                     <span className="px-3 py-1 rounded-full text-xs font-medium">
                                                         {typeof f.categoryId === 'object' ? f.categoryId.name : 'Uncategorized'}
                                                     </span>
@@ -216,8 +219,7 @@ export default function MenuTable(){
                                 totalPages={totalPages} 
                                 onPageChange={(page) => setCurrentPage(page)} 
                             />
-                            </>
-                            
+                            </> 
                         )}
                         
                     </div>

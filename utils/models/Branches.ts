@@ -20,11 +20,11 @@ const BranchSchema = new mongoose.Schema({
         trim: true,
         default: ''
     },
-    category: {
+    categories: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'AdminCategory',
         required: true
-    },
+    }],
     slug: {
         type: String,
         unique: true
@@ -47,9 +47,15 @@ const BranchSchema = new mongoose.Schema({
         x: { type: String, default: "" },
         tiktok: { type: String, default: "" }
     },
-    logo: { 
-        url: { type: String, default: "" },
-        publicId: { type: String, default: "" }
+    branding: {
+        logo: { 
+            url: { type: String, default: "" },
+            publicId: { type: String, default: "" }
+        },
+        coverImage: { 
+            url: { type: String, default: "" },
+            publicId: { type: String, default: "" }
+        }
     },
 }, 
 { timestamps: true }
