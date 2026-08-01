@@ -27,15 +27,16 @@ const pricingData = [
     {
         id: 2, 
         label: 'Pro', 
-        price: 40000, 
+        price: 45000, 
         currency: '₦',
         isCustom: false,
-        desc: 'For busy restaurants and lounges needing premium real-time features and deep insights.',
+        desc: 'For busy restaurants, clubs and lounges needing premium real-time features and deep insights.',
         features: [
             'Unlimited tables',
             'Call Waiter feature (Real-time requests)',
             'Kitchen Display System (KDS)',
-            'Up to 5 staff/waiter accounts',
+            // 'Up to 5 staff/waiter accounts',
+            'Up to 5 zones',
             'Advanced analytics',
             // 'Advanced analytics & busy hour reports',
             'Priority customer support'
