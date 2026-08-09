@@ -1,10 +1,10 @@
 'use client'
 
-import { useUserAdmin } from "@/context/UserAdminContext";
 import { pusherClient } from "@/utils/pusher/pusherClient";
-import { SlidersVertical, CheckCircle, ChevronDown } from "lucide-react";
+// 🚀 NEW: Added AlertTriangle for the expired link screen
+import { SlidersVertical, CheckCircle, ChevronDown, Lock, AlertTriangle } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useParams } from "next/navigation"; 
 
 interface OrderItem {
     _id: string;
@@ -25,31 +25,60 @@ interface Order {
     specialInstructions?: string;
 }
 
+const processedKDSOrders = new Set<string>();
+
 export default function ZoneOrders() {
-    const { branch } = useUserAdmin();
-    const branchId = branch?._id;
+    const params = useParams();
+    const branchSlug = params?.branchSlug as string; 
     
-    // 🚀 NEW: Get the zone name from the URL (e.g., ?zone=bar)
     const searchParams = useSearchParams();
     const targetZone = searchParams.get('zone')?.toLowerCase() || '';
+    const rawToken = searchParams.get('token');
+    const token = (rawToken && rawToken !== 'undefined' && rawToken !== 'null') ? rawToken : '';
 
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [itemLoading, setItemLoading] = useState<string | null>(null);
     const [activeFilter, setActiveFilter] = useState<'Active' | 'Completed'>('Active'); 
     const [timeframe, setTimeframe] = useState('today');
+    const [realBranchId, setRealBranchId] = useState<string | null>(null);
+    const [isTokenInvalid, setIsTokenInvalid] = useState(false);
 
     const filters = ['Active', 'Completed'];
 
     useEffect(() => {
-        if(!branch?._id || !pusherClient) return;
+        if(!realBranchId || !pusherClient || !token) return;
 
-        const channelName = `branch-${branch._id}`;
+        const channelName = `branch-${realBranchId}`;
         const channel = pusherClient.subscribe(channelName);
 
         const handleNewOrder = (incomingOrder: any) =>  {
             console.log('🔥 NEW ORDER RECEIVED VIA PUSHER:', incomingOrder);
             setOrders(prevOrder => [incomingOrder, ...prevOrder]);
+
+            // 🚀 NEW: Smart Filter for the Kitchen Bell
+            const orderId = incomingOrder._id || incomingOrder.orderNumber;
+            
+            // 1. Block duplicate sounds
+            if (processedKDSOrders.has(orderId)) return;
+            processedKDSOrders.add(orderId);
+            setTimeout(() => processedKDSOrders.delete(orderId), 10000);
+
+            // 2. Check if this specific zone has to cook anything for this order
+            const hasItemsForThisZone = incomingOrder.items.some((item: any) => {
+                const zName = typeof item.zoneId === 'object' ? item.zoneId?.name?.toLowerCase() : '';
+                return zName === targetZone;
+            });
+
+            // 3. Only play the sound if the order belongs to them
+            if (hasItemsForThisZone) {
+                try {
+                    const audio = new Audio('/ding.mp3'); 
+                    audio.play().catch(e => console.log("KDS Audio Blocked - Tap the screen first!"));
+                } catch (error) {
+                    console.error("Audio error");
+                }
+            }
         };
 
         channel.bind('new-order', handleNewOrder);
@@ -57,34 +86,42 @@ export default function ZoneOrders() {
         return () => {
             channel.unbind('new-order', handleNewOrder);
         }
-    }, [branch?._id]);
+    }, [realBranchId, token]);
 
     const fetchOrders = useCallback(async (showLoadingState = false) => {
         if (showLoadingState) setIsLoading(true);
         try {
-            const res = await fetch(`/api/user-admin/${branchId}/orders?timeframe=${timeframe}`);
+            const res = await fetch(`/api/user-admin/kds/orders?timeframe=${timeframe}&token=${token}`);
             const data = await res.json();
             
             if (res.ok) {
                 setOrders(data.orders);
+                setRealBranchId(data.branchId);
+            } else {
+                // 🚀 NEW: Catch the exact 401 error and trigger the expired UI
+                if (res.status === 401) {
+                    setIsTokenInvalid(true);
+                }
+                console.error("API Error:", data.error);
             }
         } catch (error) {
             console.error("Failed to fetch orders:", error);
         } finally {
             if (showLoadingState) setIsLoading(false);
         }
-    }, [branchId, timeframe]); 
+    }, [timeframe, token]); 
 
     useEffect(() => {
-        fetchOrders(true); 
-    }, [fetchOrders]); 
+        if (branchSlug && token) {
+            fetchOrders(true); 
+        }
+    }, [fetchOrders, branchSlug, token]); 
 
-    // 🚀 NEW: Marks a specific item as "Ready" instead of the whole order
     const markItemReady = async (orderId: string, itemId: string) => {
         setItemLoading(itemId);
 
         try {
-            const res = await fetch(`/api/user-admin/${branchId}/orders/items`, {
+            const res = await fetch(`/api/user-admin/kds/orders/items?token=${token}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ orderId, itemId, itemStatus: 'Ready' })
@@ -92,7 +129,6 @@ export default function ZoneOrders() {
 
             if (!res.ok) throw new Error("Failed to update item status");
 
-            // Update local state instantly for a snappy UI
             setOrders(prev => prev.map(order => {
                 if (order._id !== orderId) return order;
                 return {
@@ -119,12 +155,48 @@ export default function ZoneOrders() {
         return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
     }
 
-    // 🚀 NEW: Deep filtering to isolate ONLY this zone's tickets
+    // ==========================================
+    // 🚀 Missing Token UI
+    // ==========================================
+    if (!token) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+                <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center border border-gray-100 animate-in zoom-in-95 duration-300">
+                    <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Lock size={36} strokeWidth={2.5} />
+                    </div>
+                    <h2 className="text-2xl font-bold text-slate-800 mb-3">Access Denied</h2>
+                    <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+                        This Kitchen Display screen is missing its secure access token. Please ask your manager to generate and share the correct <span className="font-semibold text-slate-700">KDS Magic Link</span> from the admin dashboard.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    // ==========================================
+    // 🚀 NEW: Expired/Invalid Token UI
+    // ==========================================
+    if (isTokenInvalid) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+                <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center border border-gray-100 animate-in zoom-in-95 duration-300">
+                    <div className="w-20 h-20 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <AlertTriangle size={36} strokeWidth={2.5} />
+                    </div>
+                    <h2 className="text-2xl font-bold text-slate-800 mb-3">Link Expired</h2>
+                    <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+                        The security token for this link is invalid or has been reset by the manager. Please request a new Magic Link to access this station.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+    // ==========================================
+
     const filteredOrders = orders.filter(order => {
-        // 1. Match Active/Completed status
         if (order.status !== activeFilter) return false;
         
-        // 2. Check if this order has ANY items belonging to this specific zone
         const hasItemsForThisZone = order.items.some(item => {
             const zoneName = typeof item.zoneId === 'object' ? item.zoneId?.name?.toLowerCase() : '';
             return zoneName === targetZone;
@@ -187,7 +259,6 @@ export default function ZoneOrders() {
                     </div>
                 ) : (
                     filteredOrders.map(order => {
-                        // Isolate only the items meant for this screen
                         const zoneItems = order.items.filter(item => {
                             const zName = typeof item.zoneId === 'object' ? item.zoneId?.name?.toLowerCase() : '';
                             return zName === targetZone;

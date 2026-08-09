@@ -235,7 +235,7 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
                         onClick={() => {
                             showToast("Opening category manager...", "error"); // Adjusted text slightly
                             closeModal();
-                            // 🚀 FIX: Deep link directly to the modal
+                            // Deep link directly to the modal
                             router.push(`/dashboard/${branch?.slug}/menu?modal=new-category`); 
                         }}
                         className="w-full rounded-lg bg-red-50 border border-red-100 px-3 py-2 flex justify-between items-center cursor-pointer hover:bg-red-100 transition-colors"
@@ -267,7 +267,7 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
                             showToast("Please create a table zone first", "error");
                             closeModal();
                             // Update this route to wherever your zone/table management lives!
-                            router.push(`/dashboard/${branchId}/tables`); 
+                            router.push(`/dashboard/${branch?.slug}/settings/tables?tab=Zones`); 
                         }}
                         className="w-full rounded-lg bg-red-50 border border-red-100 px-3 py-2 flex justify-between items-center cursor-pointer hover:bg-red-100 transition-colors"
                     >

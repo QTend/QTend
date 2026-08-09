@@ -10,14 +10,24 @@ import Area from "./Area";
 import Zones from "./Zones";
 import AddZoneModal from "./AddZoneModal";
 import { useZone } from "@/context/ZoneContext";
+import { useSearchParams } from "next/navigation";
 
 
 
 export default function TablesSettings() {
-  const  {branch} = useUserAdmin()
+  const {branch} = useUserAdmin()
   const {tables, zones} = useZone()
   const [activeTab, setActiveTab] = useState('Areas');
   const [areaDrop, setAreaDrop] = useState(false)
+
+  const params = useSearchParams()
+  const zone = params.get('tab')
+
+  useEffect(() => {
+    if(zone){
+      setActiveTab(zone)
+    }
+  }, [])
 
   const tabs = ['Areas', 'Zones']
   
@@ -193,7 +203,7 @@ export default function TablesSettings() {
       {/* 4. NEW QR Code Display Modal (unchanged) */}
       {qrModalTable && (
         <Modal center={true} onClick={() => setQrModalTable(null)}>
-          <div className="bg-white p-8 rounded-2xl flex flex-col items-center shadow-xl w-full max-w-[400px] relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white p-8 rounded-2xl flex flex-col items-center shadow-xl w-full max-w-100 relative animate-in fade-in zoom-in-95 duration-200">
             <button 
               onClick={() => setQrModalTable(null)}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"

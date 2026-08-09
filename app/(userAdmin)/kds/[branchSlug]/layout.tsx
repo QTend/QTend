@@ -26,11 +26,6 @@ export default async function UserAdminDashboardLayout({
   params: Promise<{branchSlug: string}>
 }>) {
   const { branchSlug } = await params; 
-  const session: any = await getServerSession(authOptions)
-
-  if (!session?.user?.id) {
-    redirect('/auth/sign-in');
-  }
 
   const data = await getCurrentBranch(branchSlug)
 

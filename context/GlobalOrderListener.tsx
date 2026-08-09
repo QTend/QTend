@@ -5,9 +5,8 @@ import { useUserAdmin } from '@/context/UserAdminContext';
 import { useToast } from '@/context/ToastContext';
 import { pusherClient } from '@/utils/pusher/pusherClient';
 
-// 1. THIS LIVES OUTSIDE THE COMPONENT NOW
-// It creates a single, global memory bank for the entire browser tab.
-const processedOrders = new Set<string>();
+// 🚀 Memory bank specifically for "Ready" orders to prevent double-chimes
+const processedReadyOrders = new Set<string>();
 
 export default function GlobalOrderListener() {
     const { branch } = useUserAdmin();
@@ -19,33 +18,37 @@ export default function GlobalOrderListener() {
         const channelName = `branch-${branch._id}`;
         const channel = pusherClient.subscribe(channelName);
 
-       const handleNewOrder = (incomingOrder: any) => {
+        // 🚀 UPDATED: Now we listen for item updates, not new orders
+        const handleItemUpdated = (data: any) => {
+            // Smart Filter: ONLY ring the bell if the entire ticket is ready!
+            if (!data.isOrderFullyReady) return;
 
-            const orderId = incomingOrder._id || incomingOrder.orderNumber || JSON.stringify(incomingOrder);
+            const orderId = data.orderId;
 
-            if (processedOrders.has(orderId)) {
-                console.log("🛑 Blocked duplicate!", orderId);
-                return; 
+            if (processedReadyOrders.has(orderId)) {
+                return; // Block duplicate events
             }
 
-            processedOrders.add(orderId);
-            setTimeout(() => processedOrders.delete(orderId), 10000);
+            processedReadyOrders.add(orderId);
+            setTimeout(() => processedReadyOrders.delete(orderId), 10000);
 
             try {
-                const audio = new Audio('/ding.mp3');
-                audio.play().catch(e => console.log("Audio blocked"));
+                // Front-of-House polite chime
+                const audio = new Audio('/chime.mp3'); 
+                audio.play().catch(e => console.log("Audio blocked by browser"));
             } catch (error) {
                 console.error("Audio error");
             }
 
-            showToast(`New order!`, "success");
+            showToast(`Order is Ready to Serve!`, "success");
         };
 
-        channel.bind('new-order', handleNewOrder);
+        channel.bind('item-updated', handleItemUpdated);
 
         return () => {
-            channel.unbind('new-order', handleNewOrder);
-            pusherClient?.unsubscribe(channelName);
+            channel.unbind('item-updated', handleItemUpdated);
+            // NOTE: We removed pusherClient.unsubscribe(channelName) here! 
+            // The Admin Orders component is using this same channel, so we don't want to kill it.
         };
     }, [branch?._id, showToast]);
 

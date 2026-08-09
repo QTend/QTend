@@ -12,6 +12,12 @@ const ZoneSchema = new mongoose.Schema({
         required: true,
         trim: true 
     },
+    magicToken: {
+        type: String,
+        unique: true,
+        sparse: true,
+        index: true  
+    },
     isActive: { 
         type: Boolean, 
         default: true 
