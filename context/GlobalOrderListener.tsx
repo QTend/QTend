@@ -5,11 +5,12 @@ import { useUserAdmin } from '@/context/UserAdminContext';
 import { useToast } from '@/context/ToastContext';
 import { pusherClient } from '@/utils/pusher/pusherClient';
 
-// 🚀 Memory bank specifically for "Ready" orders to prevent double-chimes
-const processedReadyOrders = new Set<string>();
+// 🚀 A single global memory bank using prefixes ('new-' and 'ready-') 
+// to prevent double-chimes without collisions.
+const processedAudioEvents = new Set<string>();
 
 export default function GlobalOrderListener() {
-    const { branch } = useUserAdmin();
+    const { branch, hasActiveZones } = useUserAdmin(); 
     const { showToast } = useToast();
 
     useEffect(() => {
@@ -18,19 +19,46 @@ export default function GlobalOrderListener() {
         const channelName = `branch-${branch._id}`;
         const channel = pusherClient.subscribe(channelName);
 
-        // 🚀 UPDATED: Now we listen for item updates, not new orders
-        const handleItemUpdated = (data: any) => {
-            // Smart Filter: ONLY ring the bell if the entire ticket is ready!
-            if (!data.isOrderFullyReady) return;
+        // ==========================================
+        // 1. NEW ORDER LISTENER
+        // ==========================================
+        const handleNewOrder = (incomingOrder: any) => {
+            console.log('sound 2', hasActiveZones)
+            // 🚀 SMART FILTER: If they have zones, stay quiet! The KDS iPad will ding instead.
+            if (hasActiveZones) return; 
 
-            const orderId = data.orderId;
+            const orderId = `new-${incomingOrder._id || incomingOrder.orderNumber}`;
 
-            if (processedReadyOrders.has(orderId)) {
-                return; // Block duplicate events
+            if (processedAudioEvents.has(orderId)) return;
+            
+            processedAudioEvents.add(orderId);
+            setTimeout(() => processedAudioEvents.delete(orderId), 10000);
+
+            try {
+                // Classic ding for new orders
+                const audio = new Audio('/ding.mp3');
+                audio.play().catch(e => console.log("Audio blocked by browser"));
+            } catch (error) {
+                console.error("Audio error");
             }
 
-            processedReadyOrders.add(orderId);
-            setTimeout(() => processedReadyOrders.delete(orderId), 10000);
+            showToast(`New order received!`, "success");
+        };
+
+        // ==========================================
+        // 2. KITCHEN "READY" LISTENER
+        // ==========================================
+        const handleItemUpdated = (data: any) => {
+            // 🚀 SMART FILTER: Only chime if the entire ticket is ready
+            if (!data.isOrderFullyReady) return;
+            console.log('sound', hasActiveZones)
+
+            const orderId = `ready-${data.orderId}`; 
+
+            if (processedAudioEvents.has(orderId)) return;
+            
+            processedAudioEvents.add(orderId);
+            setTimeout(() => processedAudioEvents.delete(orderId), 10000);
 
             try {
                 // Front-of-House polite chime
@@ -43,14 +71,17 @@ export default function GlobalOrderListener() {
             showToast(`Order is Ready to Serve!`, "success");
         };
 
+        // Bind BOTH listeners
+        channel.bind('new-order', handleNewOrder);
         channel.bind('item-updated', handleItemUpdated);
 
         return () => {
+            // Clean up both listeners
+            channel.unbind('new-order', handleNewOrder);
             channel.unbind('item-updated', handleItemUpdated);
-            // NOTE: We removed pusherClient.unsubscribe(channelName) here! 
-            // The Admin Orders component is using this same channel, so we don't want to kill it.
+            // We do NOT unsubscribe the channel here, so the Orders page stays connected!
         };
-    }, [branch?._id, showToast]);
+    }, [branch?._id, hasActiveZones, showToast]); 
 
     return null;
 }

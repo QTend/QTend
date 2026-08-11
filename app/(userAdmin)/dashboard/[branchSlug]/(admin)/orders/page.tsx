@@ -27,7 +27,7 @@ interface Order {
 }
 
 export default function KitchenOrders() {
-    const { branch } = useUserAdmin()
+    const { branch, hasActiveZones } = useUserAdmin()
     const branchId = branch?._id;
 
     const [orders, setOrders] = useState<Order[]>([])
@@ -244,7 +244,7 @@ export default function KitchenOrders() {
                         const isActive = order.status === 'Active';
                         
                         // 🚀 NEW: Determine if EVERY item in the order is 'Ready'
-                        const isFullyReady = order.items.length > 0 && order.items.every(item => item.itemStatus === 'Ready');
+                        const isFullyReady = hasActiveZones && order.items.length > 0 && order.items.every(item => item.itemStatus === 'Ready');
 
                         return (
                             <div 
@@ -323,16 +323,17 @@ export default function KitchenOrders() {
                                                                 )}
                                                             </div>
 
-                                                            {/* 🚀 NEW: Individual Item Status indicator & Price */}
                                                             <div className="flex items-center gap-3">
-                                                                {item.itemStatus === 'Ready' ? (
-                                                                    <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
-                                                                        <CheckCircle size={12} /> Ready
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-md">
-                                                                        <Clock size={12} /> Pending
-                                                                    </span>
+                                                                {hasActiveZones && (
+                                                                    item.itemStatus === 'Ready' ? (
+                                                                        <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
+                                                                            <CheckCircle size={12} /> Ready
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-md">
+                                                                            <Clock size={12} /> Pending
+                                                                        </span>
+                                                                    )
                                                                 )}
                                                                 <p className="text-gray-500 font-medium whitespace-nowrap min-w-[60px] text-right">
                                                                     ₦{(item.price * item.quantity).toLocaleString()}
