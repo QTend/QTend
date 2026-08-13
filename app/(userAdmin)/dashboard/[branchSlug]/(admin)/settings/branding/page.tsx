@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/context/ToastContext"; 
 import { useUserAdmin } from "@/context/UserAdminContext";
+import imageCompression from "browser-image-compression";
 
 
 
@@ -29,16 +30,31 @@ const Branding = () => {
     previewUrl: branch?.branding?.coverImage?.url || "",
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "logo" | "cover") => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: "logo" | "cover") => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const previewUrl = URL.createObjectURL(file);
+    try {
+      // 🚀 THE MAGIC: Set different rules for Logos vs Covers
+      const options = {
+        maxSizeMB: type === "logo" ? 0.5 : 1.5, // Logos compress to < 500KB, Covers to < 1.5MB
+        maxWidthOrHeight: type === "logo" ? 800 : 1920, // Resize dimensions
+        useWebWorker: true, // Speeds it up by running in the background
+      };
 
-    if (type === "logo") {
-      setLogoState({ file, previewUrl });
-    } else {
-      setCoverState({ file, previewUrl });
+      // Show a quick loading toast if you want, or just let it run (it takes milliseconds)
+      const compressedFile = await imageCompression(file, options);
+      
+      const previewUrl = URL.createObjectURL(compressedFile);
+
+      if (type === "logo") {
+        setLogoState({ file: compressedFile, previewUrl });
+      } else {
+        setCoverState({ file: compressedFile, previewUrl });
+      }
+    } catch (error) {
+      console.error("Compression error:", error);
+      showToast("Error processing image. Please try a different file.", "error");
     }
   };
 

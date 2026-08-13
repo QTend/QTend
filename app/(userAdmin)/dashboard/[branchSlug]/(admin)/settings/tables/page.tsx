@@ -153,7 +153,7 @@ export default function TablesSettings() {
         
       </div>
 
-      {/* 2. Menu URL Card (unchanged) */}
+      {/* 2. Menu URL Card */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
         <h2 className="text-base font-semibold text-[#222222]">Menu URL</h2>
         <p className="text-xs text-[#888888] mb-5">Your public menu link</p>
@@ -167,13 +167,23 @@ export default function TablesSettings() {
               <span className="text-slate-800">/menu</span>
             </p>
           </div>
-          <button 
-            onClick={() => window.open(`${baseUrl}/${branch.slug}/menu`, '_blank')}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap"
-          >
-            <ExternalLink size={16} className="text-slate-400" />
-            Open
-          </button>
+          
+          {/* 🚀 NEW: Added the button group here */}
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setQrModalTable({ name: 'General Menu', url: `${baseUrl}/${branch.slug}/menu` })}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap"
+            >
+              View QR
+            </button>
+            <button 
+              onClick={() => window.open(`${baseUrl}/${branch.slug}/menu`, '_blank')}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-[#6da544] bg-[#6da544] text-white rounded-lg text-sm font-medium hover:bg-[#5b8a39] transition-colors whitespace-nowrap"
+            >
+              <ExternalLink size={16} className="text-white" />
+              Open
+            </button>
+          </div>
         </div>
       </div>
 
@@ -213,9 +223,9 @@ export default function TablesSettings() {
 
             <h3 className="text-xl font-bold text-slate-800 mb-2">Table {qrModalTable.name}</h3>
             
-            <p className="text-xs text-gray-500 mb-6 truncate max-w-full px-4 text-center">
-              {qrModalTable.url}
-            </p>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">
+              {qrModalTable.name === 'General Menu' ? 'General Menu QR' : `Table ${qrModalTable.name}`}
+            </h3>
 
             <div ref={qrRef} className="p-4 bg-white border-2 border-slate-100 rounded-2xl mb-8 shadow-sm">
               <QRCodeCanvas 

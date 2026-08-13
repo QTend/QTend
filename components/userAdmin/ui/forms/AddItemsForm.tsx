@@ -9,6 +9,7 @@ import { useCategory } from "@/context/CategoryContext";
 import { useZone } from "@/context/ZoneContext";
 import { useRouter } from "next/navigation";
 import { useUserAdmin } from "@/context/UserAdminContext";
+import imageCompression from 'browser-image-compression';
 
 interface Props {
     closeModal: () => void;
@@ -75,10 +76,24 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
         updateItemData(index, 'isAvailable', !currentState); 
     };
 
-    const handleFileChange = (index: number | 'new', selectedFile: File | undefined) => {
-        if (selectedFile && selectedFile.type.startsWith("image/")) {
-            updateItemData(index, 'file', selectedFile);
-            updateItemData(index, 'preview', URL.createObjectURL(selectedFile));
+    const handleFileChange = async (index: number | 'new', selectedFile: File | undefined) => {
+        if (!selectedFile || !selectedFile.type.startsWith("image/")) return;
+
+        try {
+            // 🚀 THE MAGIC: Compress food photos to be fast and lightweight
+            const options = {
+                maxSizeMB: 0.5, // 500KB is plenty for crisp menu item photos
+                maxWidthOrHeight: 800, 
+                useWebWorker: true, 
+            };
+
+            const compressedFile = await imageCompression(selectedFile, options);
+            
+            updateItemData(index, 'file', compressedFile);
+            updateItemData(index, 'preview', URL.createObjectURL(compressedFile));
+        } catch (error) {
+            console.error("Compression error:", error);
+            showToast("Failed to process image. Please try a different file.", "error");
         }
     };
 

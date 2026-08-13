@@ -67,10 +67,7 @@ const VerifyEmailContent = () => {
             sessionStorage.removeItem('temp_pass');
 
             if (loginRes?.ok) {
-                // Successfully logged in! Go to the next onboarding step
-                setTimeout(() => {
-                    router.push('/onboarding/about-business');
-                }, 1000);
+                router.push('/onboarding/about-business');
                 return;
             }
         }
