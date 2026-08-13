@@ -4,6 +4,7 @@ import MenuItem from "@/utils/models/MenuItem";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
 import MenuCategory from "@/utils/models/MenuCategory";
+import Zone from "@/utils/models/Zone";
 import { deleteCloudinaryImage } from "@/utils/cloudinary";
 
 type RouteParams = {
