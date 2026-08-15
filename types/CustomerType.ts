@@ -7,6 +7,10 @@ export interface CustomerProps {
     name: string;
     address: string;
     slug: string;
+    coverImage: {
+      url: string;
+      publicId: string
+    };
   };
   menu: {
     categories: CategoryProps[];

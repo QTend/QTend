@@ -77,10 +77,9 @@ const SummaryPage = () => {
         
         localStorage.setItem('my_orders', JSON.stringify(updatedOrders));
 
-        if (setCart) setCart([]); 
-        localStorage.removeItem('cart');
+        // if (setCart) setCart([]); 
 
-       router.push(`/${branch.restaurant.slug}/order-success/${officialOrder._id}?table=${table}`);
+       router.replace(`/${branch.restaurant.slug}/order-success/${officialOrder._id}?table=${table}`);
 
     } catch (error: any) {
         console.error("Order error:", error);

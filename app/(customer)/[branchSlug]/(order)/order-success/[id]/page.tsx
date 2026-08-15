@@ -1,7 +1,9 @@
 'use client'
 
 import Button from '@/components/customer/ui/Button'
+import { useCart } from '@/context/CartContext'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState, use } from 'react'
 import { FiCheckCircle } from 'react-icons/fi'
 
@@ -9,12 +11,14 @@ import { FiCheckCircle } from 'react-icons/fi'
 const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: string }> }) => {
   const resolvedParams = use(params);
    const { branchSlug, id } = resolvedParams;
+   const router = useRouter()
    
 
   
   const [showModal, setShowModal] = useState(false)
   const [cooldown, setCooldown] = useState(0)
   const [exactOrder, setExactOrder] = useState<any>(null)
+
 
   // ---> Look up the exact matching ID inside history <---
   useEffect(() => {
@@ -24,6 +28,7 @@ const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: str
       
       if (foundMatch) {
         setExactOrder(foundMatch)
+         localStorage.removeItem('cart');
       }
     } catch (e) {
       console.error("Could not trace order history matches", e);
@@ -38,9 +43,8 @@ const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: str
     return () => clearInterval(timer)
   }, [cooldown])
 
-  const handleWaiter = () => {
-    setShowModal(true)
-    setCooldown(120) 
+  const handleNextMenu = () => {
+    router.replace(`/${branchSlug}/menu?table=${exactOrder?.tableNumber}`)
   }
 
   return (
@@ -74,40 +78,13 @@ const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: str
         </section>
 
       {/* Buttons */}
-      <Link href={`/${branchSlug}/menu?table=${exactOrder?.tableNumber}`} className="block px-5 mt-7">
+      <div className='mx-5'>
         <Button
-          onClick={() =>{ }}
+          onClick={handleNextMenu}
           bg='#F97316'
           text={'Back to Menu'}
         />
-      </Link>
-
-      <div className="px-5 mt-3 mb-6">
-        <Button
-          onClick={handleWaiter}
-          bg='#fff'
-          text={cooldown > 0 ? `Notify again (${cooldown}s)` : 'Request Waiter'}
-          borderColor='#F97316'
-          color='#F97316'
-          disabled={cooldown > 0}
-        />
       </div>
-    
-
-      {/* MODAL */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-3xl p-6 w-[85%] max-w-sm text-center">
-            <h3 className="text-[#4B2E05] font-bold text-xl mb-2">
-              Request Sent
-            </h3>
-            <p className="text-gray-500 text-sm mb-6">
-              A request for waiter assistance has been sent. You can notify again after 2 minutes.
-            </p>
-            <Button onClick={() => setShowModal(false)} bg="#F97316" text="Okay" />
-          </div>
-        </div>
-      )}
     </section>
   )
 }

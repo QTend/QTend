@@ -1,4 +1,7 @@
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
+import { getServerSession } from "next-auth";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
 
 export default async function AuthLayout({
@@ -8,7 +11,11 @@ export default async function AuthLayout({
 }>) {
 
  
+ const session: any = await getServerSession(authOptions)
 
+  if (session?.user?.id) {
+    redirect('/dashboard-redirect');
+  }
 
   return (
     <section className="relative min-h-screen w-full">

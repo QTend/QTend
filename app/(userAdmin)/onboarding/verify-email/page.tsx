@@ -72,7 +72,7 @@ const VerifyEmailContent = () => {
             }
         }
 
-        // 🚀 FALLBACK: If sessionStorage was empty or login failed for some reason, 
+        // FALLBACK: If sessionStorage was empty or login failed for some reason, 
         // force them to manually log in instead of crashing.
         setTimeout(() => {
             router.push('/auth/sign-in'); // Note: Adjust this route to your actual sign-in page
