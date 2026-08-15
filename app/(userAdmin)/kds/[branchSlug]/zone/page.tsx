@@ -2,7 +2,7 @@
 
 import { pusherClient } from "@/utils/pusher/pusherClient";
 // 🚀 NEW: Added AlertTriangle for the expired link screen
-import { SlidersVertical, CheckCircle, ChevronDown, Lock, AlertTriangle } from "lucide-react";
+import { SlidersVertical, CheckCircle, ChevronDown, Lock, AlertTriangle, VolumeX } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useParams } from "next/navigation"; 
 
@@ -43,6 +43,15 @@ export default function ZoneOrders() {
     const [timeframe, setTimeframe] = useState('today');
     const [realBranchId, setRealBranchId] = useState<string | null>(null);
     const [isTokenInvalid, setIsTokenInvalid] = useState(false);
+    const [audioUnlocked, setAudioUnlocked] = useState(false);
+
+    const handleUnlockAudio = () => {
+        const silentAudio = new Audio('/ding.mp3');
+        silentAudio.volume = 0;
+        silentAudio.play()
+            .then(() => setAudioUnlocked(true))
+            .catch(e => console.error(e));
+    };
 
     const filters = ['Active', 'Completed'];
 
@@ -212,6 +221,15 @@ export default function ZoneOrders() {
                 <h1 className="text-2xl font-bold text-[#4B2E05] capitalize mb-4">
                     {targetZone ? `${targetZone} Station` : 'Prep Station'}
                 </h1>
+                {!audioUnlocked && (
+                    <button 
+                        onClick={handleUnlockAudio}
+                        className="flex items-center gap-1.5 bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-sm font-bold border border-red-200 animate-pulse"
+                    >
+                        <VolumeX size={16} />
+                        Tap to Enable Sounds
+                    </button>
+                )}
                 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="bg-white p-1.5 flex items-center gap-1 rounded-2xl shadow-sm border border-gray-100 w-fit">

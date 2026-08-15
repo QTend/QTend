@@ -1,17 +1,29 @@
 'use client'
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useUserAdmin } from '@/context/UserAdminContext';
 import { useToast } from '@/context/ToastContext';
 import { pusherClient } from '@/utils/pusher/pusherClient';
+import { VolumeX } from 'lucide-react'; // 🚀 NEW IMPORT
 
-// 🚀 A single global memory bank using prefixes ('new-' and 'ready-') 
-// to prevent double-chimes without collisions.
 const processedAudioEvents = new Set<string>();
 
 export default function GlobalOrderListener() {
     const { branch, hasActiveZones } = useUserAdmin(); 
     const { showToast } = useToast();
+    const [audioUnlocked, setAudioUnlocked] = useState(false); // 🚀 NEW STATE
+
+    // 🚀 NEW: The Unlock Function
+    const handleUnlockAudio = () => {
+        const silentAudio = new Audio('/ding.mp3');
+        silentAudio.volume = 0; // Play silently just to unlock the browser engine
+        silentAudio.play()
+            .then(() => {
+                setAudioUnlocked(true);
+                showToast("Order sounds enabled!", "success");
+            })
+            .catch(e => console.error("Could not unlock audio:", e));
+    };
 
     useEffect(() => {
         if (!branch?._id || !pusherClient) return;
@@ -19,25 +31,18 @@ export default function GlobalOrderListener() {
         const channelName = `branch-${branch._id}`;
         const channel = pusherClient.subscribe(channelName);
 
-        // ==========================================
-        // 1. NEW ORDER LISTENER
-        // ==========================================
         const handleNewOrder = (incomingOrder: any) => {
-            console.log('sound 2', hasActiveZones)
-            // 🚀 SMART FILTER: If they have zones, stay quiet! The KDS iPad will ding instead.
             if (hasActiveZones) return; 
 
             const orderId = `new-${incomingOrder._id || incomingOrder.orderNumber}`;
-
             if (processedAudioEvents.has(orderId)) return;
             
             processedAudioEvents.add(orderId);
             setTimeout(() => processedAudioEvents.delete(orderId), 10000);
 
             try {
-                // Classic ding for new orders
                 const audio = new Audio('/ding.mp3');
-                audio.play().catch(e => console.log("Audio blocked by browser"));
+                audio.play().catch(e => console.log("Audio blocked - waiting for user unlock"));
             } catch (error) {
                 console.error("Audio error");
             }
@@ -45,25 +50,18 @@ export default function GlobalOrderListener() {
             showToast(`New order received!`, "success");
         };
 
-        // ==========================================
-        // 2. KITCHEN "READY" LISTENER
-        // ==========================================
         const handleItemUpdated = (data: any) => {
-            // 🚀 SMART FILTER: Only chime if the entire ticket is ready
             if (!data.isOrderFullyReady) return;
-            console.log('sound', hasActiveZones)
 
             const orderId = `ready-${data.orderId}`; 
-
             if (processedAudioEvents.has(orderId)) return;
             
             processedAudioEvents.add(orderId);
             setTimeout(() => processedAudioEvents.delete(orderId), 10000);
 
             try {
-                // Front-of-House polite chime
                 const audio = new Audio('/chime.mp3'); 
-                audio.play().catch(e => console.log("Audio blocked by browser"));
+                audio.play().catch(e => console.log("Audio blocked - waiting for user unlock"));
             } catch (error) {
                 console.error("Audio error");
             }
@@ -71,17 +69,29 @@ export default function GlobalOrderListener() {
             showToast(`Order is Ready to Serve!`, "success");
         };
 
-        // Bind BOTH listeners
         channel.bind('new-order', handleNewOrder);
         channel.bind('item-updated', handleItemUpdated);
 
         return () => {
-            // Clean up both listeners
             channel.unbind('new-order', handleNewOrder);
             channel.unbind('item-updated', handleItemUpdated);
-            // We do NOT unsubscribe the channel here, so the Orders page stays connected!
         };
     }, [branch?._id, hasActiveZones, showToast]); 
+
+    // 🚀 NEW: Show a floating button until the user clicks it once
+    if (!audioUnlocked) {
+        return (
+            <div className="fixed bottom-6 right-6 z-50">
+                <button 
+                    onClick={handleUnlockAudio}
+                    className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-full shadow-lg font-bold transition-all animate-bounce"
+                >
+                    <VolumeX size={20} />
+                    Enable Order Sounds
+                </button>
+            </div>
+        );
+    }
 
     return null;
 }
