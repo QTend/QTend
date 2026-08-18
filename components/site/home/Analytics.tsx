@@ -7,9 +7,9 @@ import Image from 'next/image'
 
 const analytics = [
     {id: 1, icon: DollarSign, label:"Today's Revenue", value: '$8,420'},
-    {id: 2, icon: Clock, label:"Today's Revenue", value: '$8,420'},
-    {id: 3, icon: Star, label:"Today's Revenue", value: '$8,420'},
-    {id: 4, icon: Table, label:"Today's Revenue", value: '$8,420'},
+    {id: 2, icon: Clock, label:"Peak Ordering Time", value: '2–4pm'},
+    {id: 3, icon: Star, label:"Best-selling Item", value: 'Salmon'},
+    {id: 4, icon: Table, label:"Table Activity Rate", value: '94%'},
 ]
 
 export const Analytics = () => {

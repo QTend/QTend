@@ -9,9 +9,9 @@ const briefs = [
     { id: 5, lebel: 'Works on any smartphone', icon: Wifi }
 ]
 
-export const Brief = () => {
+export const Brief = ({bgcolor}: {bgcolor?:string}) => {
   return (
-    <div className="bg-white py-6 md:py-8 w-full border-b border-gray-50">
+    <div className={`${bgcolor ? `bg-[${bgcolor}]` : 'bg-white'}  py-6 md:py-8 w-full border-b border-[#E8E8E8]`}>
         <div className="flex flex-wrap items-center justify-center gap-y-4 gap-x-4 md:gap-x-6 max-w-7xl mx-auto px-4">
             {briefs.map(b => {
                 const IconComponent = b.icon;
