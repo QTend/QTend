@@ -29,6 +29,9 @@ export const CustomerMenuInterface = () => {
   const [showOrdersModal, setShowOrdersModal] = useState(false)
   const [myOrders, setMyOrders] = useState<any[]>([]) 
 
+
+  const isViewOnly = !!table;
+
   useEffect(() => {
     try {
       const storedCart = localStorage.getItem('cart')
@@ -175,7 +178,10 @@ export const CustomerMenuInterface = () => {
   return (
     <section className={showSummary ? 'pb-40' : ''}>
      {/* ================= HEADER ================= */}
-      <section className='relative w-full min-h-75 flex flex-col justify-between overflow-hidden'>
+      <section 
+      className='relative w-full  flex flex-col justify-between overflow-hidden'
+      style={{minHeight: isViewOnly ? 300 : 200}}  
+      >
         
         {/* Background Image & Gradient Overlay */}
         <div className="absolute inset-0 z-0">
@@ -200,24 +206,34 @@ export const CustomerMenuInterface = () => {
             <h2 className='text-4xl md:text-5xl font-black text-white leading-[1.05] mb-3 tracking-tight drop-shadow-lg'>
               {branch.restaurant.name}
             </h2>
-            <p className='text-white/90 text-lg md:text-xl font-bold drop-shadow-md tracking-wide'>
-              {table ? (table.toLowerCase().includes('table') ? table : `Table ${table}`) : ''}
-            </p>
+            {
+              isViewOnly && (
+                 <p className='text-white/90 text-lg md:text-xl font-bold drop-shadow-md tracking-wide'>
+                  {table ? (table.toLowerCase().includes('table') ? table : `Table ${table}`) : ''}
+                </p>
+              )
+            }
+           
           </div>
 
           {/* Action Buttons */}
           <div className='flex flex-col items-end gap-3 shrink-0'>
             
             {/* Call Waiter Pill */}
-            <button 
-              onClick={() => setShowWaiterModal(true)}
-              className="flex items-center gap-2 bg-[#68A544] hover:bg-[#5b903c] text-white py-2 px-4 rounded-full shadow-lg transition-transform active:scale-95 touch-manipulation"
-            >
-              <svg stroke="currentColor" fill="none" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="15" width="15" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-              </svg>
-              <span className="text-sm font-semibold tracking-wide">Call a waiter</span>
-            </button>
+            {
+              isViewOnly && (
+                 <button 
+                  onClick={() => setShowWaiterModal(true)}
+                  className="flex items-center gap-2 bg-[#68A544] hover:bg-[#5b903c] text-white py-2 px-4 rounded-full shadow-lg transition-transform active:scale-95 touch-manipulation"
+                >
+                  <svg stroke="currentColor" fill="none" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="15" width="15" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                  </svg>
+                  <span className="text-sm font-semibold tracking-wide">Call a waiter</span>
+                </button>
+              )
+            }
+           
 
             {/* Active Orders Badge */}
             {myOrders.length > 0 && (
@@ -293,9 +309,14 @@ export const CustomerMenuInterface = () => {
                       </div>
                       <div className="flex flex-col justify-between items-end py-1">
                         <p className="text-[#F97316] font-bold text-lg">₦{food.price.toLocaleString()}</p>
-                        <div onClick={() => hasAdded ? removeCart(food._id || '') : addToCart(food)} className={`w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-all shadow-sm touch-manipulation active:scale-90 ${hasAdded ? 'bg-green-500' : 'bg-[#F97316]'}`}>
-                          <GoPlus color="white" size={24} className={hasAdded ? "rotate-45 transition-transform pointer-events-none" : "transition-transform pointer-events-none"} />
-                        </div>
+                        {
+                          isViewOnly && (
+                            <div onClick={() => hasAdded ? removeCart(food._id || '') : addToCart(food)} className={`w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-all shadow-sm touch-manipulation active:scale-90 ${hasAdded ? 'bg-green-500' : 'bg-[#F97316]'}`}>
+                              <GoPlus color="white" size={24} className={hasAdded ? "rotate-45 transition-transform pointer-events-none" : "transition-transform pointer-events-none"} />
+                            </div>
+                          )
+                        }
+                        
                       </div>
                     </div>
                   )
@@ -323,6 +344,7 @@ export const CustomerMenuInterface = () => {
         cart={cart}
         addToCart={addToCart}
         removeCart={removeCart}
+        isViewOnly={isViewOnly}
       />
 
       <MyOrdersModal 
