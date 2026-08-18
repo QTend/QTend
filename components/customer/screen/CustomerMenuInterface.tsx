@@ -29,6 +29,9 @@ export const CustomerMenuInterface = () => {
   const [showOrdersModal, setShowOrdersModal] = useState(false)
   const [myOrders, setMyOrders] = useState<any[]>([]) 
 
+
+  const isViewOnly = !!table;
+
   useEffect(() => {
     try {
       const storedCart = localStorage.getItem('cart')
@@ -174,36 +177,71 @@ export const CustomerMenuInterface = () => {
 
   return (
     <section className={showSummary ? 'pb-40' : ''}>
-      {/* ================= HEADER ================= */}
-      <section className='bg-white'>
-        <div className='flex justify-between items-start p-5'>
+     {/* ================= HEADER ================= */}
+      <section 
+      className='relative w-full  flex flex-col justify-between overflow-hidden'
+      style={{minHeight: isViewOnly ? 300 : 200}}  
+      >
+        
+        {/* Background Image & Gradient Overlay */}
+        <div className="absolute inset-0 z-0">
+          {branch.restaurant.coverImage?.url ? (
+            <img 
+              src={branch.restaurant.coverImage.url} 
+              alt={branch.restaurant.name} 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-linear-to-br from-zinc-800 to-black opacity-80" />
+          )}
+          {/* Dark gradient to ensure text readability */}
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+
+        {/* Top Header Content */}
+        <div className='relative z-10 flex justify-between items-start p-5 pt-8'>
           
-          <div className='flex items-start gap-3'>
-            <div className='bg-orange-400 w-16 h-16 rounded-xl shrink-0'/>
-            <div className='flex flex-col'>
-              <h2 className='text-3xl font-bold text-[#4B2E05] leading-tight mb-1'>
-                {branch.restaurant.name}
-              </h2>
-              <p className='text-[#4B2E05] text-lg font-medium'>{table}</p>
-            </div>
+          {/* Title & Table Number */}
+          <div className='flex flex-col max-w-[60%]'>
+            <h2 className='text-4xl md:text-5xl font-black text-white leading-[1.05] mb-3 tracking-tight drop-shadow-lg'>
+              {branch.restaurant.name}
+            </h2>
+            {
+              isViewOnly && (
+                 <p className='text-white/90 text-lg md:text-xl font-bold drop-shadow-md tracking-wide'>
+                  {table ? (table.toLowerCase().includes('table') ? table : `Table ${table}`) : ''}
+                </p>
+              )
+            }
+           
           </div>
 
-          <div className='flex flex-col items-end gap-2 shrink-0'>
+          {/* Action Buttons */}
+          <div className='flex flex-col items-end gap-3 shrink-0'>
             
-            <button 
-              onClick={() => setShowWaiterModal(true)}
-              className="flex flex-col items-center justify-center bg-[#FFF7ED] text-[#F97316] p-2 px-3 rounded-xl shadow-sm border border-[#FFEDD5] transition-transform active:scale-95 touch-manipulation"
-            >
-              <FiBell size={24} className="mb-1 pointer-events-none" />
-              <span className="text-xs font-bold pointer-events-none">Waiter</span>
-            </button>
+            {/* Call Waiter Pill */}
+            {
+              isViewOnly && (
+                 <button 
+                  onClick={() => setShowWaiterModal(true)}
+                  className="flex items-center gap-2 bg-[#68A544] hover:bg-[#5b903c] text-white py-2 px-4 rounded-full shadow-lg transition-transform active:scale-95 touch-manipulation"
+                >
+                  <svg stroke="currentColor" fill="none" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="15" width="15" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                  </svg>
+                  <span className="text-sm font-semibold tracking-wide">Call a waiter</span>
+                </button>
+              )
+            }
+           
 
+            {/* Active Orders Badge */}
             {myOrders.length > 0 && (
               <button 
                 onClick={() => setShowOrdersModal(true)}
-                className="flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 py-1.5 px-3 rounded-full shadow-sm active:scale-95 touch-manipulation transition-all"
+                className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md border border-white/30 text-white py-1.5 px-3 rounded-full shadow-sm active:scale-95 touch-manipulation transition-all"
               >
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
                 <span className="text-[11px] font-bold whitespace-nowrap">
                   {myOrders.length} active order{myOrders.length > 1 ? 's' : ''}
                 </span>
@@ -213,8 +251,9 @@ export const CustomerMenuInterface = () => {
           
         </div>
 
+        {/* Category Pills (Overlaid at the bottom) */}
         <div
-          className="flex gap-2 overflow-x-auto mt-2 pb-5 px-5"
+          className="relative z-10 flex gap-3 overflow-x-auto pb-5 px-5 pt-10"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {allCategories.map(category => (
@@ -226,11 +265,13 @@ export const CustomerMenuInterface = () => {
                   setOpenMenus(prev => [...prev, category._id])
                 }
               }}
-              className={`px-5 py-2 rounded-full flex items-center gap-3 cursor-pointer whitespace-nowrap transition-colors touch-manipulation ${
-                selectedCategoryId === category._id ? 'bg-[#F97316] text-white shadow-md' : 'bg-gray-100 text-[#4B2E05]'
+              className={`px-5 py-2 rounded-full flex items-center gap-2 cursor-pointer whitespace-nowrap transition-colors touch-manipulation shadow-md border ${
+                selectedCategoryId === category._id 
+                  ? 'bg-[#F97316] text-white border-[#F97316]' 
+                  : 'bg-white text-[#4B2E05] border-white hover:bg-gray-50'
               }`}
             >
-              <p className="font-medium pointer-events-none">{category.name}</p>
+              <p className="font-semibold text-sm pointer-events-none tracking-wide">{category.name}</p>
             </div>
           ))}
         </div>
@@ -268,9 +309,14 @@ export const CustomerMenuInterface = () => {
                       </div>
                       <div className="flex flex-col justify-between items-end py-1">
                         <p className="text-[#F97316] font-bold text-lg">₦{food.price.toLocaleString()}</p>
-                        <div onClick={() => hasAdded ? removeCart(food._id || '') : addToCart(food)} className={`w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-all shadow-sm touch-manipulation active:scale-90 ${hasAdded ? 'bg-green-500' : 'bg-[#F97316]'}`}>
-                          <GoPlus color="white" size={24} className={hasAdded ? "rotate-45 transition-transform pointer-events-none" : "transition-transform pointer-events-none"} />
-                        </div>
+                        {
+                          isViewOnly && (
+                            <div onClick={() => hasAdded ? removeCart(food._id || '') : addToCart(food)} className={`w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-all shadow-sm touch-manipulation active:scale-90 ${hasAdded ? 'bg-green-500' : 'bg-[#F97316]'}`}>
+                              <GoPlus color="white" size={24} className={hasAdded ? "rotate-45 transition-transform pointer-events-none" : "transition-transform pointer-events-none"} />
+                            </div>
+                          )
+                        }
+                        
                       </div>
                     </div>
                   )
@@ -298,6 +344,7 @@ export const CustomerMenuInterface = () => {
         cart={cart}
         addToCart={addToCart}
         removeCart={removeCart}
+        isViewOnly={isViewOnly}
       />
 
       <MyOrdersModal 

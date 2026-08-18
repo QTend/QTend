@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
 import { connectToDB } from "@/utils/connectToDb";
 import Zone from "@/utils/models/Zone";
+import { randomBytes } from "crypto";
 
 type RouteParams = {
     params: Promise<{ branchId: string }>
@@ -27,11 +28,18 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "No zones provided" }, { status: 400 });
         }
 
-        // Map the frontend payload (zoneName) to match our backend schema (name)
-        const zonesToInsert = zone.map((zone: any) => ({
-            branchId,
-            name: zone.zoneName
-        }));
+        // 🚀 UPDATED: Map the frontend payload and attach a secure, unique magic token
+        const zonesToInsert = zone.map((z: any) => {
+            // Creates a readable but unguessable token (e.g., "bar-8f7b2c9a0d")
+            const safeName = z.zoneName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            const secureString = randomBytes(5).toString('hex'); 
+            
+            return {
+                branchId,
+                name: z.zoneName,
+                magicToken: `${safeName}-${secureString}` 
+            };
+        });
 
         // Bulk insert all drafted zones at once
         const insertedZones = await Zone.insertMany(zonesToInsert);
@@ -39,7 +47,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         return NextResponse.json({ 
             success: true, 
             message: `${insertedZones.length} zones successfully created`,
-            // Sending it back as 'newTables' so it perfectly matches your frontend's onSuccess expectation
             newTables: insertedZones 
         }, { status: 201 });
 

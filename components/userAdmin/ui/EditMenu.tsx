@@ -40,7 +40,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
     return menu.categoryId as string;
   };
 
-  // 🚀 NEW: Safely extract Zone ID
+  //  Safely extract Zone ID
   const getSafeZoneId = () => {
     if (!menu.zoneId) return '';
     if (typeof menu.zoneId === 'object') {
@@ -75,16 +75,16 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
 
   useEffect(() => {
       setFormData({
-          name: menu.name || '',
-          description: menu.description || '',
-          price: menu.price || '',
-          categoryId: getSafeCategoryId(),
-          zoneId: getSafeZoneId(), // 🚀 Added zoneId
-          image: {
-            url: menu.image?.url || "",
-            publicId: menu.image?.publicId || ""
-          },
-          isAvailable: menu.isAvailable || false 
+        name: menu.name || '',
+        description: menu.description || '',
+        price: menu.price || '',
+        categoryId: getSafeCategoryId(),
+        zoneId: getSafeZoneId(),
+        image: {
+          url: menu.image?.url || "",
+          publicId: menu.image?.publicId || ""
+        },
+        isAvailable: menu.isAvailable || false 
       });
   }, [menu]);
 
@@ -305,7 +305,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
                             )}
                           </div>
 
-                          {/* 🚀 NEW: Zone Selection Dropdown */}
+                          {/* Zone Selection Dropdown */}
                           <div className='flex-1'>
                             <label className='text-sm font-medium text-[#344054] mb-1 block'>Zone</label>
                             <select 

@@ -2,7 +2,7 @@
 
 import { useUserAdmin } from "@/context/UserAdminContext";
 import { pusherClient } from "@/utils/pusher/pusherClient";
-import { ChevronDown, ChevronUp, SlidersVertical } from "lucide-react"
+import { ChevronDown, ChevronUp, SlidersVertical, CheckCircle, Clock } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
 
 interface OrderItem {
@@ -10,7 +10,8 @@ interface OrderItem {
     name: string;
     quantity: number;
     price: number;
-    zoneId?: { _id: string, name: string } | string; // 🚀 Added zoneId support
+    itemStatus: 'Pending' | 'Ready'; // 🚀 Added itemStatus
+    zoneId?: { _id: string, name: string } | string;
 }
 
 interface Order {
@@ -26,8 +27,8 @@ interface Order {
 }
 
 export default function KitchenOrders() {
-    const {branch} = useUserAdmin()
-    const branchId = branch._id;
+    const { branch, hasActiveZones } = useUserAdmin()
+    const branchId = branch?._id;
 
     const [orders, setOrders] = useState<Order[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -41,22 +42,45 @@ export default function KitchenOrders() {
 
     const filters = ['All Orders', 'Active', 'Completed']
 
-   useEffect(() =>{
-        if(!branch?._id || !pusherClient) return;
+    useEffect(() => {
+        if(!branchId || !pusherClient) return;
 
-        const channelName = `branch-${branch._id}`;
+        const channelName = `branch-${branchId}`;
         const channel = pusherClient.subscribe(channelName);
 
+        console.log("Admin listening to channel:", channelName)
+
         const handleNewOrder = (incomingOrder: any) =>  {
+            console.log('🔥 NEW ORDER RECEIVED VIA PUSHER ORDER PAGE:', incomingOrder);
             setOrders((prevOrder => [incomingOrder, ...prevOrder]))
         };
 
+        // 🚀 NEW: Listener for Kitchen Updates
+        const handleItemUpdated = (data: any) => {
+            console.log(`🛎️ Kitchen update: Item is now ${data.itemStatus}`);
+            
+            setOrders(prevOrders => prevOrders.map(order => {
+                if (order._id !== data.orderId) return order;
+                
+                // Update the specific item's status
+                const updatedItems = order.items.map(item => 
+                    item._id === data.itemId 
+                        ? { ...item, itemStatus: data.itemStatus } 
+                        : item
+                );
+                
+                return { ...order, items: updatedItems };
+            }));
+        };
+
         channel.bind('new-order', handleNewOrder);
+        channel.bind('item-updated', handleItemUpdated); // 🚀 Bind the new event
 
         return () => {
             channel.unbind('new-order', handleNewOrder);
+            channel.unbind('item-updated', handleItemUpdated); // Clean it up
         }
-    }, [branch?._id]);
+    }, [branchId]);
 
     const fetchOrders = useCallback(async (showLoadingState = false) => {
         if (showLoadingState) setIsLoading(true);
@@ -218,11 +242,16 @@ export default function KitchenOrders() {
                     filteredOrders.map(order => {
                         const isExpanded = expandedOrders.includes(order._id);
                         const isActive = order.status === 'Active';
+                        
+                        // 🚀 NEW: Determine if EVERY item in the order is 'Ready'
+                        const isFullyReady = hasActiveZones && order.items.length > 0 && order.items.every(item => item.itemStatus === 'Ready');
 
                         return (
                             <div 
                                 key={order._id} 
+                                // 🚀 NEW: If it's fully ready and still active, give the whole card a green glowing border!
                                 className={`bg-white rounded-2xl p-4 md:p-5 transition-all shadow-sm border ${
+                                    isActive && isFullyReady ? 'border-green-400 shadow-green-100' : 
                                     isExpanded ? 'border-blue-200' : 'border-gray-100 hover:border-gray-200'
                                 }`}
                             >
@@ -237,10 +266,13 @@ export default function KitchenOrders() {
                                         </div>
                                         
                                         <div className="flex gap-2">
+                                            {/* 🚀 NEW: Ticket Status Badge swaps to 'Ready to Serve' when food is done */}
                                             <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${
-                                                isActive ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-green-50 text-green-600 border-green-200'
+                                                !isActive ? 'bg-gray-50 text-gray-600 border-gray-200' : 
+                                                isFullyReady ? 'bg-green-500 text-white border-green-600 animate-pulse' : 
+                                                'bg-blue-50 text-blue-600 border-blue-200'
                                             }`}>
-                                                {isActive ? 'Active' : 'Completed'}
+                                                {!isActive ? 'Completed' : isFullyReady ? <><CheckCircle size={14}/> Ready to Serve</> : 'Active'}
                                             </div>
 
                                             <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${
@@ -278,21 +310,35 @@ export default function KitchenOrders() {
                                                     const zoneName = typeof item.zoneId === 'object' ? item.zoneId?.name : null;
                                                     
                                                     return (
-                                                        <div key={item._id || index} className="flex justify-between items-start text-[#333333]">
-                                                            <div className="flex ">
+                                                        <div key={item._id || index} className="flex justify-between items-center text-[#333333] border-b border-gray-50 pb-2 last:border-0 last:pb-0">
+                                                            <div className="flex flex-col">
                                                                 <p className="font-medium">
                                                                     <span className="text-gray-400 mr-2 font-bold">{item.quantity}x</span>
                                                                     {item.name}
                                                                 </p>
                                                                 {zoneName && (
-                                                                    <div className="ml-3 inline-block px-2 py-0.5 bg-orange-50 text-orange-600 border border-orange-100 rounded text-[10px] font-bold tracking-wider uppercase">
+                                                                    <div className="mt-1 inline-block px-2 py-0.5 bg-orange-50 text-orange-600 border border-orange-100 rounded text-[10px] font-bold tracking-wider uppercase w-fit">
                                                                         {zoneName}
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            <p className="text-gray-500 font-medium whitespace-nowrap ml-4">
-                                                                ₦{(item.price * item.quantity).toLocaleString()}
-                                                            </p>
+
+                                                            <div className="flex items-center gap-3">
+                                                                {hasActiveZones && (
+                                                                    item.itemStatus === 'Ready' ? (
+                                                                        <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
+                                                                            <CheckCircle size={12} /> Ready
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-md">
+                                                                            <Clock size={12} /> Pending
+                                                                        </span>
+                                                                    )
+                                                                )}
+                                                                <p className="text-gray-500 font-medium whitespace-nowrap min-w-[60px] text-right">
+                                                                    ₦{(item.price * item.quantity).toLocaleString()}
+                                                                </p>
+                                                            </div>
                                                         </div>
                                                     )
                                                 })}

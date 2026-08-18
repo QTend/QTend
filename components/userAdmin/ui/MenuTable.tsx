@@ -166,6 +166,7 @@ export default function MenuTable(){
                                                             alt={f.name} 
                                                             fill 
                                                             className="object-cover"
+                                                            unoptimized
                                                         />
                                                     ) : (
                                                         // Fallback if no image exists
@@ -183,12 +184,12 @@ export default function MenuTable(){
                                                 </td> 
                                                 <td className="py-4 px-6 text-left">
                                                     <p className="text-sm line-clamp-2 max-w-62.5 leading-relaxed">
-                                                        {f.zoneId.name}
+                                                        {f.zoneId?.name}
                                                     </p>
                                                 </td>
                                                 <td className="py-4 px-6 text-left">
                                                     <span className="px-3 py-1 rounded-full text-xs font-medium">
-                                                        {typeof f.categoryId === 'object' ? f.categoryId.name : 'Uncategorized'}
+                                                        {typeof f.categoryId === 'object' ? f.categoryId?.name : 'Uncategorized'}
                                                     </span>
                                                 </td>
                                                                                 
@@ -201,9 +202,9 @@ export default function MenuTable(){
                                                         </div>
                                                         <span className="opacity-0 group-hover:opacity-100 transition-opacity">
                                                             <EditMenu 
-                                                            menu={f} 
-                                                            branchId={branch._id} 
-                                                            onSuccess={refreshMenuItems} 
+                                                                menu={f} 
+                                                                branchId={branch._id} 
+                                                                onSuccess={refreshMenuItems} 
                                                             />
                                                         </span>
                                                     </div>

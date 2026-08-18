@@ -42,7 +42,6 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
       setOpenModal(true);
       setAddCategory(true); 
       
-      // Clean up the URL silently so it doesn't re-trigger if the user refreshes the page
       router.replace(`/dashboard/${branchSlug}/menu`, { scroll: false }); 
     }
   }, [searchParams, branchId, router]);
@@ -162,7 +161,8 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
       }
 
       showToast(data.message, "success");
-      await refreshMenuItems()
+      refreshMenuItems()
+      refreshCategories()
       
       setAddCategory(false);
       setIsEditing(false);

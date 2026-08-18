@@ -148,7 +148,7 @@ export default function AddZoneModal({ isOpen, onClose, onSuccess, existingZones
 
   return (
     <Modal center={true} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-3xl shadow-xl w-full max-w-[450px] overflow-hidden relative animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-3xl shadow-xl w-full max-w-112.5 overflow-hidden relative animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
         
         {/* Header Section */}
         <div className="px-6 pt-6 pb-4 shrink-0">

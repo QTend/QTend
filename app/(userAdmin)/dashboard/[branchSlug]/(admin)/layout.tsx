@@ -36,7 +36,7 @@ export default async function UserAdminDashboardLayout({
   // console.log('useradmin', data)
 
   return (
-    <UserAdminProvider branch={data?.branch} user={data?.user}>
+    <UserAdminProvider branch={data?.branch} user={data?.user} hasActiveZones={data?.hasActiveZones}>
     <CategoryProvider branch={data?.branch}>
       <ZoneProvider branch={data?.branch}>
         <MenuItemProvider branch={data?.branch}>

@@ -3,6 +3,7 @@ import { connectToDB } from "@/utils/connectToDb";
 import Branches from "@/utils/models/Branches";
 import Membership from "@/utils/models/Membership";
 import User from "@/utils/models/User";
+import Zone from "@/utils/models/Zone";
 import { getServerSession } from "next-auth";
 import { cache } from "react";
 
@@ -33,8 +34,11 @@ export const getCurrentBranch = cache(async (slug: string) => {
         .select('email name')
         .lean();
 
+    const zoneCount = await Zone.countDocuments({ branchId: branch._id });
+
     return serialize({
         branch,
         user,
+        hasActiveZones: zoneCount > 0
     });
 });

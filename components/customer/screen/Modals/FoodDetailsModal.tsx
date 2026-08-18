@@ -11,6 +11,7 @@ interface FoodDetailsModalProps {
   cart: any[];
   addToCart: (food: MenuItem) => void;
   removeCart: (id: string) => void;
+  isViewOnly: boolean
 }
 
 export default function FoodDetailsModal({ 
@@ -19,7 +20,8 @@ export default function FoodDetailsModal({
   selectedFood, 
   cart, 
   addToCart, 
-  removeCart 
+  removeCart,
+  isViewOnly
 }: FoodDetailsModalProps) {
   return (
     <div className={`fixed inset-0 z-50 flex items-end justify-center ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
@@ -47,13 +49,18 @@ export default function FoodDetailsModal({
               </div>
               <p className="text-gray-600 mb-4 overflow-y-auto max-h-32 leading-relaxed">{selectedFood.description}</p>
             </div>
-            <div className="mt-auto pb-4">
-              {cart.some((c: any) => c._id === selectedFood._id) ? (
-                <Button onClick={() => { removeCart(selectedFood._id || ''); onClose(); }} bg='#1AB653' text='Remove From Cart' />
-              ) : (
-                <Button onClick={() => { addToCart(selectedFood); onClose(); }} bg='#F97316' text='Add To Cart' />
-              )}
-            </div>
+            {
+              isViewOnly && (
+                <div className="mt-auto pb-4">
+                  {cart.some((c: any) => c._id === selectedFood._id) ? (
+                    <Button onClick={() => { removeCart(selectedFood._id || ''); onClose(); }} bg='#1AB653' text='Remove From Cart' />
+                  ) : (
+                    <Button onClick={() => { addToCart(selectedFood); onClose(); }} bg='#F97316' text='Add To Cart' />
+                  )}
+                </div>
+              )
+            }
+            
           </div>
         )}
       </div>

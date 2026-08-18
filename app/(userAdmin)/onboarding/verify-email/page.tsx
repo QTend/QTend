@@ -67,15 +67,12 @@ const VerifyEmailContent = () => {
             sessionStorage.removeItem('temp_pass');
 
             if (loginRes?.ok) {
-                // Successfully logged in! Go to the next onboarding step
-                setTimeout(() => {
-                    router.push('/onboarding/about-business');
-                }, 1000);
+                router.push('/onboarding/about-business');
                 return;
             }
         }
 
-        // 🚀 FALLBACK: If sessionStorage was empty or login failed for some reason, 
+        // FALLBACK: If sessionStorage was empty or login failed for some reason, 
         // force them to manually log in instead of crashing.
         setTimeout(() => {
             router.push('/auth/sign-in'); // Note: Adjust this route to your actual sign-in page

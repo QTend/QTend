@@ -10,14 +10,24 @@ import Area from "./Area";
 import Zones from "./Zones";
 import AddZoneModal from "./AddZoneModal";
 import { useZone } from "@/context/ZoneContext";
+import { useSearchParams } from "next/navigation";
 
 
 
 export default function TablesSettings() {
-  const  {branch} = useUserAdmin()
+  const {branch} = useUserAdmin()
   const {tables, zones} = useZone()
   const [activeTab, setActiveTab] = useState('Areas');
   const [areaDrop, setAreaDrop] = useState(false)
+
+  const params = useSearchParams()
+  const zone = params.get('tab')
+
+  useEffect(() => {
+    if(zone){
+      setActiveTab(zone)
+    }
+  }, [])
 
   const tabs = ['Areas', 'Zones']
   
@@ -143,7 +153,7 @@ export default function TablesSettings() {
         
       </div>
 
-      {/* 2. Menu URL Card (unchanged) */}
+      {/* 2. Menu URL Card */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
         <h2 className="text-base font-semibold text-[#222222]">Menu URL</h2>
         <p className="text-xs text-[#888888] mb-5">Your public menu link</p>
@@ -157,13 +167,23 @@ export default function TablesSettings() {
               <span className="text-slate-800">/menu</span>
             </p>
           </div>
-          <button 
-            onClick={() => window.open(`${baseUrl}/${branch.slug}/menu`, '_blank')}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap"
-          >
-            <ExternalLink size={16} className="text-slate-400" />
-            Open
-          </button>
+          
+          {/* 🚀 NEW: Added the button group here */}
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setQrModalTable({ name: 'General Menu', url: `${baseUrl}/${branch.slug}/menu` })}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap"
+            >
+              View QR
+            </button>
+            <button 
+              onClick={() => window.open(`${baseUrl}/${branch.slug}/menu`, '_blank')}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-[#6da544] bg-[#6da544] text-white rounded-lg text-sm font-medium hover:bg-[#5b8a39] transition-colors whitespace-nowrap"
+            >
+              <ExternalLink size={16} className="text-white" />
+              Open
+            </button>
+          </div>
         </div>
       </div>
 
@@ -193,7 +213,7 @@ export default function TablesSettings() {
       {/* 4. NEW QR Code Display Modal (unchanged) */}
       {qrModalTable && (
         <Modal center={true} onClick={() => setQrModalTable(null)}>
-          <div className="bg-white p-8 rounded-2xl flex flex-col items-center shadow-xl w-full max-w-[400px] relative animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white p-8 rounded-2xl flex flex-col items-center shadow-xl w-full max-w-100 relative animate-in fade-in zoom-in-95 duration-200">
             <button 
               onClick={() => setQrModalTable(null)}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
@@ -203,9 +223,9 @@ export default function TablesSettings() {
 
             <h3 className="text-xl font-bold text-slate-800 mb-2">Table {qrModalTable.name}</h3>
             
-            <p className="text-xs text-gray-500 mb-6 truncate max-w-full px-4 text-center">
-              {qrModalTable.url}
-            </p>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">
+              {qrModalTable.name === 'General Menu' ? 'General Menu QR' : `Table ${qrModalTable.name}`}
+            </h3>
 
             <div ref={qrRef} className="p-4 bg-white border-2 border-slate-100 rounded-2xl mb-8 shadow-sm">
               <QRCodeCanvas 

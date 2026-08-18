@@ -6,16 +6,18 @@ import { BranchProps } from "@/types/BranchType";
 interface UserAdminProps {
     branch: BranchProps;
     user: any;
+    hasActiveZones?: boolean;
 }
 
 export const UserAdminContext = createContext<UserAdminProps | null>(null)
 
-export const UserAdminProvider = ({children, branch, user}: {children: ReactNode, branch: BranchProps, user: any}) => {
+export const UserAdminProvider = ({children, branch, user, hasActiveZones}: {children: ReactNode, branch: BranchProps, user: any, hasActiveZones?: boolean;}) => {
    
     return(
         <UserAdminContext.Provider value={{
             branch,
-            user
+            user,
+            hasActiveZones
         }}>
             {children}
         </UserAdminContext.Provider>

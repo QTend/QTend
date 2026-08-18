@@ -6,10 +6,10 @@ import Link from "next/link"
 import { useState } from "react"
 
 const links = [
-    {id:1, label: 'Product', link: '#product'},
-    {id:2, label: 'Features', link: '#features'},
-    {id:3, label: 'Pricing', link: '#pricing'},
-    {id:4, label: 'Resources', link: '#resources'},
+    {id:1, label: 'Product', link: '/'},
+    {id:2, label: 'Features', link: 'features'},
+    {id:3, label: 'Pricing', link: 'pricing'},
+    {id:4, label: 'Resources', link: 'resources'},
 ]
 
 export const Navbar = () => {

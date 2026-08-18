@@ -7,7 +7,7 @@ export interface IOrderItem {
   price: number;
   quantity: number;
   zoneId: mongoose.Types.ObjectId | string; // Routes to Bar/Grill
-  itemStatus: 'Pending' | 'Preparing' | 'Ready'; // Lets Bar/Grill mark their specific item ready
+  itemStatus: 'Pending' | 'Ready'; // Lets Bar/Grill mark their specific item ready
 }
 
 export interface IOrder {

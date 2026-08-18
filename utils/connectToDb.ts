@@ -1,4 +1,15 @@
 import mongoose from "mongoose";
+import "@/utils/models/Branches";
+import "@/utils/models/MenuCategory";
+import "@/utils/models/MenuItem";
+import "@/utils/models/Zone";
+import "@/utils/models/Membership";
+import "@/utils/models/Notification"
+import "@/utils/models/OrderItem"
+import "@/utils/models/Table"
+import "@/utils/models/User"
+import "@/utils/models/WaiterRequest"
+import "@/utils/models/otpVerificatoin"
 
 // In Next.js, we must use the global object to cache the connection.
 // This prevents connections from growing exponentially during API Route hot-reloading.

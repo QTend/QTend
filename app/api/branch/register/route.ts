@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Onboarding Error:", error);
     return NextResponse.json({ 
-      error: error.code === 11000 ? "Business name already taken" : "Internal Server Error" 
+      error: "Try agaoin later" 
     }, { status: 500 });  
   }
 }
