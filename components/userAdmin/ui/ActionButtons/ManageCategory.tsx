@@ -1,5 +1,5 @@
 'use client'
-import { ChevronDown, ChevronRight, Pencil, Plus, Trash, Trash2, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Pencil, Plus, Rocket, Trash, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Modal } from "../../screen/Modal";
 import Switch from "../Switch";
@@ -11,13 +11,18 @@ import { MenuItem } from "@/types/MenuItemType";
 import { useMenuItem } from "@/context/MenuItemContext";
 import { useCategory } from "@/context/CategoryContext";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useUserAdmin } from "@/context/UserAdminContext";
+import UpgradeModal from "../UpgradeModal"; // Adjust path if needed
 
 export function ManageCategory({ branchId, branchSlug }: { branchId: string, branchSlug: string }) {
   const { showToast } = useToast()
   const searchParams = useSearchParams(); 
   const router = useRouter();
+  
   const [openModal, setOpenModal] = useState(false);
   const [openAddModal, setOpenAddModal] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false); 
+  
   const [isdelete, setIsDelete] = useState(false);
   const [addCategory, setAddCategory] = useState(false);
   const [categoryMenu, setCategoryMenu] = useState(false);
@@ -34,8 +39,13 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
   const [error, setError] = useState('');
   const [isItemsLoading, setIsItemsLoading] = useState(false);
   
-  const { refreshMenuItems } = useMenuItem()
-  const {refreshCategories, categories} = useCategory()
+  const { refreshMenuItems, totalItemCount } = useMenuItem(); 
+  const { refreshCategories, categories } = useCategory();
+  const { branch } = useUserAdmin(); 
+
+  // 🚀 UPDATED: Basic Plan & 30-Item Check
+  const isBasicPlan = !branch?.plans?.planType || branch.plans.planType === 'basic';
+  const limitReached = isBasicPlan && totalItemCount >= 30;
 
   useEffect(() => {
     if (searchParams.get("modal") === "new-category") {
@@ -47,7 +57,7 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
   }, [searchParams, branchId, router]);
 
   useEffect(() => {
-    if (openModal) {
+    if (openModal || showUpgradeModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
@@ -55,7 +65,7 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [openModal]);
+  }, [openModal, showUpgradeModal]);
 
 
   const fetchCategoryItems = async (categoryId: string) => {
@@ -222,9 +232,9 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
     } catch (error: any) {
         showToast(error.message, "error");
     } finally {
-        setDeletingItemId(null); // 2. Stop loading when done (whether success or fail)
+        setDeletingItemId(null); 
     }
-}
+  }
 
   return (
     <>
@@ -246,6 +256,10 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
                 closeModal={handleCloseModal} 
                 branchId={branchId}
                 category={selectedCategory}
+                onUpgradeRequired={() => {
+                  setOpenAddModal(false);
+                  setShowUpgradeModal(true);
+                }}
                 onSuccess={() => {
                   setOpenAddModal(false);
                   fetchCategoryItems(selectedCategory?._id);
@@ -365,7 +379,7 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
                         </p>
                       </div>
 
-                      {/* 2. Scrollable List Area - UPDATED WITH LOADING STATE */}
+                      {/* 2. Scrollable List Area */}
                       <div className="flex-1 overflow-y-auto no-scrollbar mb-4">
                         {isItemsLoading ? (
                           <p className="text-gray-500 text-center py-10 animate-pulse">Loading items...</p>
@@ -397,7 +411,7 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
                                       color={'#667085'} 
                                       size={18} 
                                       onClick={(e) => {
-                                        e.stopPropagation(); // Prevents the accordion from opening when clicking trash
+                                        e.stopPropagation(); 
                                         deleteItemFromDatabase(m._id);
                                       }} 
                                       className="cursor-pointer hover:text-red-500 transition-colors shrink-0" 
@@ -405,11 +419,11 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
                                   )}                              
                               </div>
 
-                              {/* Expanded Details View (Only shows if this specific item's ID matches the state) */}
+                              {/* Expanded Details View */}
                               {expandedItemId === m._id && (
                                 <div className="flex gap-4 bg-white rounded-lg p-3 mt-3 shadow-sm border border-[#EAECF0]">
                                   
-                                  {/* Image Placeholder (You can swap this with next/image later) */}
+                                  {/* Image Placeholder */}
                                   <div className="w-14 h-14 rounded-lg bg-orange-200 shrink-0 object-cover overflow-hidden">
                                       {m.image?.url && !m.image.url.includes("temp_random") && (
                                           <img src={m.image.url} alt={m.name} className="w-full h-full object-cover" />
@@ -449,7 +463,19 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
 
                       {/* 3. Fixed Button at the bottom */}
                       <div className="pb-6"> 
-                        <PlainButton onClick={() => setOpenAddModal(true)} label="Add new item" className="bg-[#68A544] text-white w-full" />
+                        {limitReached ? (
+                          <PlainButton 
+                            onClick={() => setShowUpgradeModal(true)} 
+                            label="🚀 Upgrade to Add More Items" 
+                            className="bg-[#F67D26] text-white w-full" 
+                          />
+                        ) : (
+                          <PlainButton 
+                            onClick={() => setOpenAddModal(true)} 
+                            label="Add new item" 
+                            className="bg-[#68A544] text-white w-full" 
+                          />
+                        )}
                       </div>
                     </div>
 
@@ -492,8 +518,23 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
               )
             )
           }
+        </Modal>
+      )}
 
-          
+      {/* 🚀 UPDATED: Upgrade Modal Text */}
+      {showUpgradeModal && (
+        <Modal center={true} onClick={() => setShowUpgradeModal(false)}>
+          <UpgradeModal 
+              closeModal={() => setShowUpgradeModal(false)}
+              title="Basic Tier Limit Reached"
+              message="You've reached the 30-item limit on the Basic plan. Upgrade to Starter for unlimited items, live order tracking, and more."
+              actionLabel="View Pricing Plans"
+              onAction={() => {
+                  setShowUpgradeModal(false);
+                  setOpenModal(false); 
+                  router.push(`/dashboard/${branchSlug}/billing`);
+              }}
+          />
         </Modal>
       )}
     </>

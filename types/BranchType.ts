@@ -5,6 +5,11 @@ export type BranchProps = {
     description: string;
     phone: string;
     website: string;
+    plans:{
+        planType: 'basic' | 'starter' | 'pro';
+        isTrial: boolean;
+        expiryDate: Date;
+    };
     category: string;
     slug: string;
     location: {

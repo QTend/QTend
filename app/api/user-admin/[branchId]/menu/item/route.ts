@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDB } from "@/utils/connectToDb";
 import MenuItem from "@/utils/models/MenuItem"; 
+import Branch from "@/utils/models/Branches"; // 🚀 NEW: Import Branch for billing checks
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
 import MenuCategory from "@/utils/models/MenuCategory";
@@ -12,7 +13,6 @@ type RouteParams = {
 }
 
 export const dynamic = 'force-dynamic';
-
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
     try {
@@ -28,17 +28,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Branch ID parameter missing" }, { status: 400 });
         }
         
-        // Grab data from the URL query parameter
         const categoryId = req.nextUrl.searchParams.get("categoryId");
         const q = req.nextUrl.searchParams.get('q');
 
-        // --- NEW PAGINATION PARAMS ---
-        // Default to page 1 and limit to 10 if not provided in the URL
         const page = parseInt(req.nextUrl.searchParams.get('page') || '1', 10);
         const limit = parseInt(req.nextUrl.searchParams.get('limit') || '10', 10);
         const skip = (page - 1) * limit;
 
-        // Build the database query dynamically
         const query: any = { branchId };
         
         if (categoryId) {
@@ -49,25 +45,25 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
             query.name = { $regex: q, $options: "i" }; 
         }
 
-        // --- FETCH ITEMS AND TOTAL COUNT CONCURRENTLY ---
-        const [items, totalItems] = await Promise.all([
+        // 🚀 NEW: Fetch absolute total for billing concurrently with pagination data
+        const [items, filteredTotal, absoluteTotalItems] = await Promise.all([
             MenuItem.find(query)
                 .populate('categoryId', 'name _id')
                 .populate('zoneId', 'name _id')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit),
-            MenuItem.countDocuments(query)
+            MenuItem.countDocuments(query),               // For Pagination pages
+            MenuItem.countDocuments({ branchId })         // For Billing Limits
         ]);
 
-        // Calculate how many pages exist in total
-        const totalPages = Math.ceil(totalItems / limit);
+        const totalPages = Math.ceil(filteredTotal / limit);
 
-        // Return the items alongside the pagination metadata
         return NextResponse.json({ 
             items, 
             totalPages, 
-            currentPage: page 
+            currentPage: page,
+            totalItems: absoluteTotalItems // 🚀 NEW: Sent to frontend for limit checking
         }, { status: 200 });
 
     } catch (error: any) {
@@ -86,7 +82,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         await connectToDB();
         const { branchId } = await params;
         
-        // Grab categoryId from the URL (if the frontend passed it)
         const categoryId = req.nextUrl.searchParams.get("categoryId");
         
         const body = await req.json();
@@ -94,6 +89,31 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
         if (!items || items.length === 0) {
             return NextResponse.json({ error: "No items provided" }, { status: 400 });
+        }
+
+        // 🚀 NEW: Billing Guard Check
+        const branch = await Branch.findById(branchId);
+        if (!branch) {
+            return NextResponse.json({ error: "Branch not found" }, { status: 404 });
+        }
+
+        // Limit Check (Basic Tier: Max 15 items)
+        const isBasicPlan = !branch.plans?.planType || branch.plans.planType === 'basic';
+        
+        if (isBasicPlan) {
+            const currentItemCount = await MenuItem.countDocuments({ branchId });
+            
+            if (currentItemCount + items.length > 15) {
+                return NextResponse.json(
+                    { 
+                        error: `Basic plan limit reached. You have ${currentItemCount} item(s). Adding ${items.length} more exceeds the 15-item limit. Upgrade to Starter for unlimited items.`,
+                        code: "UPGRADE_REQUIRED",
+                        limit: 15,
+                        currentCount: currentItemCount
+                    }, 
+                    { status: 403 }
+                );
+            }
         }
 
         // Check all items BEFORE processing
@@ -108,8 +128,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
             ...item,
             branchId,
             categoryId: categoryId || item.categoryId, 
-            
-            // typeId: new mongoose.Types.ObjectId(), 
         }));
 
         // Bulk insert!
@@ -127,7 +145,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
     try {
-        // 1. Authenticate the user
         const session: any = await getServerSession(authOptions);
         if (!session?.user.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -136,15 +153,12 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
         await connectToDB();
         const { branchId } = await params;
         
-        // 2. Grab the itemId from the URL query parameter
         const itemId = req.nextUrl.searchParams.get("itemId");
 
         if (!itemId) {
             return NextResponse.json({ error: "Item ID is required" }, { status: 400 });
         }
 
-        // 3. Delete the item. 
-        // We check BOTH _id and branchId to ensure a user can't maliciously delete an item from another branch!
         const deletedItem = await MenuItem.findOneAndDelete({ 
             _id: itemId, 
             branchId: branchId 
@@ -155,8 +169,6 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
         }
 
         if (deletedItem.image && deletedItem.image.publicId) {
-            // Notice we do NOT use "await" here.
-            // This runs in the background so the user gets a fast response!
             await deleteCloudinaryImage(deletedItem.image.publicId)
                 .catch((err: any) => console.error("Failed to clean up Cloudinary image:", err));
         }
@@ -181,7 +193,6 @@ export async function PATCH(req: NextRequest, {params}: RouteParams) {
         const {branchId} = await params;
         const body = await req.json();
         
-        
         const { itemId, categoryId, zoneId, name, isAvailable, price, description, image } = body;
 
         if (!itemId) {
@@ -196,7 +207,7 @@ export async function PATCH(req: NextRequest, {params}: RouteParams) {
         const updateFields: any = {};
         if (name !== undefined) updateFields.name = name;
         if (categoryId !== undefined) updateFields.categoryId = categoryId;
-        if (zoneId !== undefined) updateFields.zoneId = zoneId; // 🚀 FIX: Add zoneId to update fields
+        if (zoneId !== undefined) updateFields.zoneId = zoneId;
         if (isAvailable !== undefined) updateFields.isAvailable = isAvailable;
         if (price !== undefined) updateFields.price = price;
         if (description !== undefined) updateFields.description = description;

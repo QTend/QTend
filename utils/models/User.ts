@@ -10,12 +10,6 @@ const UserSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
-    plans: {
-        planType: { type: String, enum: ['free', 'lite', 'pro'], default: 'free' },
-        status: { type: String, enum: ['inactive', 'active', 'expired'], default: 'inactive' },
-        maxBranches: { type: Number, default: 1 },
-        expiryDate: { type: Date }
-    },
     isFoundingMember: {
         type: Boolean,
         default: false

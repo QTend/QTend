@@ -14,6 +14,7 @@ import imageCompression from 'browser-image-compression';
 interface Props {
     closeModal: () => void;
     onSuccess: () => void; 
+    onUpgradeRequired?: () => void;
     branchId: string;      
     category?: {
         _id: string,
@@ -33,7 +34,7 @@ interface LocalItem {
     file: File | null;
 }
 
-export default function AddItemsForm({ closeModal, onSuccess, branchId, category }: Props) {
+export default function AddItemsForm({ closeModal, onSuccess, branchId, category, onUpgradeRequired }: Props) {
     const router = useRouter();
     const { showToast } = useToast();
     const { refreshMenuItems } = useMenuItem()
@@ -206,7 +207,15 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
             });
             
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
+            if (!res.ok) {
+                if (res.status === 403 && data.code === "UPGRADE_REQUIRED") {
+                    // Dismiss the form
+                    handleClose();
+                    onUpgradeRequired?.(); // Trigger the upgrade modal
+                    // throw new Error("Free tier limit reached. Redirecting to billing...");
+                }
+                throw new Error(data.error || "Failed to save items");
+            }
 
             showToast(data.message, "success");
             refreshMenuItems();
