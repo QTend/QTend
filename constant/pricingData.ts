@@ -1,8 +1,8 @@
 export const pricingData = [
     {
         id: 1, 
-        label: 'Digital Menu (Free)', 
-        price: 0, 
+        label: 'Digital Menu (Basic)', 
+        price: 5000, 
         currency: '₦',
         isCustom: false,
         desc: 'Replace expensive paper menus. Perfect for getting your restaurant digitized at zero cost.',

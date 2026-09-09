@@ -20,6 +20,11 @@ const BranchSchema = new mongoose.Schema({
         trim: true,
         default: ''
     },
+    plans: {
+        planType: { type: String, enum: ['basic', 'starter', 'pro'], default: 'basic' },
+        isTrial: { type: Boolean, default: true },
+        expiryDate: { type: Date, default: () => new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) } // +14 days
+    },
     categories: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'AdminCategory',

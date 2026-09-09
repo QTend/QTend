@@ -16,6 +16,7 @@ interface MenuContextType {
     currentPage: number;
     totalPages: number;
     setCurrentPage: (page: number) => void;
+    totalItemCount: number;
 }
 
 const MenuItemContext = createContext<MenuContextType | null>(null)
@@ -30,6 +31,7 @@ export const MenuItemProvider = ({children, branch}: {children: ReactNode, branc
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [activeCategory, setActiveCategory] = useState("");
+    const [totalItemCount, setTotalItemCount] = useState(0);
 
     // 1. Fetch whenever the page or the active category changes
     useEffect(() => {
@@ -43,7 +45,6 @@ export const MenuItemProvider = ({children, branch}: {children: ReactNode, branc
 
     // 2. Handle search with a debounce
     useEffect(() => {
-
         const controller = new AbortController();
 
         const delaySearch = setTimeout(() => {
@@ -80,6 +81,7 @@ export const MenuItemProvider = ({children, branch}: {children: ReactNode, branc
             
             setMenuItems(data.items || []);
             setTotalPages(data.totalPages || 1);
+            setTotalItemCount(data.totalItems || 0); 
         } catch (err: any) {
             console.log(err.message || 'Failed to fetch Menu')
             showToast(err.message);
@@ -105,7 +107,8 @@ export const MenuItemProvider = ({children, branch}: {children: ReactNode, branc
             },
             currentPage,
             totalPages,
-            setCurrentPage
+            setCurrentPage,
+            totalItemCount
         }}>
             {children}
         </MenuItemContext.Provider>

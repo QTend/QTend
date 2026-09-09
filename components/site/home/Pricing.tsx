@@ -48,7 +48,7 @@ export const Pricing = () => {
                 const isDark = plan.isPopular;
                 const checkColor = isDark ? '#F97316' : '#16A34A';
                 // Apply a 20% discount if yearly is selected
-                const calculatedPrice = isYearly && plan.price > 0 ? (plan.price * 12) * 0.8 : plan.price;
+                const calculatedPrice = isYearly && plan.price > 0 ? (plan.price * 12 * 0.8) : plan.price;
                 const billingText = plan.price === 0 ? 'forever' : isYearly ? '/year' : '/month';
 
                 return (
