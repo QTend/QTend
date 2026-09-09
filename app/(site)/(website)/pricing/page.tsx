@@ -18,7 +18,7 @@ export const PricingCards = ({ isAnnual }: { isAnnual: boolean }) => {
             {pricingData.map((plan) => {
                 const isDark = plan.isPopular;
                 // Simple calculation for annual display (20% off)
-                const displayPrice = isAnnual && plan.price > 0 ? (plan.price * 0.8) : plan.price;
+                const displayPrice = isAnnual && plan.price > 0 ? (plan.price * 12 * 0.8) : plan.price;
 
                 return (
                     <div 
