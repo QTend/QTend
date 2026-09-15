@@ -9,6 +9,7 @@ import { MenuItem } from '@/types/MenuItemType'
 import { useToast } from '@/context/ToastContext'
 import Image from 'next/image'
 import { useZone } from '@/context/ZoneContext'
+import { useUserAdmin } from '@/context/UserAdminContext'
 
 interface EditMenuProps {
   menu: MenuItem;
@@ -21,6 +22,8 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
   const { zones } = useZone();
   const [openEdit, setOpenEdit] = useState(false);
   const [update, setUpdate] = useState(false);
+  const {branch} = useUserAdmin()
+  const isProPlan = branch?.plans?.planType === 'pro';
   
   // Loading states
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
@@ -137,7 +140,7 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
 
   // PATCH Request to save changes
   const handleUpdate = async () => {
-    if (!formData.name.trim() || !formData.categoryId || !formData.price || !formData.zoneId) {
+    if (!formData.name.trim() || !formData.categoryId || !formData.price || (isProPlan && !formData.zoneId)) {
         showToast("Please fill in all required fields", "error");
         setUpdate(false); // Go back to form
         return;
@@ -306,7 +309,9 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
                           </div>
 
                           {/* Zone Selection Dropdown */}
-                          <div className='flex-1'>
+                          {isProPlan 
+                          && (
+                            <div className='flex-1'>
                             <label className='text-sm font-medium text-[#344054] mb-1 block'>Zone</label>
                             <select 
                               name="zoneId" 
@@ -320,6 +325,8 @@ export const EditMenu = ({ menu, branchId, onSuccess }: EditMenuProps) => {
                               ))}
                             </select>
                           </div>
+                          )}
+                          
                       </div>
 
                       <div className='mb-4'>

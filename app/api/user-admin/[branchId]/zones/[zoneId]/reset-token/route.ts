@@ -4,6 +4,7 @@ import { authOptions } from "../../../../../auth/[...nextauth]/auth";
 import { connectToDB } from "@/utils/connectToDb";
 import Zone from "@/utils/models/Zone";
 import { randomBytes } from "crypto";
+import Branches from "@/utils/models/Branches";
 
 type RouteParams = {
   params: Promise<{
@@ -30,6 +31,23 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         const zone = await Zone.findOne({ _id: zoneId, branchId });
         if (!zone) {
             return NextResponse.json({ error: "Zone not found" }, { status: 404 });
+        }
+
+        const branch = await Branches.findById(branchId);
+        if (!branch) {
+            return NextResponse.json({ error: "Branch not found" }, { status: 404 });
+        }
+
+        const planType = branch.plans?.planType || 'basic';
+        if (planType !== 'pro') {
+            return NextResponse.json(
+                { 
+                    error: "Multi-Zone KDS routing is only available on the Pro plan.", 
+                    code: "UPGRADE_REQUIRED",
+                    zones: [] // Safely return empty array so frontend maps don't crash
+                }, 
+                { status: 403 }
+            );
         }
 
         // 3. Generate the new token

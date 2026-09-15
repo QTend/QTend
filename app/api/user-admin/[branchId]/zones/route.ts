@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
 import { connectToDB } from "@/utils/connectToDb";
 import Zone from "@/utils/models/Zone";
 import { randomBytes } from "crypto";
+import Branches from "@/utils/models/Branches";
 
 type RouteParams = {
     params: Promise<{ branchId: string }>
@@ -26,6 +27,22 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
         if (!zone || zone.length === 0) {
             return NextResponse.json({ error: "No zones provided" }, { status: 400 });
+        }
+
+        const branch = await Branches.findById(branchId);
+        if (!branch) {
+            return NextResponse.json({ error: "Branch not found" }, { status: 404 });
+        }
+
+        const planType = branch.plans?.planType || 'basic';
+        if (planType !== 'pro') {
+            return NextResponse.json(
+                { 
+                    error: "Multi-Zone KDS routing is only available on the Pro plan.", 
+                    code: "UPGRADE_REQUIRED" 
+                }, 
+                { status: 403 }
+            );
         }
 
         // 🚀 UPDATED: Map the frontend payload and attach a secure, unique magic token
@@ -68,6 +85,23 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
         await connectToDB();
         const { branchId } = await params;
+
+        const branch = await Branches.findById(branchId);
+        if (!branch) {
+            return NextResponse.json({ error: "Branch not found" }, { status: 404 });
+        }
+
+        const planType = branch.plans?.planType || 'basic';
+        if (planType !== 'pro') {
+            return NextResponse.json(
+                { 
+                    error: "Multi-Zone KDS routing is only available on the Pro plan.", 
+                    code: "UPGRADE_REQUIRED",
+                    zones: [] // Safely return empty array so frontend maps don't crash
+                }, 
+                { status: 403 }
+            );
+        }
 
         const zones = await Zone.find({ branchId }).sort({ createdAt: -1 }).lean();
 

@@ -7,17 +7,24 @@ import { createContext, ReactNode, useContext } from "react";
 
 interface ContextProps {
     branch: CustomerProps;
-    table: string | null
+    table: string | null;
+    isBasic: boolean; 
+    canInteract: boolean;
+    hasTable: boolean
 }
 
 
 const customerContext = createContext<ContextProps | null>(null)
 
-export const CustomerProvider = ({children, branch}: {children: ReactNode, branch: CustomerProps}) => {
+export const CustomerProvider = ({children, branch, isBasic}: {children: ReactNode, branch: CustomerProps, isBasic: boolean}) => {
     const searchParams = useSearchParams()
     const table = searchParams.get('table')
+
+    const hasTable = !!table 
+    
+      const canInteract = !isBasic && hasTable
     return(
-        <customerContext.Provider value={{branch, table}}>
+        <customerContext.Provider value={{branch, table, isBasic, hasTable, canInteract}}>
             {children}
         </customerContext.Provider>
     )

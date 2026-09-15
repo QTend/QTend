@@ -1,5 +1,6 @@
 'use client'
 
+import PremiumFeatureGuard from "@/components/userAdmin/screen/PremiumFeatureGuard";
 import { useUserAdmin } from "@/context/UserAdminContext";
 import { pusherClient } from "@/utils/pusher/pusherClient";
 import { ChevronDown, ChevronUp, SlidersVertical, CheckCircle, Clock } from "lucide-react"
@@ -175,6 +176,18 @@ export default function KitchenOrders() {
     });
 
     return  (
+        <PremiumFeatureGuard 
+            requiredPlan="starter" 
+            featureName="Live Order Management"
+            description="Accept and manage live orders directly from your customers' smartphones."
+            benefits={[
+                "Customers can order directly from the QR menu",
+                "Live order management dashboard",
+                "Real-time incoming alerts (Pusher integration)",
+                "Eliminate waiter order-taking bottlenecks"
+            ]}
+        >
+
         <div className="mx-auto  md:p-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 
@@ -382,5 +395,6 @@ export default function KitchenOrders() {
                 )}
             </div>
         </div>
+        </PremiumFeatureGuard>
     )
 }

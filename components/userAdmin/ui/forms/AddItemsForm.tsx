@@ -42,6 +42,8 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
     const {categories} = useCategory()
     const {branch} = useUserAdmin()
     const {zones} = useZone()
+
+    const isProPlan = branch?.plans?.planType === 'pro';
     
     const [menu, setMenu] = useState<LocalItem>({
         name: '', category: category?._id || '', zoneId: '', price: '', description: '', isAvailable: false, preview: null, file: null
@@ -105,7 +107,7 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
 
     const handleAddMoreItems = () => {
         if (expandedIndex === 'new') {
-            if (!menu.category || !menu.name || !menu.zoneId) {
+            if (!menu.category || !menu.name || (isProPlan && !menu.zoneId )) {
                 showToast("Please provide a name, category, and zone", "error");
                 return;
             }
@@ -122,7 +124,7 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
         let rawItems = [...menusItems];
         
         if (menu.name.trim() !== '') {
-            if (!menu.category || !menu.zoneId) {
+            if (!menu.category || (isProPlan && !menu.zoneId ) ) {
                 showToast("Please select a category and zone for your new item", "error");
                 return;
             }
@@ -283,6 +285,9 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
             </div>
 
             {/* 🚀 SMART ZONE DROPDOWN */}
+            {isProPlan 
+            && 
+            (
             <div className="flex flex-col gap-1 flex-1">
                 <label className="text-sm font-medium text-[#344054]">Zone</label>
                 {zones.length === 0 ? (
@@ -305,6 +310,8 @@ export default function AddItemsForm({ closeModal, onSuccess, branchId, category
                     </select>
                 )}
             </div>
+            )}
+            
         </div>
             
 

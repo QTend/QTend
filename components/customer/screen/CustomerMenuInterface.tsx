@@ -6,17 +6,15 @@ import { MenuItem } from '@/types/MenuItemType'
 import { useEffect, useMemo, useState } from 'react'
 import { GoPlus } from 'react-icons/go'
 import { IoIosArrowDown } from 'react-icons/io'
-import { FiBell } from 'react-icons/fi' 
 import { useCustomer } from '@/context/CustomerContext'
 import { pusherClient } from '@/utils/pusher/pusherClient'
 
-// Import our new modals
 import CallWaiterModal from './Modals/CallWaiterModal'
 import FoodDetailsModal from './Modals/FoodDetailsModal'
 import MyOrdersModal from './Modals/MyOrdersModal'
 
 export const CustomerMenuInterface = () => {
-  const { branch, table } = useCustomer()
+  const { branch, table, isBasic, hasTable, canInteract } = useCustomer()
   
   const [openMenus, setOpenMenus] = useState<string[]>([])
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('All')
@@ -30,7 +28,7 @@ export const CustomerMenuInterface = () => {
   const [myOrders, setMyOrders] = useState<any[]>([]) 
 
 
-  const isViewOnly = !!table;
+
 
   useEffect(() => {
     try {
@@ -175,12 +173,22 @@ export const CustomerMenuInterface = () => {
     setShowOrdersModal(false);
   }
 
+  const visibleItems = useMemo(() => {
+    if(!branch?.menu?.items) return [];
+
+    if(isBasic) {
+      return branch.menu.items.slice(0, 25)
+    }
+
+    return branch.menu.items;
+  }, [branch, isBasic])
+
   return (
     <section className={showSummary ? 'pb-40' : ''}>
      {/* ================= HEADER ================= */}
       <section 
       className='relative w-full  flex flex-col justify-between overflow-hidden'
-      style={{minHeight: isViewOnly ? 300 : 200}}  
+      style={{minHeight: hasTable ? 300 : 200}}  
       >
         
         {/* Background Image & Gradient Overlay */}
@@ -207,7 +215,7 @@ export const CustomerMenuInterface = () => {
               {branch.restaurant.name}
             </h2>
             {
-              isViewOnly && (
+              (hasTable) && (
                  <p className='text-white/90 text-lg md:text-xl font-bold drop-shadow-md tracking-wide'>
                   {table ? (table.toLowerCase().includes('table') ? table : `Table ${table}`) : ''}
                 </p>
@@ -221,7 +229,7 @@ export const CustomerMenuInterface = () => {
             
             {/* Call Waiter Pill */}
             {
-              isViewOnly && (
+              canInteract && (
                  <button 
                   onClick={() => setShowWaiterModal(true)}
                   className="flex items-center gap-2 bg-[#68A544] hover:bg-[#5b903c] text-white py-2 px-4 rounded-full shadow-lg transition-transform active:scale-95 touch-manipulation"
@@ -280,7 +288,7 @@ export const CustomerMenuInterface = () => {
       {/* ================= MEALS LIST ================= */}
       <section className="px-5 pt-3">
         {categoriesToDisplay.map(category => {
-          const foodsInCategory = branch.menu.items.filter(item => item.categoryId === category._id)
+          const foodsInCategory = visibleItems.filter(item => item.categoryId === category._id)
           if (foodsInCategory.length === 0) return null
 
           return (
@@ -310,7 +318,7 @@ export const CustomerMenuInterface = () => {
                       <div className="flex flex-col justify-between items-end py-1">
                         <p className="text-[#F97316] font-bold text-lg">₦{food.price.toLocaleString()}</p>
                         {
-                          isViewOnly && (
+                          canInteract && (
                             <div onClick={() => hasAdded ? removeCart(food._id || '') : addToCart(food)} className={`w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-all shadow-sm touch-manipulation active:scale-90 ${hasAdded ? 'bg-green-500' : 'bg-[#F97316]'}`}>
                               <GoPlus color="white" size={24} className={hasAdded ? "rotate-45 transition-transform pointer-events-none" : "transition-transform pointer-events-none"} />
                             </div>
@@ -344,7 +352,7 @@ export const CustomerMenuInterface = () => {
         cart={cart}
         addToCart={addToCart}
         removeCart={removeCart}
-        isViewOnly={isViewOnly}
+        isViewOnly={(canInteract)}
       />
 
       <MyOrdersModal 
