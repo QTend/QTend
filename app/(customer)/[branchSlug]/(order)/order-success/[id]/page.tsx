@@ -15,9 +15,9 @@ const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: str
    
 
   
-  const [showModal, setShowModal] = useState(false)
   const [cooldown, setCooldown] = useState(0)
   const [exactOrder, setExactOrder] = useState<any>(null)
+  const { setCart } = useCart();
 
 
   // ---> Look up the exact matching ID inside history <---
@@ -29,11 +29,12 @@ const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: str
       if (foundMatch) {
         setExactOrder(foundMatch)
          localStorage.removeItem('cart');
+         setCart([]);
       }
     } catch (e) {
       console.error("Could not trace order history matches", e);
     }
-  }, [id])
+  }, [id, setCart])
 
   useEffect(() => {
     if (cooldown === 0) return
