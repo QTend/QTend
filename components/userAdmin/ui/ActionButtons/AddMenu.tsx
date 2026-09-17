@@ -29,7 +29,7 @@ export function AddMenu({ branchId }: { branchId: string }) {
 
     // 🚀 Basic Plan & 30-Item Check
     const isBasicPlan = !branch?.plans?.planType || branch?.plans?.planType === 'basic';
-    const limitReached = isBasicPlan && totalItemCount >= 15;
+    const limitReached = isBasicPlan && totalItemCount >= 25;
 
     return (
         <>

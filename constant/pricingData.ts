@@ -12,7 +12,7 @@ export const pricingData = [
             'Update prices instantly',
             'View-only (Customers order via waiter)'
         ],
-        btnText: 'Start for Free',
+        btnText: 'Current Plan (14-Day Trial)', // 🚀 Updated
         isPopular: false
     },
     {
@@ -29,7 +29,7 @@ export const pricingData = [
             'Real-time incoming alerts',
             'Email & WhatsApp support'
         ],
-        btnText: 'Start 14-Day Trial',
+        btnText: 'Upgrade to Starter', // 🚀 Updated (No more trial mention)
         isPopular: false
     },
     {
@@ -43,11 +43,11 @@ export const pricingData = [
             'Everything in Starter, plus:',
             'Call Waiter feature (Live requests)',
             'Kitchen Display System (KDS)',
-            'Up to 5 prep zones (Grill, Bar, etc.)',
+            'Unlimited prep zones (Grill, Bar, etc.)',
             'Advanced analytics & reports',
             'Priority customer support'
         ],
-        btnText: 'Get Pro',
+        btnText: 'Upgrade to Pro', // 🚀 Updated
         isPopular: true
     }
 ]

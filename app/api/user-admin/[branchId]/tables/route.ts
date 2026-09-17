@@ -7,6 +7,11 @@ import Branches from '@/utils/models/Branches';
 
 export async function POST(req: Request, { params }: { params: Promise<{ branchId: string }> }) {
     try {
+
+        const session: any = await getServerSession(authOptions);
+        if (!session?.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
         await connectToDB();
         const resolvedParams = await params;
         const { branchId } = resolvedParams;
@@ -21,6 +26,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ branchI
         const branch = await Branches.findById(branchId);
         if (!branch) {
             return NextResponse.json({ error: 'Branch not found' }, { status: 404 });
+        }
+
+        const planType = branch.plans?.planType || 'basic';
+        if (planType === 'basic') {
+            return NextResponse.json(
+                { 
+                    error: "Table management is not available on the Basic plan. Upgrade to Starter or Pro.", 
+                    code: "UPGRADE_REQUIRED" 
+                }, 
+                { status: 403 }
+            );
         }
 
         const existingTables = await Table.find({ branchId });
@@ -119,6 +135,23 @@ export async function GET(req: Request, { params }: { params: Promise<{ branchId
 
         if (!branchId) {
             return NextResponse.json({ error: 'Branch ID is required' }, { status: 400 });
+        }
+
+        const branch = await Branches.findById(branchId);
+        if (!branch) {
+            return NextResponse.json({ error: 'Branch not found' }, { status: 404 });
+        }
+
+        const planType = branch.plans?.planType || 'basic';
+        if (planType === 'basic') {
+            return NextResponse.json(
+                { 
+                    error: "Table management requires Starter or Pro plan.", 
+                    code: "UPGRADE_REQUIRED",
+                    tables: [] // Safely return empty array so frontend maps don't crash
+                }, 
+                { status: 403 }
+            );
         }
 
         // Fetch all tables for this branch

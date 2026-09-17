@@ -12,7 +12,7 @@ import { WaiterNotification } from "@/components/userAdmin/ui/WaiterNotification
 import { Metadata } from "next";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { ZoneProvider } from "@/context/ZoneContext";
-
+import TrialLockWrapper from "@/components/userAdmin/ui/TrialLockWrapper";
 
 export const metadata: Metadata = {
   title: "Qtend | Smart QR Menus & Kitchen Management System",
@@ -35,6 +35,12 @@ export default async function UserAdminDashboardLayout({
   const data = await getCurrentBranch(branchSlug)
   // console.log('useradmin', data)
 
+  const isTrial = data?.branch?.plans?.isTrial !== false;
+  const expiryTimestamp = new Date(data?.branch?.plans?.expiryDate).getTime();
+  const initialIsExpired = isTrial && Date.now() > expiryTimestamp;
+  
+
+
   return (
     <UserAdminProvider branch={data?.branch} user={data?.user} hasActiveZones={data?.hasActiveZones}>
     <CategoryProvider branch={data?.branch}>
@@ -42,7 +48,13 @@ export default async function UserAdminDashboardLayout({
         <MenuItemProvider branch={data?.branch}>
         <GlobalOrderListener />
         <NotificationProvider>
-          <div className=' min-h-screen flex flex-col gap-5'>
+          <TrialLockWrapper 
+            initialIsExpired={initialIsExpired} 
+            expiryTimestamp={expiryTimestamp}
+            isTrial={isTrial}
+            branchSlug={branchSlug}
+          >
+            <div className=' min-h-screen flex flex-col gap-5'>
             <Header  branch={data?.branch} />
             <WaiterNotification />
             <Navbar branch={data?.branch} />
@@ -50,6 +62,8 @@ export default async function UserAdminDashboardLayout({
               {children} 
             </div> 
           </div> 
+          </TrialLockWrapper>
+          
         </NotificationProvider>
         
        </MenuItemProvider>

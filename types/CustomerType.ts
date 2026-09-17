@@ -1,17 +1,15 @@
+import { BranchProps } from "./BranchType";
 import { CategoryProps } from "./MenuCategoyType";
 import { MenuItem } from "./MenuItemType";
 
 export interface CustomerProps {
-  restaurant: {
-    id: string
-    name: string;
-    address: string;
-    slug: string;
+  restaurant: BranchProps & {
+    id: string;
     coverImage: {
-      url: string;
-      publicId: string
+      url: string
     };
-  };
+    plan: string
+  }
   menu: {
     categories: CategoryProps[];
     items: MenuItem[];

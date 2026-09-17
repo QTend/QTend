@@ -97,18 +97,20 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Branch not found" }, { status: 404 });
         }
 
-        // Limit Check (Basic Tier: Max 15 items)
-        const isBasicPlan = !branch.plans?.planType || branch.plans.planType === 'basic';
+        const planType = branch.plans?.planType || 'basic';
+        const isBasicPlan = planType === 'basic';
+        const isProPlan = planType === 'pro';
         
+        // Limit Check (Basic Tier: Max 25 items)
         if (isBasicPlan) {
             const currentItemCount = await MenuItem.countDocuments({ branchId });
             
-            if (currentItemCount + items.length > 15) {
+            if (currentItemCount + items.length > 25) {
                 return NextResponse.json(
                     { 
-                        error: `Basic plan limit reached. You have ${currentItemCount} item(s). Adding ${items.length} more exceeds the 15-item limit. Upgrade to Starter for unlimited items.`,
+                        error: `Basic plan limit reached. You have ${currentItemCount} item(s). Adding ${items.length} more exceeds the 25-item limit. Upgrade to Starter for unlimited items.`,
                         code: "UPGRADE_REQUIRED",
-                        limit: 15,
+                        limit: 25,
                         currentCount: currentItemCount
                     }, 
                     { status: 403 }
@@ -116,10 +118,12 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
             }
         }
 
-        // Check all items BEFORE processing
+        // 🚀 UPDATED: Only require a zoneId if the user is on the Pro plan
         for (const item of items) {
-            if (!item.zoneId) {
-                return NextResponse.json({ error: "Every item must be assigned to a zone." }, { status: 400 });
+            if (isProPlan && !item.zoneId) {
+                return NextResponse.json({ 
+                    error: "Pro plan features require every item to be assigned to a preparation zone." 
+                }, { status: 400 });
             }
         }
 
@@ -128,6 +132,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
             ...item,
             branchId,
             categoryId: categoryId || item.categoryId, 
+            // If they aren't on Pro and didn't send a zone, it simply remains undefined
+            zoneId: item.zoneId || undefined 
         }));
 
         // Bulk insert!
@@ -183,6 +189,8 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     }
 }
 
+
+
 export async function PATCH(req: NextRequest, {params}: RouteParams) {
     try {
         const session: any = await getServerSession(authOptions);
@@ -204,18 +212,55 @@ export async function PATCH(req: NextRequest, {params}: RouteParams) {
 
         await connectToDB();
 
+        // 🚀 1. Fetch the branch to check the active plan
+        const branch = await Branch.findById(branchId);
+        if (!branch) {
+            return NextResponse.json({ error: "Branch not found" }, { status: 404 });
+        }
+        const isProPlan = branch.plans?.planType === 'pro';
+
         const updateFields: any = {};
+        const unsetFields: any = {}; // 🚀 Needed to safely clear empty zones
+
         if (name !== undefined) updateFields.name = name;
         if (categoryId !== undefined) updateFields.categoryId = categoryId;
-        if (zoneId !== undefined) updateFields.zoneId = zoneId;
         if (isAvailable !== undefined) updateFields.isAvailable = isAvailable;
         if (price !== undefined) updateFields.price = price;
         if (description !== undefined) updateFields.description = description;
         if (image !== undefined) updateFields.image = image;
 
+        // 🚀 2. Handle the Zone Logic securely
+        if (zoneId !== undefined) {
+            if (isProPlan) {
+                // If they are on Pro, they MUST provide a zone
+                if (!zoneId) {
+                    return NextResponse.json(
+                        { error: "Pro plan features require the item to be assigned to a preparation zone." }, 
+                        { status: 400 }
+                    );
+                }
+                updateFields.zoneId = zoneId;
+            } else {
+                // If they are on Basic/Starter and send an empty string, safely UNSET it in MongoDB
+                if (!zoneId) {
+                    unsetFields.zoneId = 1;
+                } else {
+                    updateFields.zoneId = zoneId;
+                }
+            }
+        }
+
+        // 🚀 3. Construct the final MongoDB update object
+        const updateQuery: any = { $set: updateFields };
+        
+        // Only append $unset if there is actually a field to remove
+        if (Object.keys(unsetFields).length > 0) {
+            updateQuery.$unset = unsetFields;
+        }
+
         const updatedItem = await MenuItem.findOneAndUpdate(
             { _id: itemId, branchId: branchId },
-            { $set: updateFields },
+            updateQuery,
             { new: true } 
         );
 

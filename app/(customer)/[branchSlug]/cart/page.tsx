@@ -26,9 +26,20 @@ const CartPage = ({ params }: { params: Promise<any> }) => {
   const {branchSlug} = use(params);
    const {cart, setCart} = useCart();
    const router = useRouter()
-   const {table, branch} = useCustomer()
+   const {table, branch, canInteract} = useCustomer()
 
 
+
+   // 🚀 SECURITY 1: Safely Redirect Unauthorized or Empty Carts
+    useEffect(() => {
+      if (!canInteract) {
+        // 1. Not allowed to order? Send back to menu
+        router.replace(`/${branchSlug}/menu${table ? `?table=${table}` : ''}`);
+      } else if (cart.length === 0) {
+        // 2. Empty cart? Send back to menu so they don't checkout $0
+        router.replace(`/${branchSlug}/menu${table ? `?table=${table}` : ''}`);
+      }
+    }, [canInteract, cart.length, branchSlug, router, table]);
 
     // Fixed: item is now a string (MongoDB _id)
     const addQuantity = (itemId: string) => {
@@ -61,6 +72,10 @@ const CartPage = ({ params }: { params: Promise<any> }) => {
     );
 
 
+
+    if (!canInteract || cart.length === 0) {
+      return null; 
+    }
 
   return (
     <section>

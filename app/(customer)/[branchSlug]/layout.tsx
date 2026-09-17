@@ -23,11 +23,13 @@ export default async function CustomerLayout({
 
   const branch = await  getPublicItems(branchSlug) 
 
+  const isBasic = branch.restaurant?.plan === "basic"
 
-  console.log('page2', branchSlug, branch ) 
+
+  console.log('page2', isBasic ) 
   return (
     <>
-      <CustomerProvider branch={branch}>
+      <CustomerProvider branch={branch} isBasic={isBasic}>
           {children}
       </CustomerProvider>
         

@@ -6,5 +6,6 @@ export default async function page ({params} : {params: {branchSlug: string}})  
   
 
   return <CustomerMenuInterface  />
+
 }
 
