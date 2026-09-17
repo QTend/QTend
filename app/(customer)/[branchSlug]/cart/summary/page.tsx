@@ -87,7 +87,7 @@ const SummaryPage = () => {
         
         localStorage.setItem('my_orders', JSON.stringify(updatedOrders));
 
-        if (setCart) setCart([]); 
+        // if (setCart) setCart([]); 
 
        router.replace(`/${branch.restaurant.slug}/order-success/${officialOrder._id}?table=${table}`);
 
