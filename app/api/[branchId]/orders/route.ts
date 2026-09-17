@@ -17,18 +17,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ branchI
         const { tableNumber, items, totalAmount, specialInstructions } = body;
 
         // Basic validation (Now checking the URL's branchId and the body's contents)
-        if (!branchId || !tableNumber || !items || items.length === 0) {
+        if (!branchId || !items || items.length === 0) {
             return NextResponse.json({ error: 'Missing required fields or empty cart' }, { status: 400 });
         }
 
-        // This guarantees the Ticket Splitting will work. If an item lacks a zone, the API rejects it.
-        const hasMissingZones = items.some((item: any) => !item.zoneId);
-        if (hasMissingZones) {
-            return NextResponse.json(
-                { error: 'System Error: One or more items are missing a preparation zone.' }, 
-                { status: 400 }
-            );
-        }
+       
 
         // 4. Generate a clean Order Number (e.g., "ORD-83492")
         const orderNumber = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
@@ -37,7 +30,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ branchI
         const newOrder = await Order.create({
             branchId,
             orderNumber,
-            tableNumber,
+            tableNumber: tableNumber || 'Remote',
             items,
             totalAmount,
             specialInstructions,

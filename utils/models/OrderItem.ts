@@ -32,7 +32,6 @@ const OrderItemSchema = new Schema<IOrderItem>({
   zoneId: { 
     type: Schema.Types.ObjectId, 
     ref: 'Zone', 
-    required: true 
   },
   itemStatus: { 
     type: String, 
@@ -56,7 +55,6 @@ const OrderSchema = new Schema<IOrder>(
     },
     tableNumber: { 
         type: String, 
-        required: true 
     },
     items: { 
         type: [OrderItemSchema], 
