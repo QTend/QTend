@@ -45,13 +45,23 @@ const SummaryPage = () => {
 
     setIsLoading(true)
 
-    const formattedItems = cart.map((item) => ({
-      _id: item._id,
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity,
-      zoneId: typeof item.zoneId === 'object' ? (item.zoneId as any)._id : item.zoneId
-    }));
+    const formattedItems = cart.map((item) => {
+      // Only include zoneId if the item actually has one
+      const baseItem = {
+        _id: item._id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      };
+
+      if (item.zoneId) {
+        return {
+          ...baseItem,
+          zoneId: typeof item.zoneId === 'object' ? (item.zoneId as any)._id : item.zoneId
+        };
+      }
+      return baseItem;
+    });
 
     try {
         const res = await fetch(`/api/${branch.restaurant.id}/orders`, {
