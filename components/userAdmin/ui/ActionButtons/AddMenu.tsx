@@ -27,55 +27,56 @@ export function AddMenu({ branchId }: { branchId: string }) {
 
     const closeModal = () => setOpenModal(false);
 
-    // 🚀 Basic Plan & 30-Item Check
     const isBasicPlan = !branch?.plans?.planType || branch?.plans?.planType === 'basic';
     const limitReached = isBasicPlan && totalItemCount >= 25;
 
     return (
         <>
-            {/* Unified Button Rendering based on limitReached */}
             {limitReached ? (
                 <div 
                     onClick={() => setShowUpgradeModal(true)} 
-                    className="flex items-center gap-2 bg-[#F67D26]/10 text-[#F67D26] border-[#F67D26] hover:bg-[#F67D26]/20 transition-colors border rounded-xl text-sm px-6 py-2 cursor-pointer font-medium"
+                    className="flex items-center gap-1 sm:gap-2 bg-orange-50 text-[#F67D26] border-[#F67D26] hover:bg-orange-100 transition-colors border rounded-xl text-xs sm:text-sm px-3 sm:px-6 py-2 cursor-pointer font-medium whitespace-nowrap"
                 >
-                    <Rocket size={18} /> 
-                    Upgrade to Add More
+                    <Rocket size={16} /> 
+                    <span className="hidden sm:inline">Upgrade to Add More</span>
+                    <span className="sm:hidden">Upgrade</span>
                 </div>
             ) : (
-                <div onClick={() => setOpenModal(true)} className="flex items-center gap-1 text-[#68A544] border-[#68A544] hover:bg-[#68A544]/5 transition-colors border rounded-xl text-sm px-6 py-1 cursor-pointer font-medium">
-                    <Plus size={20} /> Add item
+                <div onClick={() => setOpenModal(true)} className="flex items-center gap-1 bg-[#68A544] text-white hover:bg-[#5a8e3b] transition-colors rounded-xl text-xs sm:text-sm px-3 sm:px-6 py-2 cursor-pointer font-medium whitespace-nowrap shadow-sm">
+                    <Plus size={18} /> Add item
                 </div>
             )}
 
-            {/* Form Modal */}
             {openModal && (
                 <Modal center={true} onClick={() => setOpenModal(false)} >
-                    <AddItemsForm 
-                        closeModal={closeModal} 
-                        onSuccess={closeModal} 
-                        branchId={branchId} 
-                        onUpgradeRequired={() => {
-                            setOpenModal(false);
-                            setShowUpgradeModal(true);
-                        }}
-                    />
+                    <div className="w-full max-w-[95vw] md:max-w-2xl max-h-[90svh] overflow-y-auto no-scrollbar rounded-2xl bg-white">
+                        <AddItemsForm 
+                            closeModal={closeModal} 
+                            onSuccess={closeModal} 
+                            branchId={branchId} 
+                            onUpgradeRequired={() => {
+                                setOpenModal(false);
+                                setShowUpgradeModal(true);
+                            }}
+                        />
+                    </div>
                 </Modal>
             )}
 
-            {/* Upgrade Modal now mounts perfectly because it's always part of the output tree */}
             {showUpgradeModal && (
                 <Modal center={true} onClick={() => setShowUpgradeModal(false)}>
-                    <UpgradeModal 
-                        closeModal={() => setShowUpgradeModal(false)}
-                        title="Basic Tier Limit Reached"
-                        message="You've reached the 30-item limit on the Basic plan. Upgrade to Starter for unlimited items, live order tracking, and more."
-                        actionLabel="View Pricing Plans"
-                        onAction={() => {
-                            setShowUpgradeModal(false);
-                            router.push(`/dashboard/${branch?.slug}/billing`);
-                        }}
-                    />
+                    <div className="w-full max-w-[95vw] md:max-w-md">
+                        <UpgradeModal 
+                            closeModal={() => setShowUpgradeModal(false)}
+                            title="Basic Tier Limit Reached"
+                            message="You've reached the 30-item limit on the Basic plan. Upgrade to Starter for unlimited items, live order tracking, and more."
+                            actionLabel="View Pricing Plans"
+                            onAction={() => {
+                                setShowUpgradeModal(false);
+                                router.push(`/dashboard/${branch?.slug}/billing`);
+                            }}
+                        />
+                    </div>
                 </Modal>
             )}
         </>
