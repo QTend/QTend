@@ -358,35 +358,35 @@ export default function KitchenOrders() {
                                             </div>
                                         </div>
 
-                                        <div className="flex justify-between items-end border-t border-gray-100 pt-5">
-                                            <div>
-                                                <p className="text-sm text-[#666666] mb-1">Total</p>
-                                                <p className="text-[#4B2E05] font-bold text-2xl">
-                                                    ₦{order.totalAmount.toLocaleString()}
-                                                </p>
-                                            </div>
-                                            
-                                            <div className="flex gap-3">
-                                                {isActive && (
-                                                    <button 
-                                                        onClick={(e) => markOrderComplete(order._id, e)}
-                                                        className="bg-[#16A34A] hover:bg-[#15803d] text-white font-bold rounded-xl py-3 px-6 transition-colors active:scale-95 shadow-sm"
-                                                    >
-                                                        {completeLoading ? "..." : "Mark Complete"}
-                                                    </button>
-                                                )}
+                                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-5 border-t border-gray-100 pt-5"> 
+                                            <div> 
+                                            <p className="text-sm text-[#666666] mb-1">Total</p> 
+                                            <p className="text-[#4B2E05] font-bold text-2xl"> 
+                                            ₦{order.totalAmount.toLocaleString()} 
+                                            </p> 
+                                            </div> 
 
-                                                {order.paymentStatus !== 'Paid' && (
-                                                    <button 
-                                                        onClick={(e) => markOrderPaid(order._id, e)}
-                                                        disabled={paymentLoading === order._id}
-                                                        className="bg-[#F97316] hover:bg-[#ea580c] text-white font-bold rounded-xl py-3 px-6 transition-colors active:scale-95 shadow-sm disabled:opacity-50"
-                                                    >
-                                                        {paymentLoading === order._id ? "..." : "Mark as Paid"}
-                                                    </button>
-                                                )}
-                                            </div>
+                                            <div className="flex flex-col md:flex-row gap-3 w-full sm:w-auto"> 
+                                                {isActive && ( 
+                                                <button 
+                                                onClick={(e) => markOrderComplete(order._id, e)} 
+                                                className="w-full sm:w-auto bg-[#16A34A] hover:bg-[#15803d] text-white font-bold rounded-xl py-3 px-6 transition-colors active:scale-95 shadow-sm"
+                                                > 
+                                                {completeLoading ? "..." : "Mark Complete"} 
+                                                </button> 
+                                                )} 
+                                                {order.paymentStatus !== 'Paid' && ( 
+                                                <button 
+                                                onClick={(e) => markOrderPaid(order._id, e)} 
+                                                disabled={paymentLoading === order._id} 
+                                                className="w-full sm:w-auto bg-[#F97316] hover:bg-[#ea580c] text-white font-bold rounded-xl py-3 px-6 transition-colors active:scale-95 shadow-sm disabled:opacity-50"
+                                                > 
+                                                {paymentLoading === order._id ? "..." : "Mark as Paid"} 
+                                                </button> 
+                                                )} 
+                                            </div> 
                                         </div>
+
                                     </div>
                                 )}
                             </div>
