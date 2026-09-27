@@ -193,7 +193,7 @@ export const CustomerMenuInterface = ({branchSlug}: any) => {
         <div className="absolute inset-0 z-0">
           {branch?.restaurant?.coverImage?.url ? (
             <img 
-              src={branch.restaurant.coverImage.url} 
+              src={branch?.restaurant?.coverImage.url} 
               alt={branch?.restaurant?.name || "Restaurant Cover"} 
               className="w-full h-full object-cover"
             />
