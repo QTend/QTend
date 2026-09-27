@@ -13,7 +13,7 @@ import CallWaiterModal from './Modals/CallWaiterModal'
 import FoodDetailsModal from './Modals/FoodDetailsModal'
 import MyOrdersModal from './Modals/MyOrdersModal'
 
-export const CustomerMenuInterface = () => {
+export const CustomerMenuInterface = ({branchSlug}: any) => {
   const { branch, table, isBasic, hasTable, canInteract } = useCustomer()
   
   const [openMenus, setOpenMenus] = useState<string[]>([])
@@ -26,8 +26,6 @@ export const CustomerMenuInterface = () => {
   const [showWaiterModal, setShowWaiterModal] = useState(false)
   const [showOrdersModal, setShowOrdersModal] = useState(false)
   const [myOrders, setMyOrders] = useState<any[]>([]) 
-
-
 
 
   useEffect(() => {
@@ -193,14 +191,14 @@ export const CustomerMenuInterface = () => {
         
         {/* Background Image & Gradient Overlay */}
         <div className="absolute inset-0 z-0">
-          {branch.restaurant.coverImage?.url ? (
+          {branch?.restaurant?.coverImage?.url ? (
             <img 
               src={branch.restaurant.coverImage.url} 
-              alt={branch.restaurant.name} 
+              alt={branch?.restaurant?.name || "Restaurant Cover"} 
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-linear-to-br from-zinc-800 to-black opacity-80" />
+              <div className="w-full h-full bg-linear-to-br from-zinc-800 to-black opacity-80" />
           )}
           {/* Dark gradient to ensure text readability */}
           <div className="absolute inset-0 bg-black/40" />
@@ -324,7 +322,6 @@ export const CustomerMenuInterface = () => {
                             </div>
                           )
                         }
-                        
                       </div>
                     </div>
                   )
@@ -335,7 +332,7 @@ export const CustomerMenuInterface = () => {
         })}
       </section>
 
-      {showSummary && <Order cart={cart} slug={branch.restaurant.slug} table={table} />}
+      {showSummary && <Order cart={cart} slug={branchSlug} table={table} />}
 
       {/* ================= MODALS ================= */}
       <CallWaiterModal 

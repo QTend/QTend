@@ -12,7 +12,7 @@ import { PricingComparison } from '@/components/site/pricing/PricingComparison'
 
 
 
-export const PricingCards = ({ isAnnual }: { isAnnual: boolean }) => {
+const PricingCards = ({ isAnnual }: { isAnnual: boolean }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-desktop mx-auto mb-20">
             {pricingData.map((plan) => {
@@ -82,7 +82,7 @@ export const PricingCards = ({ isAnnual }: { isAnnual: boolean }) => {
     )
 }
 
-export const PricingSection = () => {
+const PricingSection = () => {
     const [isAnnual, setIsAnnual] = useState(false);
 
     return (

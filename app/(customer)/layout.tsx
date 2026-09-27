@@ -9,6 +9,8 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
+
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
