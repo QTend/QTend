@@ -4,7 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 import { getCurrentBranch } from '@/lib/get-current-branch';
 import { MenuItemProvider } from '@/context/MenuItemContext';
 import { CategoryProvider } from '@/context/CategoryContext';
-import { Navbar } from '@/components/userAdmin/ui/layouts/Navbar'; // Assuming this import
+import { Navbar } from '@/components/userAdmin/ui/layouts/Navbar'; 
 import { Header } from "@/components/userAdmin/ui/layouts/Haeder";
 import { UserAdminProvider } from "@/context/UserAdminContext";
 import GlobalOrderListener from "@/context/GlobalOrderListener";
@@ -33,14 +33,11 @@ export default async function UserAdminDashboardLayout({
   }
 
   const data = await getCurrentBranch(branchSlug)
-  // console.log('useradmin', data)
 
   const isTrial = data?.branch?.plans?.isTrial !== false;
   const expiryTimestamp = new Date(data?.branch?.plans?.expiryDate).getTime();
   const initialIsExpired = isTrial && Date.now() > expiryTimestamp;
   
-
-
   return (
     <UserAdminProvider branch={data?.branch} user={data?.user} hasActiveZones={data?.hasActiveZones}>
     <CategoryProvider branch={data?.branch}>
@@ -54,7 +51,8 @@ export default async function UserAdminDashboardLayout({
             isTrial={isTrial}
             branchSlug={branchSlug}
           >
-            <div className=' min-h-screen flex flex-col gap-5'>
+            {/* Added pb-20 on mobile to account for the new bottom nav bar */}
+            <div className='min-h-screen flex flex-col md:gap-5 pb-20 md:pb-0 bg-[#F9FAFB] md:bg-transparent'>
             <Header  branch={data?.branch} />
             <WaiterNotification />
             <Navbar branch={data?.branch} />
@@ -63,12 +61,9 @@ export default async function UserAdminDashboardLayout({
             </div> 
           </div> 
           </TrialLockWrapper>
-          
         </NotificationProvider>
-        
        </MenuItemProvider>
       </ZoneProvider>
-      
     </CategoryProvider>
     </UserAdminProvider>
   );

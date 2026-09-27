@@ -18,6 +18,7 @@ const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: str
   const [cooldown, setCooldown] = useState(0)
   const [exactOrder, setExactOrder] = useState<any>(null)
   const { setCart } = useCart();
+  const [isLaoding, setIsLoading] = useState(false)
 
 
   // ---> Look up the exact matching ID inside history <---
@@ -45,6 +46,7 @@ const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: str
   }, [cooldown])
 
   const handleNextMenu = () => {
+    setIsLoading(true)
     router.replace(`/${branchSlug}/menu?table=${exactOrder?.tableNumber}`)
   }
 
@@ -83,7 +85,7 @@ const SuccessPage = ({ params }: { params: Promise<{ branchSlug: string, id: str
         <Button
           onClick={handleNextMenu}
           bg='#F97316'
-          text={'Back to Menu'}
+          text={isLaoding ? 'Redirecting...' : 'Back to Menu'}
         />
       </div>
     </section>
