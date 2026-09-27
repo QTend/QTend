@@ -13,7 +13,7 @@ import CallWaiterModal from './Modals/CallWaiterModal'
 import FoodDetailsModal from './Modals/FoodDetailsModal'
 import MyOrdersModal from './Modals/MyOrdersModal'
 
-export const CustomerMenuInterface = () => {
+export const CustomerMenuInterface = ({branchSlug}: any) => {
   const { branch, table, isBasic, hasTable, canInteract } = useCustomer()
   
   const [openMenus, setOpenMenus] = useState<string[]>([])
@@ -335,7 +335,7 @@ export const CustomerMenuInterface = () => {
         })}
       </section>
 
-      {showSummary && <Order cart={cart} slug={branch.restaurant.slug} table={table} />}
+      {showSummary && <Order cart={cart} slug={branchSlug} table={table} />}
 
       {/* ================= MODALS ================= */}
       <CallWaiterModal 
