@@ -99,7 +99,7 @@ export default function MenuTable(){
                         <ChevronDown size={14} className="text-gray-500" />
 
                         {dropDown && ( 
-                            <div className="absolute top-full mt-2 left-0 w-48 max-h-60 overflow-y-auto bg-white border border-gray-200 shadow-xl rounded-xl z-50"> 
+                            <div className="absolute top-full mt-2 right-0 w-48 max-h-60 overflow-y-auto bg-white border border-gray-200 shadow-xl rounded-xl z-50"> 
                                 <p onClick={() => { setSelectedCategory(null); refreshMenuItems(); }} className="px-4 py-3 border-b text-sm hover:bg-gray-50 cursor-pointer">
                                     All categories
                                 </p>
