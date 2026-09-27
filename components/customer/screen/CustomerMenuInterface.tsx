@@ -28,8 +28,6 @@ export const CustomerMenuInterface = ({branchSlug}: any) => {
   const [myOrders, setMyOrders] = useState<any[]>([]) 
 
 
-
-
   useEffect(() => {
     try {
       const storedCart = localStorage.getItem('cart')
@@ -193,14 +191,14 @@ export const CustomerMenuInterface = ({branchSlug}: any) => {
         
         {/* Background Image & Gradient Overlay */}
         <div className="absolute inset-0 z-0">
-          {branch.restaurant.coverImage?.url ? (
+          {branch?.restaurant?.coverImage?.url ? (
             <img 
               src={branch.restaurant.coverImage.url} 
-              alt={branch.restaurant.name} 
+              alt={branch?.restaurant?.name || "Restaurant Cover"} 
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-linear-to-br from-zinc-800 to-black opacity-80" />
+              <div className="w-full h-full bg-linear-to-br from-zinc-800 to-black opacity-80" />
           )}
           {/* Dark gradient to ensure text readability */}
           <div className="absolute inset-0 bg-black/40" />
@@ -324,7 +322,6 @@ export const CustomerMenuInterface = ({branchSlug}: any) => {
                             </div>
                           )
                         }
-                        
                       </div>
                     </div>
                   )
