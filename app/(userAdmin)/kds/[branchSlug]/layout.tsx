@@ -1,17 +1,10 @@
-import { redirect } from "next/navigation";
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/auth';
 import { getCurrentBranch } from '@/lib/get-current-branch';
-import { MenuItemProvider } from '@/context/MenuItemContext';
 import { CategoryProvider } from '@/context/CategoryContext';
-import { Navbar } from '@/components/userAdmin/ui/layouts/Navbar'; // Assuming this import
 import { Header } from "@/components/userAdmin/ui/layouts/Haeder";
 import { UserAdminProvider } from "@/context/UserAdminContext";
 import GlobalOrderListener from "@/context/GlobalOrderListener";
-import { WaiterNotification } from "@/components/userAdmin/ui/WaiterNotification";
 import { Metadata } from "next";
 import { NotificationProvider } from "@/context/NotificationContext";
-import { ZoneProvider } from "@/context/ZoneContext";
 
 
 export const metadata: Metadata = {
