@@ -16,11 +16,17 @@ import { ZoneProvider } from "@/context/ZoneContext";
 
 export const metadata: Metadata = {
   title: "Qtend KDS",
-  manifest: '/manifest.webmanifest',
+  manifest: '/kds-manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Qtend KDS'
+    title: 'QTend KDS',
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
   }
 };
 
