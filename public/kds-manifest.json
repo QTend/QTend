@@ -1,8 +1,8 @@
 {
   "name": "QTend KDS",
-  "short_name": "KDS",
+  "short_name": "QTend KDS",
   "description": "QTend Kitchen Display System",
-  "start_url": ".", 
+
   "display": "standalone",
   "background_color": "#FFFFFF",
     "theme_color": "#F67D26",
