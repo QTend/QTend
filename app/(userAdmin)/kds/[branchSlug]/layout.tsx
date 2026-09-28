@@ -15,7 +15,13 @@ import { ZoneProvider } from "@/context/ZoneContext";
 
 
 export const metadata: Metadata = {
-  title: "Qtend | Smart QR Menus & Kitchen Management System",
+  title: "Qtend KDS",
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Qtend KDS'
+  }
 };
 
 export default async function UserAdminDashboardLayout({
