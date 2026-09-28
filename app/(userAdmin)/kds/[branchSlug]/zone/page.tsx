@@ -32,9 +32,13 @@ export default function ZoneOrders() {
     const branchSlug = params?.branchSlug as string; 
     
     const searchParams = useSearchParams();
-    const targetZone = searchParams.get('zone')?.toLowerCase() || '';
     const rawToken = searchParams.get('token');
-    const token = (rawToken && rawToken !== 'undefined' && rawToken !== 'null') ? rawToken : '';
+    const rawZone = searchParams.get('zone');
+
+
+    const [token, setToken] = useState<string>('');
+    const [targetZone, setTargetZone] = useState<string>('');
+    const [isReady, setIsReady] = useState(false); // Prevents hydration mismatch
 
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +48,24 @@ export default function ZoneOrders() {
     const [realBranchId, setRealBranchId] = useState<string | null>(null);
     const [isTokenInvalid, setIsTokenInvalid] = useState(false);
     const [audioUnlocked, setAudioUnlocked] = useState(false);
+
+
+
+    useEffect(() => {
+        // Priority 1: Read from URL. Priority 2: Fallback to localStorage
+        const validUrlToken = (rawToken && rawToken !== 'undefined' && rawToken !== 'null') ? rawToken : null;
+        
+        const finalToken = validUrlToken || localStorage.getItem('kds_token') || '';
+        const finalZone = rawZone || localStorage.getItem('kds_zone') || '';
+
+        // Save to localStorage so the PWA remembers them tomorrow
+        if (validUrlToken) localStorage.setItem('kds_token', validUrlToken);
+        if (rawZone) localStorage.setItem('kds_zone', rawZone);
+
+        setToken(finalToken);
+        setTargetZone(finalZone.toLowerCase());
+        setIsReady(true);
+    }, [rawToken, rawZone]);
 
     const handleUnlockAudio = () => {
         const silentAudio = new Audio('/ding.mp3');
@@ -164,9 +186,10 @@ export default function ZoneOrders() {
         return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
     }
 
-    // ==========================================
-    // 🚀 Missing Token UI
-    // ==========================================
+    // Missing Token UI (Updated to wait for isReady)
+    if (!isReady) return null;
+
+    // Missing Token UI
     if (!token) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
