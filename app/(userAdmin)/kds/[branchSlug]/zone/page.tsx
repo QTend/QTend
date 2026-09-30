@@ -1,8 +1,7 @@
 'use client'
 
 import { pusherClient } from "@/utils/pusher/pusherClient";
-// 🚀 NEW: Added AlertTriangle for the expired link screen
-import { SlidersVertical, CheckCircle, ChevronDown, Lock, AlertTriangle, VolumeX } from "lucide-react";
+import { SlidersVertical, CheckCircle, ChevronDown, Lock, AlertTriangle, RefreshCw } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useParams } from "next/navigation"; 
 import { registerPushNotifications } from "@/constant/registerPushNotifications";
@@ -28,10 +27,6 @@ interface Order {
 
 const processedKDSOrders = new Set<string>();
 
-
-
-
-
 export default function ZoneOrders() {
     const params = useParams();
     const branchSlug = params?.branchSlug as string; 
@@ -40,10 +35,9 @@ export default function ZoneOrders() {
     const rawToken = searchParams.get('token');
     const rawZone = searchParams.get('zone');
 
-
     const [token, setToken] = useState<string>('');
     const [targetZone, setTargetZone] = useState<string>('');
-    const [isReady, setIsReady] = useState(false); // Prevents hydration mismatch
+    const [isReady, setIsReady] = useState(false); 
 
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -51,19 +45,14 @@ export default function ZoneOrders() {
     const [activeFilter, setActiveFilter] = useState<'Active' | 'Completed'>('Active'); 
     const [timeframe, setTimeframe] = useState('today');
     const [realBranchId, setRealBranchId] = useState<string | null>(null);
+    const [realZoneId, setRealZoneId] = useState<string | null>(null);
     const [isTokenInvalid, setIsTokenInvalid] = useState(false);
-    const [audioUnlocked, setAudioUnlocked] = useState(false);
-
-
 
     useEffect(() => {
-        // Priority 1: Read from URL. Priority 2: Fallback to localStorage
         const validUrlToken = (rawToken && rawToken !== 'undefined' && rawToken !== 'null') ? rawToken : null;
-        
         const finalToken = validUrlToken || localStorage.getItem('kds_token') || '';
         const finalZone = rawZone || localStorage.getItem('kds_zone') || '';
 
-        // Save to localStorage so the PWA remembers them tomorrow
         if (validUrlToken) localStorage.setItem('kds_token', validUrlToken);
         if (rawZone) localStorage.setItem('kds_zone', rawZone);
 
@@ -71,14 +60,6 @@ export default function ZoneOrders() {
         setTargetZone(finalZone.toLowerCase());
         setIsReady(true);
     }, [rawToken, rawZone]);
-
-    const handleUnlockAudio = () => {
-        const silentAudio = new Audio('/ding.mp3');
-        silentAudio.volume = 0;
-        silentAudio.play()
-            .then(() => setAudioUnlocked(true))
-            .catch(e => console.error(e));
-    };
 
     const filters = ['Active', 'Completed'];
 
@@ -89,28 +70,22 @@ export default function ZoneOrders() {
         const channel = pusherClient.subscribe(channelName);
 
         const handleNewOrder = (incomingOrder: any) =>  {
-            console.log('🔥 NEW ORDER RECEIVED VIA PUSHER:', incomingOrder);
             setOrders(prevOrder => [incomingOrder, ...prevOrder]);
 
-            // 🚀 NEW: Smart Filter for the Kitchen Bell
             const orderId = incomingOrder._id || incomingOrder.orderNumber;
-            
-            // 1. Block duplicate sounds
             if (processedKDSOrders.has(orderId)) return;
             processedKDSOrders.add(orderId);
             setTimeout(() => processedKDSOrders.delete(orderId), 10000);
 
-            // 2. Check if this specific zone has to cook anything for this order
             const hasItemsForThisZone = incomingOrder.items.some((item: any) => {
                 const zName = typeof item.zoneId === 'object' ? item.zoneId?.name?.toLowerCase() : '';
                 return zName === targetZone;
             });
 
-            // 3. Only play the sound if the order belongs to them
             if (hasItemsForThisZone) {
                 try {
                     const audio = new Audio('/ding.mp3'); 
-                    audio.play().catch(e => console.log("KDS Audio Blocked - Tap the screen first!"));
+                    audio.play().catch(e => console.log("Audio blocked by browser"));
                 } catch (error) {
                     console.error("Audio error");
                 }
@@ -122,7 +97,7 @@ export default function ZoneOrders() {
         return () => {
             channel.unbind('new-order', handleNewOrder);
         }
-    }, [realBranchId, token]);
+    }, [realBranchId, token, targetZone]);
 
     const fetchOrders = useCallback(async (showLoadingState = false) => {
         if (showLoadingState) setIsLoading(true);
@@ -133,18 +108,11 @@ export default function ZoneOrders() {
             if (res.ok) {
                 setOrders(data.orders);
                 setRealBranchId(data.branchId);
-
-                // 🚀 NEW: Ask for push permission and register this device
-                // Wait a moment to ensure the UI has loaded before asking
-                setTimeout(() => {
-                    registerPushNotifications(data.branchId, data.zoneId);
-                }, 2000);
+                setRealZoneId(data.zoneId); // 🚀 Save the zone ID for push registration
             } else {
-                // 🚀 NEW: Catch the exact 401 error and trigger the expired UI
                 if (res.status === 401) {
                     setIsTokenInvalid(true);
                 }
-                console.error("API Error:", data.error);
             }
         } catch (error) {
             console.error("Failed to fetch orders:", error);
@@ -158,6 +126,29 @@ export default function ZoneOrders() {
             fetchOrders(true); 
         }
     }, [fetchOrders, branchSlug, token]); 
+
+    // 🚀 NEW: Auto-prompt effect for background notifications
+    useEffect(() => {
+        if (!realBranchId || !realZoneId) return;
+
+        const pushTimer = setTimeout(() => {
+            try {
+                registerPushNotifications(realBranchId, realZoneId);
+            } catch (e) {
+                console.log("Auto-prompt blocked by browser security rules.");
+            }
+        }, 3000);
+
+        return () => clearTimeout(pushTimer);
+    }, [realBranchId, realZoneId]);
+
+    // 🚀 NEW: Manual refresh + fallback push trigger for strict browsers (iOS)
+    const handleRefresh = () => {
+        fetchOrders(true);
+        if (realBranchId && realZoneId) {
+            registerPushNotifications(realBranchId, realZoneId);
+        }
+    };
 
     const markItemReady = async (orderId: string, itemId: string) => {
         setItemLoading(itemId);
@@ -197,10 +188,8 @@ export default function ZoneOrders() {
         return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
     }
 
-    // Missing Token UI (Updated to wait for isReady)
     if (!isReady) return null;
 
-    // Missing Token UI
     if (!token) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -217,9 +206,6 @@ export default function ZoneOrders() {
         );
     }
 
-    // ==========================================
-    // 🚀 NEW: Expired/Invalid Token UI
-    // ==========================================
     if (isTokenInvalid) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -235,7 +221,6 @@ export default function ZoneOrders() {
             </div>
         );
     }
-    // ==========================================
 
     const filteredOrders = orders.filter(order => {
         if (order.status !== activeFilter) return false;
@@ -250,20 +235,10 @@ export default function ZoneOrders() {
 
     return  (
         <div className="mx-auto md:p-6">
-            {/* Header Area */}
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-[#4B2E05] capitalize mb-4">
                     {targetZone ? `${targetZone} Station` : 'Prep Station'}
                 </h1>
-                {!audioUnlocked && (
-                    <button 
-                        onClick={handleUnlockAudio}
-                        className="flex items-center gap-1.5 bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-sm font-bold border border-red-200 animate-pulse"
-                    >
-                        <VolumeX size={16} />
-                        Tap to Enable Sounds
-                    </button>
-                )}
                 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="bg-white p-1.5 flex items-center gap-1 rounded-2xl shadow-sm border border-gray-100 w-fit">
@@ -282,22 +257,33 @@ export default function ZoneOrders() {
                         ))}
                     </div>
 
-                    <div className="relative flex items-center bg-white py-2 pl-3 pr-8 gap-2 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors w-fit">
-                        <SlidersVertical size={16} className="text-gray-500" />
-                        <select 
-                            value={timeframe}
-                            onChange={(e) => setTimeframe(e.target.value)}
-                            className="text-sm font-medium text-gray-700 bg-transparent outline-none appearance-none cursor-pointer w-full z-10 relative"
+                    <div className="flex items-center gap-3">
+                        {/* 🚀 NEW: Manual Refresh Button */}
+                        <button 
+                            onClick={handleRefresh}
+                            disabled={isLoading}
+                            className="flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
                         >
-                            <option value="today">Today</option>
-                            <option value="7days">Last 7 Days</option>
-                        </select>
-                        <ChevronDown size={16} className="text-gray-500 absolute right-3 pointer-events-none" />
+                            <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
+                            <span className="text-sm font-medium">Refresh</span>
+                        </button>
+
+                        <div className="relative flex items-center bg-white py-2 pl-3 pr-8 gap-2 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors w-fit">
+                            <SlidersVertical size={16} className="text-gray-500" />
+                            <select 
+                                value={timeframe}
+                                onChange={(e) => setTimeframe(e.target.value)}
+                                className="text-sm font-medium text-gray-700 bg-transparent outline-none appearance-none cursor-pointer w-full z-10 relative"
+                            >
+                                <option value="today">Today</option>
+                                <option value="7days">Last 7 Days</option>
+                            </select>
+                            <ChevronDown size={16} className="text-gray-500 absolute right-3 pointer-events-none" />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Grid layout for responsive kitchen tickets */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {isLoading ? (
                     <div className="col-span-full bg-white rounded-2xl p-10 text-center border border-gray-100 shadow-sm flex flex-col items-center">
@@ -318,7 +304,6 @@ export default function ZoneOrders() {
 
                         return (
                             <div key={order._id} className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col h-full">
-                                {/* Ticket Header */}
                                 <div className="flex items-start justify-between border-b border-gray-100 pb-3 mb-3">
                                     <div className="grid gap-1">
                                         <p className="text-xl font-black text-[#F97316]">#{order.orderNumber}</p>
@@ -329,7 +314,6 @@ export default function ZoneOrders() {
                                     </div>
                                 </div>
 
-                                {/* Special Instructions */}
                                 {order.specialInstructions && (
                                     <div className="mb-4 bg-orange-50 border border-orange-100 p-3 rounded-xl">
                                         <p className="text-xs text-orange-400 font-bold uppercase mb-1">Note:</p>
@@ -337,7 +321,6 @@ export default function ZoneOrders() {
                                     </div>
                                 )}
 
-                                {/* Ticket Items */}
                                 <div className="flex-1 flex flex-col gap-3">
                                     {zoneItems.map((item, index) => (
                                         <div key={item._id || index} className="flex flex-col gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100">
@@ -346,7 +329,6 @@ export default function ZoneOrders() {
                                                 {item.name}
                                             </p>
                                             
-                                            {/* Item Action Button */}
                                             {item.itemStatus !== 'Ready' ? (
                                                 <button 
                                                     onClick={() => markItemReady(order._id, item._id)}
