@@ -3,6 +3,7 @@ import { connectToDB } from "@/utils/connectToDb";
 import Zone from "@/utils/models/Zone";
 import Order from "@/utils/models/OrderItem"; 
 import { pusherServer } from "@/utils/pusher/pusher";
+import { dispatchPushAlert } from "@/utils/pushNotification";
 
 
 export async function PATCH(req: NextRequest) {
@@ -59,6 +60,16 @@ export async function PATCH(req: NextRequest) {
             zoneName: zone.name
         });
         // ==========================================
+
+       if (isOrderFullyReady && itemStatus === 'Ready') {
+            await dispatchPushAlert({
+                branchId: updatedOrder.branchId.toString(),
+                target: 'admin',
+                title: '🔔 ORDER READY',
+                body: `Table ${updatedOrder.tableNumber}'s food is ready for pickup!`,
+                url: `/dashboard/orders`, 
+            });
+        }
 
         return NextResponse.json({ success: true, message: "Item updated successfully", order: updatedOrder }, { status: 200 });
 
