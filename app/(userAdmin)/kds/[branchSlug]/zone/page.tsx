@@ -5,6 +5,7 @@ import { pusherClient } from "@/utils/pusher/pusherClient";
 import { SlidersVertical, CheckCircle, ChevronDown, Lock, AlertTriangle, VolumeX } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useParams } from "next/navigation"; 
+import { registerPushNotifications } from "@/constant/registerPushNotifications";
 
 interface OrderItem {
     _id: string;
@@ -26,6 +27,10 @@ interface Order {
 }
 
 const processedKDSOrders = new Set<string>();
+
+
+
+
 
 export default function ZoneOrders() {
     const params = useParams();
@@ -128,6 +133,12 @@ export default function ZoneOrders() {
             if (res.ok) {
                 setOrders(data.orders);
                 setRealBranchId(data.branchId);
+
+                // 🚀 NEW: Ask for push permission and register this device
+                // Wait a moment to ensure the UI has loaded before asking
+                setTimeout(() => {
+                    registerPushNotifications(data.branchId, data.zoneId);
+                }, 2000);
             } else {
                 // 🚀 NEW: Catch the exact 401 error and trigger the expired UI
                 if (res.status === 401) {

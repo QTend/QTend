@@ -4,7 +4,7 @@ import { AddMenu } from "@/components/userAdmin/ui/ActionButtons/AddMenu";
 import { ManageCategory } from "@/components/userAdmin/ui/ActionButtons/ManageCategory";
 import Switch from "./Switch";
 import { EditMenu } from "./EditMenu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MenuItem } from "@/types/MenuItemType";
 import { useToast } from "@/context/ToastContext";
 import { useMenuItem } from "@/context/MenuItemContext";
@@ -15,6 +15,7 @@ import { LoadingSpiner } from "@/components/LoadingSpiner";
 import { Pagination } from "./Pagination";
 import { useUserAdmin } from "@/context/UserAdminContext";
 import Image from "next/image";
+import { registerPushNotifications } from "@/constant/registerPushNotifications";
 
 const tableHeads = ['Menu items', 'Descriptions', 'Zone', 'Category', 'Price', 'Availability']
 
@@ -26,6 +27,19 @@ export default function MenuTable(){
     const [dropDown, setDropDown] = useState(false)
     const [selectedCategory, setSelectedCategory] = useState<CategoryProps | null>(null)
     const [togglingItemId, setTogglingItemId] = useState<string | null>(null);
+
+
+    useEffect(() => {
+        if (!branch?._id) return;
+
+        // Use a 3-second timeout so the browser doesn't throw the permission 
+        // popup exactly as the page is trying to render the UI. 
+        const pushTimer = setTimeout(() => {
+            registerPushNotifications(branch?._id);
+        }, 3000);
+
+        return () => clearTimeout(pushTimer);
+    }, [branch?._id]);
 
     const handleFilterCategory = async (c: CategoryProps) => {
         setSelectedCategory(c)

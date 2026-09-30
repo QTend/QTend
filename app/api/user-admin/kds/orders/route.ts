@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Ultra-Fast Lookup: Find the zone and get its branchId
-        const zone = await Zone.findOne({ magicToken: token }).select('branchId');
+        const zone = await Zone.findOne({ magicToken: token }).select('_id branchId');
         
         if (!zone) {
             return NextResponse.json({ error: "Invalid or revoked token" }, { status: 401 });
@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ 
             success: true, 
             branchId: zone.branchId, 
+            zoneId: zone._id,
             orders 
         }, { status: 200 });
 
