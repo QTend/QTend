@@ -9,7 +9,7 @@ interface PushOptions {
   title: string;
   body: string;
   url?: string;
-}
+}. 
 
 let isVapidInitialized = false;
 
