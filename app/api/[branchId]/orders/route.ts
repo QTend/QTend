@@ -34,7 +34,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ branchI
 
         // Retrieve the branch slug
         const branch = await Branches.findById(branchId)
-            .select('slug')
+            .select('slug plans')
             .lean();
 
         if (!branch || !branch.slug) {
@@ -44,6 +44,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ branchI
             );
         }
         
+        const isProPlan = branch.plans?.planType === 'pro';
         const branchSlug = branch.slug;
 
         // 🚀 Type-safe extraction of unique zone IDs
@@ -73,9 +74,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ branchI
         // 6. Real-time websocket update for screens that are awake
         await pusherServer.trigger(`branch-${branchId}`, 'new-order', populatedOrder);
 
-        // 7. Background Web Push dispatch for screens that are minimized/locked
-        if (uniqueZoneIds.length > 0) {
-            // Restaurant has zones: Notify KDS devices subscribed to these specific zones
+        // 7. 3. Dispatch based on Plan + Order Contents
+        if (isProPlan && uniqueZoneIds.length > 0) {
+            /// 🟢 PRO PLAN + HAS ZONES: Route to specific kitchen screens
             await dispatchPushAlert({
                 branchId,
                 target: 'zones',
@@ -85,7 +86,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ branchI
                 url: `/kds/${branchSlug}/zone`,
             });
         } else {
-            // No zones: Notify main kitchen/admin dashboard
+            // 🟡 BASIC/STARTER (or Pro order with unassigned items): Route to Admin
             await dispatchPushAlert({
                 branchId,
                 target: 'admin',
