@@ -242,7 +242,7 @@ export const CustomerMenuInterface = ({branchSlug}: any) => {
            
 
             {/* Active Orders Badge */}
-            {myOrders.length > 0 && (
+            {canInteract && myOrders.length > 0 && (
               <button 
                 onClick={() => setShowOrdersModal(true)}
                 className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md border border-white/30 text-white py-1.5 px-3 rounded-full shadow-sm active:scale-95 touch-manipulation transition-all"
