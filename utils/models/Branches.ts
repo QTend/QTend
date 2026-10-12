@@ -21,7 +21,7 @@ const BranchSchema = new mongoose.Schema({
         default: ''
     },
     plans: {
-        planType: { type: String, enum: ['basic', 'starter', 'pro'], default: 'basic' },
+        planType: { type: String, enum: ['free', 'basic', 'starter', 'pro'], default: 'basic' },
         isTrial: { type: Boolean, default: true },
         // expiryDate: { type: Date, default: () => new Date(Date.now() + 3 * 60 * 1000) } // +3 minutes
         expiryDate: { type: Date, default: () => new Date(Date.now() + 1 * 24 * 60 * 60 * 1000) } // +14 days

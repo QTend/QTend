@@ -6,7 +6,7 @@ export type BranchProps = {
     phone: string;
     website: string;
     plans:{
-        planType: 'basic' | 'starter' | 'pro';
+        planType: 'free' |'basic' | 'starter' | 'pro';
         isTrial: boolean;
         expiryDate: Date;
     };

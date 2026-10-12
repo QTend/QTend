@@ -43,8 +43,8 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
   const { refreshCategories, categories } = useCategory();
   const { branch } = useUserAdmin(); 
 
-  const isBasicPlan = !branch?.plans?.planType || branch.plans.planType === 'basic';
-  const limitReached = isBasicPlan && totalItemCount >= 30;
+  const isFreePlan = !branch?.plans?.planType || branch.plans.planType === 'free';
+  const limitReached = isFreePlan && totalItemCount >= 30;
 
   useEffect(() => {
     if (searchParams.get("modal") === "new-category") {
@@ -298,8 +298,8 @@ export function ManageCategory({ branchId, branchSlug }: { branchId: string, bra
           <div className="w-full max-w-[95vw] md:max-w-md">
             <UpgradeModal 
                 closeModal={() => setShowUpgradeModal(false)}
-                title="Basic Tier Limit Reached"
-                message="You've reached the 30-item limit on the Basic plan. Upgrade to Starter for unlimited items, live order tracking, and more."
+                title="Free Tier Limit Reached"
+                message="You've reached the 10-item limit on the Free plan. Upgrade to Starter for unlimited items, live order tracking, and more."
                 actionLabel="View Pricing Plans"
                 onAction={() => { setShowUpgradeModal(false); setOpenModal(false); router.push(`/dashboard/${branchSlug}/billing`); }}
             />

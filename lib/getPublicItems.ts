@@ -21,7 +21,7 @@ export const getPublicItems = cache(async (slug: string) => {
     ]);
 
     return JSON.parse(JSON.stringify({
-        restaurant: { name: branch.name, address: branch.address, id: branch._id, slug: branch.slug, coverImage: branch.branding.coverImage, logo: branch.branding.logo, plan: branch.plans.planType},
+        restaurant: { name: branch.name, address: branch.address, id: branch._id, slug: branch.slug, coverImage: branch.branding.coverImage, logo: branch.branding.logo, plan: branch.plans.planType, phone:branch.phone},
         menu: { categories, items }
     }))
 })

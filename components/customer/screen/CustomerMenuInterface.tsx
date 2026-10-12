@@ -14,7 +14,7 @@ import FoodDetailsModal from './Modals/FoodDetailsModal'
 import MyOrdersModal from './Modals/MyOrdersModal'
 
 export const CustomerMenuInterface = ({branchSlug}: any) => {
-  const { branch, table, isBasic, hasTable, canInteract } = useCustomer()
+  const { branch, table, isFree, hasTable, canInteract } = useCustomer()
   
   const [openMenus, setOpenMenus] = useState<string[]>([])
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('All')
@@ -174,12 +174,12 @@ export const CustomerMenuInterface = ({branchSlug}: any) => {
   const visibleItems = useMemo(() => {
     if(!branch?.menu?.items) return [];
 
-    if(isBasic) {
-      return branch.menu.items.slice(0, 25)
+    if(isFree) {
+      return branch.menu.items.slice(0, 10)
     }
 
     return branch.menu.items;
-  }, [branch, isBasic])
+  }, [branch, isFree])
 
   return (
     <section className={showSummary ? 'pb-40' : ''}>

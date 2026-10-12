@@ -98,19 +98,19 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         }
 
         const planType = branch.plans?.planType || 'basic';
-        const isBasicPlan = planType === 'basic';
+        const isFreePlan = planType === 'free';
         const isProPlan = planType === 'pro';
         
-        // Limit Check (Basic Tier: Max 25 items)
-        if (isBasicPlan) {
+        // Limit Check (Free Tier: Max 10 items)
+        if (isFreePlan) {
             const currentItemCount = await MenuItem.countDocuments({ branchId });
             
-            if (currentItemCount + items.length > 25) {
+            if (currentItemCount + items.length > 10) {
                 return NextResponse.json(
                     { 
-                        error: `Basic plan limit reached. You have ${currentItemCount} item(s). Adding ${items.length} more exceeds the 25-item limit. Upgrade to Starter for unlimited items.`,
+                        error: `Free plan limit reached. You have ${currentItemCount} item(s). Adding ${items.length} more exceeds the 100-item limit. Upgrade to Starter for unlimited items.`,
                         code: "UPGRADE_REQUIRED",
-                        limit: 25,
+                        limit: 10,
                         currentCount: currentItemCount
                     }, 
                     { status: 403 }
