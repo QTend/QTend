@@ -21,9 +21,10 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
         // Map the IDs from your pricingData to your database string values
         const planMap: Record<number, string> = {
-            1: 'basic',
-            2: 'starter',
-            3: 'pro'
+            1: 'free',
+            2: 'basic',
+            3: 'starter',
+            4: 'pro'
         };
         const planString = planMap[planId] || 'basic';
 

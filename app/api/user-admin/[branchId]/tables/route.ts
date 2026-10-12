@@ -29,6 +29,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ branchI
         }
 
         const planType = branch.plans?.planType || 'basic';
+        if (planType === 'free') {
+            return NextResponse.json(
+                { 
+                    error: "Table management is not available on the Free plan. Upgrade to Starter or Pro.", 
+                    code: "UPGRADE_REQUIRED" 
+                }, 
+                { status: 403 }
+            );
+        }
         if (planType === 'basic') {
             return NextResponse.json(
                 { 
@@ -143,7 +152,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ branchId
         }
 
         const planType = branch.plans?.planType || 'basic';
-        if (planType === 'basic') {
+        if (planType === 'basic' || planType === 'free') {
             return NextResponse.json(
                 { 
                     error: "Table management requires Starter or Pro plan.", 

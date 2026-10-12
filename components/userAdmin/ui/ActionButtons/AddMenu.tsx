@@ -27,8 +27,8 @@ export function AddMenu({ branchId }: { branchId: string }) {
 
     const closeModal = () => setOpenModal(false);
 
-    const isBasicPlan = !branch?.plans?.planType || branch?.plans?.planType === 'basic';
-    const limitReached = isBasicPlan && totalItemCount >= 25;
+    const isFreePlan = !branch?.plans?.planType || branch?.plans?.planType === 'free';
+    const limitReached = isFreePlan && totalItemCount >= 10;
 
     return (
         <>
@@ -68,8 +68,8 @@ export function AddMenu({ branchId }: { branchId: string }) {
                     <div className="w-full max-w-[95vw] md:max-w-md">
                         <UpgradeModal 
                             closeModal={() => setShowUpgradeModal(false)}
-                            title="Basic Tier Limit Reached"
-                            message="You've reached the 30-item limit on the Basic plan. Upgrade to Starter for unlimited items, live order tracking, and more."
+                            title="Free Tier Limit Reached"
+                            message="You've reached the 10-item limit on the Free plan. Upgrade to Starter for unlimited items, live order tracking, and more."
                             actionLabel="View Pricing Plans"
                             onAction={() => {
                                 setShowUpgradeModal(false);

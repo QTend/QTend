@@ -90,7 +90,7 @@ export default function TablesSettings() {
   return (
     <div className="w-full max-w-5xl space-y-6">
       
-      {/* 1. Menu URL Card (Always visible, even on Basic) */}
+      {/* 1. Menu URL Card (Always visible, even on Basic or Free) */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
         <h2 className="text-base font-semibold text-[#222222]">Menu URL</h2>
         <p className="text-xs text-[#888888] mb-5">Your public menu link</p>

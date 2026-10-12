@@ -9,6 +9,7 @@ interface ContextProps {
     branch: CustomerProps;
     table: string | null;
     isBasic: boolean; 
+    isFree: boolean;
     canInteract: boolean;
     hasTable: boolean
 }
@@ -16,15 +17,15 @@ interface ContextProps {
 
 const customerContext = createContext<ContextProps | null>(null)
 
-export const CustomerProvider = ({children, branch, isBasic}: {children: ReactNode, branch: CustomerProps, isBasic: boolean}) => {
+export const CustomerProvider = ({children, branch, isBasic, isFree}: {children: ReactNode, branch: CustomerProps, isBasic: boolean, isFree: boolean}) => {
     const searchParams = useSearchParams()
     const table = searchParams.get('table')
 
     const hasTable = !!table 
     
-      const canInteract = !isBasic && hasTable
+      const canInteract = !isBasic && !isFree && hasTable
     return(
-        <customerContext.Provider value={{branch, table, isBasic, hasTable, canInteract}}>
+        <customerContext.Provider value={{branch, table, isBasic, isFree, hasTable, canInteract}}>
             {children}
         </customerContext.Provider>
     )
